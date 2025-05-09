@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apply to ACE Model College | Admission Process | Best School in Ibadan</title>
-    <meta name="description" content="Start your educational journey at ACE Model College Ibadan. Apply now for admission to our prestigious institution offering quality education from Nursery to Secondary level. Limited spaces available." />
-    <meta name="keywords" content="ACE Model College admission, school admission Ibadan, apply to ACE College, secondary school admission, private school enrollment, ACE Kiddies admission, school registration Ibadan" />
-    <meta name="author" content="ACE Model College" />
+    <title>Apply to ACE College | Admission Process | Best School in Ibadan</title>
+    <meta name="description" content="Start your educational journey at ACE College Ibadan. Apply now for admission to our prestigious institution offering quality education from Nursery to Secondary level. Limited spaces available." />
+    <meta name="keywords" content="ACE College admission, school admission Ibadan, apply to ACE College, secondary school admission, private school enrollment, ACE Kiddies admission, school registration Ibadan" />
+    <meta name="author" content="ACE College" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Apply to ACE Model College | Start Your Educational Journey">
-    <meta property="og:description" content="Start your educational journey at ACE Model College Ibadan. Apply now for admission to our prestigious institution offering quality education from Nursery to Secondary level.">
-    <meta property="og:image" content="https://www.acemodelcollege.com/images/logo.png">
-    <meta property="og:url" content="https://www.acemodelcollege.com/apply.html">
+    <meta property="og:title" content="Apply to ACE College | Start Your Educational Journey">
+    <meta property="og:description" content="Start your educational journey at ACE College Ibadan. Apply now for admission to our prestigious institution offering quality education from Nursery to Secondary level.">
+    <meta property="og:image" content="https://www.acecollege.com/images/logo.png">
+    <meta property="og:url" content="https://www.acecollege.com/apply.html">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="ACE Model College">
+    <meta property="og:site_name" content="ACE College">
     <meta property="og:locale" content="en_NG">
 
     <!-- Twitter Card Meta Tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Apply to ACE Model College | Start Your Educational Journey">
-    <meta name="twitter:description" content="Start your educational journey at ACE Model College Ibadan. Apply now for admission to our prestigious institution.">
-    <meta name="twitter:image" content="https://www.acemodelcollege.com/images/logo.png">
+    <meta name="twitter:title" content="Apply to ACE College | Start Your Educational Journey">
+    <meta name="twitter:description" content="Start your educational journey at ACE College Ibadan. Apply now for admission to our prestigious institution.">
+    <meta name="twitter:image" content="https://www.acecollege.com/images/logo.png">
     <meta name="twitter:site" content="@ace_model_college">
 
     <!-- Structured Data -->
@@ -30,12 +30,12 @@
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Apply to ACE Model College",
-      "description": "Start your educational journey at ACE Model College Ibadan. Apply now for admission to our prestigious institution offering quality education from Nursery to Secondary level.",
+      "name": "Apply to ACE College",
+      "description": "Start your educational journey at ACE College Ibadan. Apply now for admission to our prestigious institution offering quality education from Nursery to Secondary level.",
       "publisher": {
         "@type": "EducationalOrganization",
-        "name": "ACE Model College",
-        "url": "https://www.acemodelcollege.com"
+        "name": "ACE College",
+        "url": "https://www.acecollege.com"
       },
       "offers": {
         "@type": "AggregateOffer",
@@ -69,13 +69,13 @@
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://www.acemodelcollege.com"
+        "item": "https://www.acecollege.com"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Apply",
-        "item": "https://www.acemodelcollege.com/apply.html"
+        "item": "https://www.acecollege.com/apply.html"
       }]
     }
     </script>
@@ -92,13 +92,13 @@
             background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)), url('images/img_bg_6.png');
             background-size: cover;
             background-position: center;
-            background-attachment: fixed;
+            background-repeat: no-repeat;
+            width: 100%;
+            height: 100vh; /* Full viewport height */
             color: white;
-            padding: 180px 0;
             text-align: center;
             margin-bottom: 70px;
             position: relative;
-            min-height: 600px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -120,26 +120,25 @@
             max-width: 1000px;
             margin: 0 auto;
             padding: 0 20px;
+            width: 100%;
         }
 
         .apply-header h1 {
-            font-size: 4.5em;
+            font-size: clamp(2.5rem, 5vw, 4.5rem); /* Responsive font size */
             font-weight: 800;
             margin-bottom: 30px;
             text-transform: uppercase;
             letter-spacing: 2px;
             text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
-            position: relative;
             line-height: 1.2;
         }
 
         .apply-header p {
-            font-size: 1.5em;
-            max-width: 900px;
+            font-size: clamp(1.1rem, 2vw, 1.5rem); /* Responsive font size */
+            max-width: min(900px, 90%); /* Responsive width */
             margin: 0 auto;
             opacity: 0.95;
             text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
-            position: relative;
             line-height: 1.6;
         }
 
@@ -264,51 +263,38 @@
             text-decoration: none;
         }
 
+        /* Media Queries for better responsiveness */
         @media (max-width: 768px) {
             .apply-header {
-                padding: 120px 0;
-                min-height: 400px;
-            }
-
-            .apply-header h1 {
-                font-size: 3em;
-            }
-
-            .apply-header p {
-                font-size: 1.2em;
-                padding: 0 20px;
-            }
-
-            .enrollment-section {
-                padding: 30px 20px;
-            }
-
-            .section-icon {
-                font-size: 36px;
-            }
-
-            .enrollment-section h2 {
-                font-size: 1.5em;
-            }
-
-            .enroll-btn {
-                padding: 12px 30px;
-                font-size: 1em;
+                min-height: 60vh; /* Smaller height on mobile */
+                padding: 100px 0;
             }
         }
 
         @media (max-width: 480px) {
             .apply-header {
+                min-height: 50vh; /* Even smaller height on smaller devices */
+                padding: 80px 0;
+            }
+
+            .apply-header .container {
+                padding: 0 15px;
+            }
+        }
+
+        /* For very tall screens */
+        @media (min-height: 1000px) {
+            .apply-header {
+                height: 70vh; /* Slightly shorter on tall screens */
+            }
+        }
+
+        /* For landscape orientation on mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .apply-header {
+                height: auto;
+                min-height: 100vh;
                 padding: 100px 0;
-                min-height: 350px;
-            }
-
-            .apply-header h1 {
-                font-size: 2.5em;
-            }
-
-            .apply-header p {
-                font-size: 1.1em;
             }
         }
     </style>
