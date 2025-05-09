@@ -1,0 +1,334 @@
+{
+    "Algebra": {
+        "questions": [
+            {
+                "question": "Solve for x: 2x + 5 = 13",
+                "options": ["x = 4", "x = 6", "x = 8", "x = 3"],
+                "correctAnswer": 0,
+                "solution": "2x + 5 = 13\n2x = 13 - 5\n2x = 8\nx = 4"
+            },
+            {
+                "question": "Factorize: x² + 5x + 6",
+                "options": [
+                    "(x + 2)(x + 3)",
+                    "(x - 2)(x - 3)",
+                    "(x + 1)(x + 6)",
+                    "(x - 1)(x - 6)"
+                ],
+                "correctAnswer": 0,
+                "solution": "To factorize x² + 5x + 6, find two numbers that:\n1. Add up to 5 (coefficient of x)\n2. Multiply to give 6 (constant term)\nThese numbers are 2 and 3\nTherefore, x² + 5x + 6 = (x + 2)(x + 3)"
+            },
+            {
+                "question": "Solve the equation: 3(x - 4) = 15",
+                "options": ["x = 9", "x = 7", "x = 8", "x = 6"],
+                "correctAnswer": 1,
+                "solution": "3(x - 4) = 15\nx - 4 = 15/3\nx - 4 = 5\nx = 9"
+            },
+            {
+                "question": "Simplify: 2(x + 3) - (x - 2)",
+                "options": [
+                    "x + 8",
+                    "x + 4",
+                    "2x + 8",
+                    "3x + 1"
+                ],
+                "correctAnswer": 0,
+                "solution": "2(x + 3) - (x - 2)\n= 2x + 6 - x + 2\n= x + 8"
+            },
+            {
+                "question": "Solve: x² - 9 = 0",
+                "options": [
+                    "x = ±3",
+                    "x = 3",
+                    "x = -3",
+                    "x = 9"
+                ],
+                "correctAnswer": 0,
+                "solution": "x² - 9 = 0\nx² = 9\nx = ±√9\nx = ±3"
+            },
+            {
+                "question": "Simplify: (x² + 2x) + (3x² - x)",
+                "options": [
+                    "4x² + x",
+                    "4x² - x",
+                    "4x² + 2x",
+                    "3x² + x"
+                ],
+                "correctAnswer": 0,
+                "solution": "(x² + 2x) + (3x² - x)\n= x² + 3x² + 2x - x\n= 4x² + x"
+            },
+            {
+                "question": "Solve: 2x + 3 > 7",
+                "options": [
+                    "x > 2",
+                    "x < 2",
+                    "x > 5",
+                    "x < 5"
+                ],
+                "correctAnswer": 0,
+                "solution": "2x + 3 > 7\n2x > 7 - 3\n2x > 4\nx > 2"
+            },
+            {
+                "question": "Factor: x² - 4",
+                "options": [
+                    "(x+2)(x-2)",
+                    "(x+4)(x-4)",
+                    "(x+1)(x-4)",
+                    "(x+4)(x+1)"
+                ],
+                "correctAnswer": 0,
+                "solution": "x² - 4 is a difference of squares\nx² - 4 = (x+2)(x-2)"
+            },
+            {
+                "question": "Solve: x/2 + 3 = 7",
+                "options": [
+                    "x = 8",
+                    "x = 10",
+                    "x = 6",
+                    "x = 4"
+                ],
+                "correctAnswer": 0,
+                "solution": "x/2 + 3 = 7\nx/2 = 7 - 3\nx/2 = 4\nx = 8"
+            },
+            {
+                "question": "Simplify: (x + 2)²",
+                "options": [
+                    "x² + 4x + 4",
+                    "x² + 2x + 2",
+                    "x² + 4",
+                    "x² + 2x + 4"
+                ],
+                "correctAnswer": 0,
+                "solution": "(x + 2)² = (x + 2)(x + 2)\n= x² + 2x + 2x + 4\n= x² + 4x + 4"
+            }
+        ]
+    },
+    "Geometry": {
+        "questions": [
+            {
+                "question": "What is the area of a rectangle with length 8 and width 5?",
+                "options": [
+                    "40 square units",
+                    "26 square units",
+                    "13 square units",
+                    "32 square units"
+                ],
+                "correctAnswer": 0,
+                "solution": "Area of rectangle = length × width\n= 8 × 5\n= 40 square units"
+            },
+            {
+                "question": "Find the perimeter of a square with side length 6.",
+                "options": [
+                    "24 units",
+                    "36 units",
+                    "12 units",
+                    "18 units"
+                ],
+                "correctAnswer": 0,
+                "solution": "Perimeter of square = 4 × side length\n= 4 × 6\n= 24 units"
+            },
+            {
+                "question": "What is the area of a triangle with base 10 and height 8?",
+                "options": [
+                    "40 square units",
+                    "80 square units",
+                    "20 square units",
+                    "16 square units"
+                ],
+                "correctAnswer": 0,
+                "solution": "Area of triangle = (1/2) × base × height\n= (1/2) × 10 × 8\n= 40 square units"
+            },
+            {
+                "question": "Find the circumference of a circle with radius 7.",
+                "options": [
+                    "44 units",
+                    "14π units",
+                    "28 units",
+                    "21π units"
+                ],
+                "correctAnswer": 1,
+                "solution": "Circumference = 2πr\n= 2π × 7\n= 14π units"
+            },
+            {
+                "question": "What is the area of a circle with radius 5?",
+                "options": [
+                    "25π square units",
+                    "10π square units",
+                    "15π square units",
+                    "20π square units"
+                ],
+                "correctAnswer": 0,
+                "solution": "Area of circle = πr²\n= π × 5²\n= 25π square units"
+            },
+            {
+                "question": "Find the volume of a cube with side length 4.",
+                "options": [
+                    "64 cubic units",
+                    "16 cubic units",
+                    "32 cubic units",
+                    "48 cubic units"
+                ],
+                "correctAnswer": 0,
+                "solution": "Volume of cube = side length³\n= 4³\n= 64 cubic units"
+            },
+            {
+                "question": "What is the volume of a cylinder with radius 3 and height 8?",
+                "options": [
+                    "72π cubic units",
+                    "24π cubic units",
+                    "48π cubic units",
+                    "36π cubic units"
+                ],
+                "correctAnswer": 0,
+                "solution": "Volume of cylinder = πr²h\n= π × 3² × 8\n= 72π cubic units"
+            },
+            {
+                "question": "Find the surface area of a cube with side length 5.",
+                "options": [
+                    "150 square units",
+                    "125 square units",
+                    "100 square units",
+                    "75 square units"
+                ],
+                "correctAnswer": 0,
+                "solution": "Surface area of cube = 6 × side length²\n= 6 × 5²\n= 6 × 25\n= 150 square units"
+            },
+            {
+                "question": "What is the Pythagorean theorem?",
+                "options": [
+                    "a² + b² = c²",
+                    "a + b = c",
+                    "2a + 2b = c",
+                    "a × b = c"
+                ],
+                "correctAnswer": 0,
+                "solution": "The Pythagorean theorem states that in a right triangle, the square of the hypotenuse (c) equals the sum of squares of the other two sides (a and b)."
+            },
+            {
+                "question": "Find the area of a trapezoid with bases 8 and 12, and height 5.",
+                "options": [
+                    "50 square units",
+                    "40 square units",
+                    "60 square units",
+                    "45 square units"
+                ],
+                "correctAnswer": 0,
+                "solution": "Area of trapezoid = (1/2)(b₁ + b₂)h\n= (1/2)(8 + 12)5\n= (1/2)(20)5\n= 50 square units"
+            }
+        ]
+    },
+    "Statistics": {
+        "questions": [
+            {
+                "question": "What is the mean of 2, 4, 6, 8, 10?",
+                "options": [
+                    "6",
+                    "5",
+                    "7",
+                    "8"
+                ],
+                "correctAnswer": 0,
+                "solution": "Mean = sum of values ÷ number of values\n= (2 + 4 + 6 + 8 + 10) ÷ 5\n= 30 ÷ 5\n= 6"
+            },
+            {
+                "question": "Find the median of 3, 7, 8, 5, 2.",
+                "options": [
+                    "5",
+                    "3",
+                    "7",
+                    "8"
+                ],
+                "correctAnswer": 0,
+                "solution": "First arrange in order: 2, 3, 5, 7, 8\nMedian is the middle number\nMedian = 5"
+            },
+            {
+                "question": "What is the mode of 2, 3, 3, 4, 5, 3, 6?",
+                "options": [
+                    "3",
+                    "2",
+                    "4",
+                    "5"
+                ],
+                "correctAnswer": 0,
+                "solution": "Mode is the most frequent value\n3 appears three times\nMode = 3"
+            },
+            {
+                "question": "Calculate the range of 12, 15, 18, 21, 24.",
+                "options": [
+                    "12",
+                    "15",
+                    "18",
+                    "21"
+                ],
+                "correctAnswer": 0,
+                "solution": "Range = highest value - lowest value\n= 24 - 12\n= 12"
+            },
+            {
+                "question": "What is the probability of rolling a 6 on a fair die?",
+                "options": [
+                    "1/6",
+                    "1/3",
+                    "1/2",
+                    "1/4"
+                ],
+                "correctAnswer": 0,
+                "solution": "Probability = favorable outcomes ÷ total possible outcomes\n= 1 ÷ 6\n= 1/6"
+            },
+            {
+                "question": "Find the variance of 2, 4, 6, 8.",
+                "options": [
+                    "5",
+                    "4",
+                    "6",
+                    "7"
+                ],
+                "correctAnswer": 0,
+                "solution": "Mean = 5\nDeviations: -3, -1, 1, 3\nSquared deviations: 9, 1, 1, 9\nVariance = mean of squared deviations = 20/4 = 5"
+            },
+            {
+                "question": "What is the standard deviation of 1, 3, 5?",
+                "options": [
+                    "2",
+                    "3",
+                    "4",
+                    "1"
+                ],
+                "correctAnswer": 0,
+                "solution": "Mean = 3\nDeviations: -2, 0, 2\nSquared deviations: 4, 0, 4\nVariance = 8/3\nStandard deviation = √(8/3) = 2"
+            },
+            {
+                "question": "Calculate the probability of getting heads twice when flipping a fair coin twice.",
+                "options": [
+                    "1/4",
+                    "1/2",
+                    "3/4",
+                    "1/3"
+                ],
+                "correctAnswer": 0,
+                "solution": "Probability of heads = 1/2\nProbability of two heads = 1/2 × 1/2 = 1/4"
+            },
+            {
+                "question": "What is the interquartile range of 2, 4, 6, 8, 10, 12, 14?",
+                "options": [
+                    "6",
+                    "8",
+                    "4",
+                    "10"
+                ],
+                "correctAnswer": 0,
+                "solution": "Q1 = 4, Q3 = 10\nInterquartile range = Q3 - Q1 = 10 - 4 = 6"
+            },
+            {
+                "question": "Find the sample space when rolling two dice.",
+                "options": [
+                    "36 outcomes",
+                    "12 outcomes",
+                    "24 outcomes",
+                    "48 outcomes"
+                ],
+                "correctAnswer": 0,
+                "solution": "Each die has 6 possible outcomes\nTotal outcomes = 6 × 6 = 36 outcomes"
+            }
+        ]
+    }
+} 

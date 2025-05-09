@@ -1,0 +1,344 @@
+{
+    "Cell Biology": {
+        "questions": [
+            {
+                "question": "Which organelle is known as the 'powerhouse' of the cell?",
+                "options": [
+                    "Mitochondria",
+                    "Nucleus",
+                    "Golgi apparatus",
+                    "Endoplasmic reticulum"
+                ],
+                "correctAnswer": 0,
+                "solution": "Mitochondria are called the 'powerhouse' of the cell because they produce most of the cell's supply of adenosine triphosphate (ATP), used as a source of chemical energy."
+            },
+            {
+                "question": "What is the primary function of the cell membrane?",
+                "options": [
+                    "Protein synthesis",
+                    "Energy production",
+                    "Selective permeability",
+                    "DNA storage"
+                ],
+                "correctAnswer": 2,
+                "solution": "The cell membrane's primary function is selective permeability - controlling what substances can enter and exit the cell. This is crucial for maintaining cellular homeostasis."
+            },
+            {
+                "question": "Which of these is NOT a function of the nucleus?",
+                "options": [
+                    "DNA storage",
+                    "ATP production",
+                    "Gene expression",
+                    "Chromosome organization"
+                ],
+                "correctAnswer": 1,
+                "solution": "ATP production occurs in the mitochondria, not in the nucleus. The nucleus is responsible for storing genetic material (DNA), gene expression, and chromosome organization."
+            },
+            {
+                "question": "What is the function of the Golgi apparatus?",
+                "options": [
+                    "Protein modification and packaging",
+                    "Energy production",
+                    "Waste disposal",
+                    "DNA replication"
+                ],
+                "correctAnswer": 0,
+                "solution": "The Golgi apparatus modifies, packages, and distributes proteins and lipids to their final destinations within or outside the cell."
+            },
+            {
+                "question": "Which organelle is responsible for protein synthesis?",
+                "options": [
+                    "Ribosomes",
+                    "Lysosomes",
+                    "Vacuoles",
+                    "Chloroplasts"
+                ],
+                "correctAnswer": 0,
+                "solution": "Ribosomes are the cellular structures responsible for protein synthesis through the process of translation."
+            },
+            {
+                "question": "What is the function of lysosomes?",
+                "options": [
+                    "Cellular digestion",
+                    "Photosynthesis",
+                    "Protein synthesis",
+                    "Energy production"
+                ],
+                "correctAnswer": 0,
+                "solution": "Lysosomes contain digestive enzymes that break down cellular waste, foreign materials, and damaged cell components."
+            },
+            {
+                "question": "What is the role of the endoplasmic reticulum?",
+                "options": [
+                    "Protein transport and modification",
+                    "Energy storage",
+                    "Cell division",
+                    "Waste removal"
+                ],
+                "correctAnswer": 0,
+                "solution": "The endoplasmic reticulum is involved in protein transport and modification, as well as lipid synthesis."
+            },
+            {
+                "question": "Which organelle is found only in plant cells?",
+                "options": [
+                    "Chloroplasts",
+                    "Mitochondria",
+                    "Nucleus",
+                    "Ribosomes"
+                ],
+                "correctAnswer": 0,
+                "solution": "Chloroplasts are unique to plant cells and are responsible for photosynthesis, converting light energy into chemical energy."
+            },
+            {
+                "question": "What is the function of the cell wall?",
+                "options": [
+                    "Structural support",
+                    "Energy production",
+                    "Protein synthesis",
+                    "Genetic storage"
+                ],
+                "correctAnswer": 0,
+                "solution": "The cell wall provides structural support and protection for plant cells, fungi, and certain bacteria."
+            },
+            {
+                "question": "What is the role of vacuoles in plant cells?",
+                "options": [
+                    "Storage and maintenance of turgor pressure",
+                    "Protein synthesis",
+                    "Energy production",
+                    "DNA replication"
+                ],
+                "correctAnswer": 0,
+                "solution": "Vacuoles store water, nutrients, and waste products, and help maintain turgor pressure in plant cells."
+            }
+        ]
+    },
+    "Genetics": {
+        "questions": [
+            {
+                "question": "What is the structure of DNA?",
+                "options": [
+                    "Double helix",
+                    "Single helix",
+                    "Triple helix",
+                    "Straight chain"
+                ],
+                "correctAnswer": 0,
+                "solution": "DNA has a double helix structure, consisting of two strands of nucleotides wound around each other."
+            },
+            {
+                "question": "What are the base pairs in DNA?",
+                "options": [
+                    "Adenine-Thymine and Guanine-Cytosine",
+                    "Adenine-Guanine and Thymine-Cytosine",
+                    "Adenine-Cytosine and Guanine-Thymine",
+                    "Adenine-Adenine and Thymine-Thymine"
+                ],
+                "correctAnswer": 0,
+                "solution": "In DNA, Adenine pairs with Thymine, and Guanine pairs with Cytosine through hydrogen bonds."
+            },
+            {
+                "question": "What is a gene?",
+                "options": [
+                    "A segment of DNA that codes for a protein",
+                    "A type of cell",
+                    "A chromosome",
+                    "A type of mutation"
+                ],
+                "correctAnswer": 0,
+                "solution": "A gene is a segment of DNA that contains the instructions for making a specific protein or functional RNA molecule."
+            },
+            {
+                "question": "What is the process of DNA replication?",
+                "options": [
+                    "Making exact copies of DNA",
+                    "Breaking down DNA",
+                    "Combining two DNA molecules",
+                    "Converting DNA to RNA"
+                ],
+                "correctAnswer": 0,
+                "solution": "DNA replication is the process of making exact copies of DNA before cell division, ensuring genetic information is passed to daughter cells."
+            },
+            {
+                "question": "What is a mutation?",
+                "options": [
+                    "A change in DNA sequence",
+                    "A type of cell division",
+                    "A protein structure",
+                    "A cellular organelle"
+                ],
+                "correctAnswer": 0,
+                "solution": "A mutation is a permanent change in the DNA sequence of a gene, which can affect protein function and organism traits."
+            },
+            {
+                "question": "What is the central dogma of molecular biology?",
+                "options": [
+                    "DNA → RNA → Protein",
+                    "Protein → RNA → DNA",
+                    "RNA → DNA → Protein",
+                    "DNA → Protein → RNA"
+                ],
+                "correctAnswer": 0,
+                "solution": "The central dogma describes the flow of genetic information: DNA is transcribed to RNA, which is then translated to protein."
+            },
+            {
+                "question": "What is a chromosome?",
+                "options": [
+                    "Condensed DNA and proteins",
+                    "A type of protein",
+                    "A cell membrane",
+                    "A type of RNA"
+                ],
+                "correctAnswer": 0,
+                "solution": "Chromosomes are structures made of condensed DNA and proteins that carry genetic information."
+            },
+            {
+                "question": "What is meiosis?",
+                "options": [
+                    "Cell division producing gametes",
+                    "Regular cell division",
+                    "Protein synthesis",
+                    "DNA replication"
+                ],
+                "correctAnswer": 0,
+                "solution": "Meiosis is a type of cell division that produces gametes (sex cells) with half the normal number of chromosomes."
+            },
+            {
+                "question": "What are alleles?",
+                "options": [
+                    "Alternative forms of a gene",
+                    "Types of cells",
+                    "Parts of chromosomes",
+                    "Types of mutations"
+                ],
+                "correctAnswer": 0,
+                "solution": "Alleles are alternative forms of the same gene that can produce different traits."
+            },
+            {
+                "question": "What is genetic inheritance?",
+                "options": [
+                    "Passing of genes from parents to offspring",
+                    "Creation of new genes",
+                    "Gene mutation",
+                    "Chromosome duplication"
+                ],
+                "correctAnswer": 0,
+                "solution": "Genetic inheritance is the process by which genes are passed from parents to their offspring."
+            }
+        ]
+    },
+    "Human Anatomy": {
+        "questions": [
+            {
+                "question": "What is the function of the cardiovascular system?",
+                "options": [
+                    "Transport blood throughout the body",
+                    "Digest food",
+                    "Filter waste",
+                    "Control movement"
+                ],
+                "correctAnswer": 0,
+                "solution": "The cardiovascular system transports blood throughout the body, delivering oxygen and nutrients while removing waste products."
+            },
+            {
+                "question": "What is the main function of the respiratory system?",
+                "options": [
+                    "Gas exchange",
+                    "Digestion",
+                    "Waste removal",
+                    "Movement"
+                ],
+                "correctAnswer": 0,
+                "solution": "The respiratory system facilitates gas exchange, bringing oxygen into the body and removing carbon dioxide."
+            },
+            {
+                "question": "What is the largest organ in the human body?",
+                "options": [
+                    "Skin",
+                    "Liver",
+                    "Brain",
+                    "Heart"
+                ],
+                "correctAnswer": 0,
+                "solution": "The skin is the largest organ in the human body, serving as a protective barrier and helping regulate body temperature."
+            },
+            {
+                "question": "What is the function of the digestive system?",
+                "options": [
+                    "Break down food and absorb nutrients",
+                    "Pump blood",
+                    "Filter air",
+                    "Control movement"
+                ],
+                "correctAnswer": 0,
+                "solution": "The digestive system breaks down food into nutrients that can be absorbed and used by the body."
+            },
+            {
+                "question": "What is the role of the nervous system?",
+                "options": [
+                    "Control and coordination",
+                    "Blood circulation",
+                    "Digestion",
+                    "Waste removal"
+                ],
+                "correctAnswer": 0,
+                "solution": "The nervous system controls and coordinates all body functions through electrical and chemical signals."
+            },
+            {
+                "question": "What is the function of the skeletal system?",
+                "options": [
+                    "Support and protection",
+                    "Digestion",
+                    "Breathing",
+                    "Blood circulation"
+                ],
+                "correctAnswer": 0,
+                "solution": "The skeletal system provides structural support, protects organs, and enables movement in conjunction with muscles."
+            },
+            {
+                "question": "What is the main function of red blood cells?",
+                "options": [
+                    "Transport oxygen",
+                    "Fight infection",
+                    "Form blood clots",
+                    "Produce antibodies"
+                ],
+                "correctAnswer": 0,
+                "solution": "Red blood cells transport oxygen from the lungs to body tissues and carry carbon dioxide back to the lungs."
+            },
+            {
+                "question": "What is the function of the endocrine system?",
+                "options": [
+                    "Hormone production and regulation",
+                    "Digestion",
+                    "Movement",
+                    "Blood circulation"
+                ],
+                "correctAnswer": 0,
+                "solution": "The endocrine system produces and regulates hormones that control various body functions."
+            },
+            {
+                "question": "What is the main function of the lymphatic system?",
+                "options": [
+                    "Immune defense",
+                    "Digestion",
+                    "Breathing",
+                    "Movement"
+                ],
+                "correctAnswer": 0,
+                "solution": "The lymphatic system helps defend against infection and disease as part of the immune system."
+            },
+            {
+                "question": "What is the function of the urinary system?",
+                "options": [
+                    "Filter blood and remove waste",
+                    "Digest food",
+                    "Transport oxygen",
+                    "Produce hormones"
+                ],
+                "correctAnswer": 0,
+                "solution": "The urinary system filters blood and removes waste products through urine production."
+            }
+        ]
+    }
+} 

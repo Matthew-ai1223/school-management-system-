@@ -2559,6 +2559,77 @@
 	  });
 	</script>
 	<!-- End Popup Modal -->
+
+	<!-- Add before closing body tag, just before the scripts -->
+	<!-- Floating CBT Button -->
+	<div class="cbt-floating-btn">
+	    <a href="free_CBT/cbt.html" class="cbt-btn">
+	        <i class="fas fa-laptop-code"></i>
+	        <span>Take CBT Test</span>
+	    </a>
+	</div>
+
+	<style>
+	.cbt-floating-btn {
+	    position: fixed;
+	    bottom: 100px;
+	    right: 20px;
+	    z-index: 999;
+	}
+
+	.cbt-btn {
+	    display: flex;
+	    align-items: center;
+	    background: linear-gradient(135deg, #1a237e, #2962ff);
+	    color: white;
+	    padding: 12px 20px;
+	    border-radius: 50px;
+	    text-decoration: none;
+	    box-shadow: 0 4px 15px rgba(41,98,255,0.3);
+	    transition: all 0.3s ease;
+	    font-weight: 600;
+	    font-size: 16px;
+	    animation: pulse 2s infinite;
+	}
+
+	.cbt-btn i {
+	    margin-right: 8px;
+	    font-size: 20px;
+	}
+
+	.cbt-btn:hover {
+	    transform: translateY(-3px);
+	    box-shadow: 0 6px 20px rgba(41,98,255,0.4);
+	    color: white;
+	}
+
+	@keyframes pulse {
+	    0% {
+	        transform: scale(1);
+	    }
+	    50% {
+	        transform: scale(1.05);
+	    }
+	    100% {
+	        transform: scale(1);
+	    }
+	}
+
+	@media (max-width: 768px) {
+	    .cbt-floating-btn {
+	        bottom: 20px;
+	    }
+	    
+	    .cbt-btn {
+	        padding: 10px 15px;
+	        font-size: 14px;
+	    }
+	    
+	    .cbt-btn i {
+	        font-size: 18px;
+	    }
+	}
+	</style>
 	</body>
 </html>
 

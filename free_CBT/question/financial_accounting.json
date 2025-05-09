@@ -1,0 +1,344 @@
+{
+    "Financial Statements": {
+        "questions": [
+            {
+                "question": "Which financial statement shows a company's assets, liabilities, and equity?",
+                "options": [
+                    "Income Statement",
+                    "Balance Sheet",
+                    "Cash Flow Statement",
+                    "Statement of Changes in Equity"
+                ],
+                "correctAnswer": 1,
+                "solution": "The Balance Sheet shows a company's financial position at a specific point in time, listing all assets (what the company owns), liabilities (what it owes), and equity (net worth)."
+            },
+            {
+                "question": "Which financial statement shows a company's revenues and expenses over a period of time?",
+                "options": [
+                    "Balance Sheet",
+                    "Income Statement",
+                    "Cash Flow Statement",
+                    "Trial Balance"
+                ],
+                "correctAnswer": 1,
+                "solution": "The Income Statement shows a company's financial performance over a period, detailing revenues earned and expenses incurred to determine net profit or loss."
+            },
+            {
+                "question": "What does the Statement of Cash Flows report?",
+                "options": [
+                    "Only operating activities",
+                    "Only investing and financing activities",
+                    "Operating, investing, and financing activities",
+                    "Only financing activities"
+                ],
+                "correctAnswer": 2,
+                "solution": "The Statement of Cash Flows reports cash movements from three main activities: operating, investing, and financing, showing how a company generates and uses its cash."
+            },
+            {
+                "question": "Which financial statement shows changes in retained earnings?",
+                "options": [
+                    "Statement of Changes in Equity",
+                    "Balance Sheet",
+                    "Income Statement",
+                    "Cash Flow Statement"
+                ],
+                "correctAnswer": 0,
+                "solution": "The Statement of Changes in Equity shows movements in owners' equity, including retained earnings, share issues, and dividends over a period."
+            },
+            {
+                "question": "What is the purpose of notes to financial statements?",
+                "options": [
+                    "To provide additional detailed information",
+                    "To correct errors in statements",
+                    "To replace the main statements",
+                    "To show future projections"
+                ],
+                "correctAnswer": 0,
+                "solution": "Notes to financial statements provide additional detailed information and explanations that cannot be presented in the main financial statements."
+            },
+            {
+                "question": "Which statement shows the cumulative profits not paid out as dividends?",
+                "options": [
+                    "Cash Flow Statement",
+                    "Income Statement",
+                    "Retained Earnings Statement",
+                    "Trial Balance"
+                ],
+                "correctAnswer": 2,
+                "solution": "The Retained Earnings Statement shows accumulated profits that have been reinvested in the business rather than distributed as dividends."
+            },
+            {
+                "question": "What is an interim financial statement?",
+                "options": [
+                    "Statements covering less than one year",
+                    "Annual statements",
+                    "Statements covering more than one year",
+                    "Projected statements"
+                ],
+                "correctAnswer": 0,
+                "solution": "Interim financial statements cover periods less than one year, typically quarterly or half-yearly, providing more frequent updates on company performance."
+            },
+            {
+                "question": "Which financial statement is most useful for assessing liquidity?",
+                "options": [
+                    "Income Statement",
+                    "Statement of Changes in Equity",
+                    "Cash Flow Statement",
+                    "Trial Balance"
+                ],
+                "correctAnswer": 2,
+                "solution": "The Cash Flow Statement is most useful for assessing liquidity as it shows actual cash inflows and outflows, indicating ability to meet short-term obligations."
+            },
+            {
+                "question": "What is the primary purpose of pro forma financial statements?",
+                "options": [
+                    "To show historical performance",
+                    "To project future performance",
+                    "To correct past errors",
+                    "To report to tax authorities"
+                ],
+                "correctAnswer": 1,
+                "solution": "Pro forma financial statements project future financial performance based on certain assumptions and hypothetical conditions."
+            },
+            {
+                "question": "Which statement shows the financial position at a specific point in time?",
+                "options": [
+                    "Income Statement",
+                    "Cash Flow Statement",
+                    "Balance Sheet",
+                    "Trial Balance"
+                ],
+                "correctAnswer": 2,
+                "solution": "The Balance Sheet shows the financial position at a specific point in time, unlike other statements that show performance over a period."
+            }
+        ]
+    },
+    "Accounting Fundamentals": {
+        "questions": [
+            {
+                "question": "What is the accounting equation?",
+                "options": [
+                    "Assets = Liabilities + Owner's Equity",
+                    "Assets - Liabilities = Owner's Equity",
+                    "Assets + Liabilities = Owner's Equity",
+                    "Assets = Owner's Equity - Liabilities"
+                ],
+                "correctAnswer": 0,
+                "solution": "The fundamental accounting equation is Assets = Liabilities + Owner's Equity. This equation must always be in balance and forms the basis of double-entry bookkeeping."
+            },
+            {
+                "question": "What is the principle of double-entry bookkeeping?",
+                "options": [
+                    "Each transaction affects only one account",
+                    "Each transaction affects at least two accounts",
+                    "All transactions must be recorded twice",
+                    "All accounts must have equal balances"
+                ],
+                "correctAnswer": 1,
+                "solution": "Double-entry bookkeeping requires that each transaction affects at least two accounts, with total debits equaling total credits."
+            },
+            {
+                "question": "What is the matching principle?",
+                "options": [
+                    "Matching assets with liabilities",
+                    "Matching revenues with expenses",
+                    "Matching debits with credits",
+                    "Matching cash flows with profits"
+                ],
+                "correctAnswer": 1,
+                "solution": "The matching principle requires that expenses be matched with related revenues in the same accounting period they were incurred."
+            },
+            {
+                "question": "What is the going concern concept?",
+                "options": [
+                    "Business will continue indefinitely",
+                    "Business will close soon",
+                    "Business is currently profitable",
+                    "Business has current assets"
+                ],
+                "correctAnswer": 0,
+                "solution": "The going concern concept assumes that a business will continue operating indefinitely unless there is significant evidence to the contrary."
+            },
+            {
+                "question": "What is the accrual basis of accounting?",
+                "options": [
+                    "Recording transactions when cash changes hands",
+                    "Recording transactions when they occur",
+                    "Recording only cash transactions",
+                    "Recording only credit transactions"
+                ],
+                "correctAnswer": 1,
+                "solution": "The accrual basis records transactions when they occur, regardless of when cash changes hands, providing a more accurate picture of financial position."
+            },
+            {
+                "question": "What is materiality in accounting?",
+                "options": [
+                    "The cost of items",
+                    "The significance of financial information",
+                    "The physical nature of assets",
+                    "The size of the business"
+                ],
+                "correctAnswer": 1,
+                "solution": "Materiality refers to the significance of financial information and whether its omission or misstatement could influence decisions of users."
+            },
+            {
+                "question": "What is the cost principle?",
+                "options": [
+                    "Assets recorded at market value",
+                    "Assets recorded at original cost",
+                    "Assets recorded at replacement cost",
+                    "Assets recorded at fair value"
+                ],
+                "correctAnswer": 1,
+                "solution": "The cost principle requires that assets be recorded at their original acquisition cost, not their current market value."
+            },
+            {
+                "question": "What is the monetary unit assumption?",
+                "options": [
+                    "All transactions must be in dollars",
+                    "Money maintains constant value",
+                    "Only monetary items are recorded",
+                    "Currency must be converted"
+                ],
+                "correctAnswer": 0,
+                "solution": "The monetary unit assumption states that all transactions must be recorded in a stable currency unit (like dollars)."
+            },
+            {
+                "question": "What is the time period assumption?",
+                "options": [
+                    "Business life can be divided into periods",
+                    "All periods must be annual",
+                    "Time has no effect on accounting",
+                    "Periods must be calendar years"
+                ],
+                "correctAnswer": 0,
+                "solution": "The time period assumption states that a business's life can be divided into artificial time periods for reporting purposes."
+            },
+            {
+                "question": "What is conservatism in accounting?",
+                "options": [
+                    "Recording minimal profits",
+                    "Understating assets",
+                    "Using lower values when uncertain",
+                    "Avoiding risk"
+                ],
+                "correctAnswer": 2,
+                "solution": "Conservatism suggests when there is uncertainty in potential financial estimates, use the less optimistic estimate."
+            }
+        ]
+    },
+    "Assets Classification": {
+        "questions": [
+            {
+                "question": "Which of the following is a current asset?",
+                "options": [
+                    "Land",
+                    "Building",
+                    "Inventory",
+                    "Equipment"
+                ],
+                "correctAnswer": 2,
+                "solution": "Inventory is a current asset because it is expected to be converted to cash or used up within one year or one operating cycle, whichever is longer."
+            },
+            {
+                "question": "What defines a long-term asset?",
+                "options": [
+                    "Used within one year",
+                    "Used beyond one year",
+                    "High monetary value",
+                    "Physical existence"
+                ],
+                "correctAnswer": 1,
+                "solution": "Long-term assets are those expected to provide economic benefits for more than one year or operating cycle."
+            },
+            {
+                "question": "Which is an example of an intangible asset?",
+                "options": [
+                    "Patents",
+                    "Inventory",
+                    "Equipment",
+                    "Cash"
+                ],
+                "correctAnswer": 0,
+                "solution": "Patents are intangible assets as they have no physical form but provide economic value to the business."
+            },
+            {
+                "question": "What is accounts receivable classified as?",
+                "options": [
+                    "Current asset",
+                    "Long-term asset",
+                    "Intangible asset",
+                    "Fixed asset"
+                ],
+                "correctAnswer": 0,
+                "solution": "Accounts receivable is a current asset as it represents money owed to the business expected to be collected within one year."
+            },
+            {
+                "question": "Which asset is typically depreciated?",
+                "options": [
+                    "Cash",
+                    "Inventory",
+                    "Equipment",
+                    "Accounts receivable"
+                ],
+                "correctAnswer": 2,
+                "solution": "Equipment is typically depreciated as it's a long-term asset whose value decreases over its useful life."
+            },
+            {
+                "question": "What type of asset is goodwill?",
+                "options": [
+                    "Current asset",
+                    "Tangible asset",
+                    "Intangible asset",
+                    "Financial asset"
+                ],
+                "correctAnswer": 2,
+                "solution": "Goodwill is an intangible asset representing the excess of purchase price over fair value in a business acquisition."
+            },
+            {
+                "question": "How are marketable securities classified?",
+                "options": [
+                    "Current assets",
+                    "Long-term assets",
+                    "Fixed assets",
+                    "Intangible assets"
+                ],
+                "correctAnswer": 0,
+                "solution": "Marketable securities are current assets as they can be readily converted to cash within one year."
+            },
+            {
+                "question": "What type of asset is prepaid insurance?",
+                "options": [
+                    "Current asset",
+                    "Long-term asset",
+                    "Intangible asset",
+                    "Fixed asset"
+                ],
+                "correctAnswer": 0,
+                "solution": "Prepaid insurance is a current asset representing insurance paid in advance that will be used within one year."
+            },
+            {
+                "question": "Which is considered a financial asset?",
+                "options": [
+                    "Bonds held",
+                    "Inventory",
+                    "Equipment",
+                    "Buildings"
+                ],
+                "correctAnswer": 0,
+                "solution": "Bonds held are financial assets as they represent a contractual right to receive money in the future."
+            },
+            {
+                "question": "What distinguishes a fixed asset?",
+                "options": [
+                    "High cost",
+                    "Physical form and long-term use",
+                    "Current year usage",
+                    "Quick conversion to cash"
+                ],
+                "correctAnswer": 1,
+                "solution": "Fixed assets are distinguished by their physical form and long-term use in business operations, typically lasting more than one year."
+            }
+        ]
+    }
+} 

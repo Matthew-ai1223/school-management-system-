@@ -1,0 +1,344 @@
+{
+    "Grammar": {
+        "questions": [
+            {
+                "question": "Which sentence is grammatically correct?",
+                "options": [
+                    "They is going to the store.",
+                    "They are going to the store.",
+                    "They am going to the store.",
+                    "They be going to the store."
+                ],
+                "correctAnswer": 1,
+                "solution": "The correct form uses 'are' with the plural subject 'they'. This follows subject-verb agreement rules in English."
+            },
+            {
+                "question": "Choose the correct form of the verb:",
+                "options": [
+                    "The team have won the match.",
+                    "The team has won the match.",
+                    "The team is winning the match.",
+                    "The team were won the match."
+                ],
+                "correctAnswer": 1,
+                "solution": "'Team' is a collective noun and takes a singular verb in American English. Therefore, 'has' is correct."
+            },
+            {
+                "question": "Identify the sentence with correct punctuation:",
+                "options": [
+                    "John likes apples oranges and bananas",
+                    "John likes apples, oranges and bananas.",
+                    "John likes, apples, oranges, and bananas.",
+                    "John likes apples, oranges, and bananas."
+                ],
+                "correctAnswer": 3,
+                "solution": "The Oxford comma (serial comma) is used before 'and' in a list of three or more items. This makes the sentence clearer and prevents ambiguity."
+            },
+            {
+                "question": "Which sentence uses the correct verb tense?",
+                "options": [
+                    "I have went to the store",
+                    "I have gone to the store",
+                    "I have goed to the store",
+                    "I have going to the store"
+                ],
+                "correctAnswer": 1,
+                "solution": "The present perfect tense requires the past participle form 'gone' rather than the simple past 'went' or incorrect forms."
+            },
+            {
+                "question": "Choose the correct pronoun:",
+                "options": [
+                    "Him and me went to the store",
+                    "He and I went to the store",
+                    "Him and I went to the store",
+                    "He and me went to the store"
+                ],
+                "correctAnswer": 1,
+                "solution": "When pronouns are subjects, use subjective case pronouns 'he' and 'I' rather than objective case 'him' and 'me'."
+            },
+            {
+                "question": "Which is the correct possessive form?",
+                "options": [
+                    "The dogs bone",
+                    "The dog's bone",
+                    "The dogs' bone",
+                    "The dog's' bone"
+                ],
+                "correctAnswer": 1,
+                "solution": "For a singular possessive, add apostrophe + s ('s). 'The dog's bone' shows that the bone belongs to one dog."
+            },
+            {
+                "question": "Select the correct comparative form:",
+                "options": [
+                    "This book is more better than that one",
+                    "This book is better than that one",
+                    "This book is betterer than that one",
+                    "This book is more good than that one"
+                ],
+                "correctAnswer": 1,
+                "solution": "For most one-syllable adjectives, add -er for the comparative form. Don't use 'more' with -er forms."
+            },
+            {
+                "question": "Which sentence is in passive voice?",
+                "options": [
+                    "John wrote the letter",
+                    "The letter was written by John",
+                    "John is writing the letter",
+                    "John has written the letter"
+                ],
+                "correctAnswer": 1,
+                "solution": "Passive voice puts the object first and uses a form of 'be' + past participle. The doer may be mentioned in a 'by' phrase."
+            },
+            {
+                "question": "Choose the correct article:",
+                "options": [
+                    "I saw a elephant",
+                    "I saw an elephant",
+                    "I saw the elephant",
+                    "I saw elephant"
+                ],
+                "correctAnswer": 1,
+                "solution": "Use 'an' before words beginning with vowel sounds. 'Elephant' begins with the vowel sound /ɛ/, so 'an' is correct."
+            },
+            {
+                "question": "Identify the correct sentence structure:",
+                "options": [
+                    "Although it was raining went to the store",
+                    "Although it was raining, I went to the store",
+                    "Although it was raining, went to the store",
+                    "Although it was raining went I to the store"
+                ],
+                "correctAnswer": 1,
+                "solution": "A dependent clause beginning with 'although' must be joined to an independent clause with a comma, and the independent clause must have a subject."
+            }
+        ]
+    },
+    "Vocabulary": {
+        "questions": [
+            {
+                "question": "What is the meaning of 'ubiquitous'?",
+                "options": [
+                    "Present everywhere",
+                    "Rare",
+                    "Beautiful",
+                    "Dangerous"
+                ],
+                "correctAnswer": 0,
+                "solution": "'Ubiquitous' means present, appearing, or found everywhere. For example: 'Mobile phones have become ubiquitous in modern society.'"
+            },
+            {
+                "question": "Choose the correct synonym for 'benevolent':",
+                "options": [
+                    "Kind",
+                    "Cruel",
+                    "Angry",
+                    "Tired"
+                ],
+                "correctAnswer": 0,
+                "solution": "'Benevolent' means kind, generous, and caring about others. It's often used to describe someone who helps others."
+            },
+            {
+                "question": "What is an antonym for 'verbose'?",
+                "options": [
+                    "Concise",
+                    "Lengthy",
+                    "Wordy",
+                    "Detailed"
+                ],
+                "correctAnswer": 0,
+                "solution": "'Verbose' means using more words than needed. Its antonym 'concise' means brief and to the point."
+            },
+            {
+                "question": "What does 'pragmatic' mean?",
+                "options": [
+                    "Practical",
+                    "Theoretical",
+                    "Emotional",
+                    "Artistic"
+                ],
+                "correctAnswer": 0,
+                "solution": "'Pragmatic' means dealing with things sensibly and realistically, focused on practical considerations."
+            },
+            {
+                "question": "Choose the word that means 'to make amends':",
+                "options": [
+                    "Atone",
+                    "Attack",
+                    "Avoid",
+                    "Attract"
+                ],
+                "correctAnswer": 0,
+                "solution": "'Atone' means to make amends or reparation for a wrong or injury."
+            },
+            {
+                "question": "What is the meaning of 'ephemeral'?",
+                "options": [
+                    "Lasting a very short time",
+                    "Permanent",
+                    "Ancient",
+                    "Meaningful"
+                ],
+                "correctAnswer": 0,
+                "solution": "'Ephemeral' means lasting for a very short time, transient, or temporary."
+            },
+            {
+                "question": "What does 'ambiguous' mean?",
+                "options": [
+                    "Open to multiple interpretations",
+                    "Clear",
+                    "Definite",
+                    "Simple"
+                ],
+                "correctAnswer": 0,
+                "solution": "'Ambiguous' means having more than one possible meaning or interpretation, unclear, or vague."
+            },
+            {
+                "question": "Choose the correct meaning of 'paradox':",
+                "options": [
+                    "A seemingly absurd statement that is true",
+                    "A simple truth",
+                    "A false statement",
+                    "A clear explanation"
+                ],
+                "correctAnswer": 0,
+                "solution": "A paradox is a statement that appears self-contradictory but expresses a truth."
+            },
+            {
+                "question": "What is the meaning of 'meticulous'?",
+                "options": [
+                    "Extremely careful and precise",
+                    "Careless",
+                    "Quick",
+                    "Lazy"
+                ],
+                "correctAnswer": 0,
+                "solution": "'Meticulous' means showing great attention to detail, very careful and precise."
+            },
+            {
+                "question": "What does 'eloquent' mean?",
+                "options": [
+                    "Fluent and persuasive in speaking",
+                    "Silent",
+                    "Confused",
+                    "Angry"
+                ],
+                "correctAnswer": 0,
+                "solution": "'Eloquent' means fluent, persuasive, and capable of expressing thoughts and feelings effectively."
+            }
+        ]
+    },
+    "Comprehension": {
+        "questions": [
+            {
+                "question": "What is the main idea of a text?",
+                "options": [
+                    "The central thought or message",
+                    "The first sentence",
+                    "The last paragraph",
+                    "The longest paragraph"
+                ],
+                "correctAnswer": 0,
+                "solution": "The main idea is the central thought or message that the author wants to convey through the text."
+            },
+            {
+                "question": "What are supporting details?",
+                "options": [
+                    "Information that supports the main idea",
+                    "The title of the text",
+                    "The author's name",
+                    "The publication date"
+                ],
+                "correctAnswer": 0,
+                "solution": "Supporting details are specific pieces of information that explain, illustrate, or prove the main idea."
+            },
+            {
+                "question": "What is inference?",
+                "options": [
+                    "Drawing conclusions based on evidence",
+                    "Copying from the text",
+                    "Summarizing the text",
+                    "Finding vocabulary words"
+                ],
+                "correctAnswer": 0,
+                "solution": "Inference is the process of drawing logical conclusions based on evidence and reasoning from the text."
+            },
+            {
+                "question": "What is the purpose of a summary?",
+                "options": [
+                    "To briefly state the main points",
+                    "To copy the entire text",
+                    "To list all details",
+                    "To change the meaning"
+                ],
+                "correctAnswer": 0,
+                "solution": "A summary briefly states the main points of a text without including unnecessary details."
+            },
+            {
+                "question": "What is author's purpose?",
+                "options": [
+                    "The reason for writing the text",
+                    "The length of the text",
+                    "The title of the text",
+                    "The date of writing"
+                ],
+                "correctAnswer": 0,
+                "solution": "Author's purpose is the reason why the author wrote the text (to inform, persuade, entertain, etc.)."
+            },
+            {
+                "question": "What is context clue?",
+                "options": [
+                    "Information that helps understand unknown words",
+                    "The dictionary definition",
+                    "The text title",
+                    "The page number"
+                ],
+                "correctAnswer": 0,
+                "solution": "Context clues are hints in the surrounding text that help readers understand the meaning of unfamiliar words."
+            },
+            {
+                "question": "What is tone in writing?",
+                "options": [
+                    "The author's attitude toward the subject",
+                    "The text's length",
+                    "The font size",
+                    "The paper color"
+                ],
+                "correctAnswer": 0,
+                "solution": "Tone is the author's attitude toward the subject matter, revealed through word choice and writing style."
+            },
+            {
+                "question": "What is theme?",
+                "options": [
+                    "The underlying message about life",
+                    "The story's setting",
+                    "The main character",
+                    "The plot events"
+                ],
+                "correctAnswer": 0,
+                "solution": "Theme is the underlying message or central idea about life that the author wants to convey through the text."
+            },
+            {
+                "question": "What is sequence?",
+                "options": [
+                    "The order of events",
+                    "The text's font",
+                    "The page layout",
+                    "The paragraph length"
+                ],
+                "correctAnswer": 0,
+                "solution": "Sequence is the order in which events or information are presented in a text."
+            },
+            {
+                "question": "What is fact vs. opinion?",
+                "options": [
+                    "Verifiable truth vs. personal belief",
+                    "Long vs. short sentences",
+                    "First vs. last paragraph",
+                    "Title vs. subtitle"
+                ],
+                "correctAnswer": 0,
+                "solution": "Facts are statements that can be proven true, while opinions are personal beliefs or feelings that cannot be proven."
+            }
+        ]
+    }
+} 

@@ -1,0 +1,344 @@
+{
+    "Atomic Structure": {
+        "questions": [
+            {
+                "question": "What is an atom?",
+                "options": [
+                    "The smallest unit of matter that retains chemical properties",
+                    "A molecule",
+                    "A compound",
+                    "An element"
+                ],
+                "correctAnswer": 0,
+                "solution": "An atom is the smallest unit of matter that maintains the properties of an element. It consists of a nucleus containing protons and neutrons, surrounded by electrons."
+            },
+            {
+                "question": "What is the atomic number?",
+                "options": [
+                    "Number of protons in the nucleus",
+                    "Number of neutrons in the nucleus",
+                    "Number of electrons in the atom",
+                    "Sum of protons and neutrons"
+                ],
+                "correctAnswer": 0,
+                "solution": "The atomic number is the number of protons in an atom's nucleus, which defines the element."
+            },
+            {
+                "question": "What are isotopes?",
+                "options": [
+                    "Atoms with same number of protons but different neutrons",
+                    "Atoms with different number of protons",
+                    "Atoms with different number of electrons",
+                    "Atoms of different elements"
+                ],
+                "correctAnswer": 0,
+                "solution": "Isotopes are atoms of the same element (same number of protons) but with different numbers of neutrons."
+            },
+            {
+                "question": "What is the electron configuration?",
+                "options": [
+                    "Arrangement of electrons in atomic orbitals",
+                    "Number of protons in nucleus",
+                    "Number of neutrons in nucleus",
+                    "Total number of electrons"
+                ],
+                "correctAnswer": 0,
+                "solution": "Electron configuration describes how electrons are distributed in atomic orbitals around the nucleus."
+            },
+            {
+                "question": "What is atomic mass?",
+                "options": [
+                    "Average mass of all isotopes of an element",
+                    "Mass of protons only",
+                    "Mass of neutrons only",
+                    "Mass of electrons only"
+                ],
+                "correctAnswer": 0,
+                "solution": "Atomic mass is the weighted average of the masses of all naturally occurring isotopes of an element."
+            },
+            {
+                "question": "What is an ion?",
+                "options": [
+                    "An atom with unequal protons and electrons",
+                    "A molecule",
+                    "A compound",
+                    "An isotope"
+                ],
+                "correctAnswer": 0,
+                "solution": "An ion is an atom that has gained or lost electrons, resulting in a net electrical charge."
+            },
+            {
+                "question": "What is the atomic radius?",
+                "options": [
+                    "Distance from nucleus to outermost electron",
+                    "Size of nucleus",
+                    "Distance between atoms",
+                    "Size of electron cloud"
+                ],
+                "correctAnswer": 0,
+                "solution": "Atomic radius is the distance from an atom's nucleus to its outermost electron orbital."
+            },
+            {
+                "question": "What are valence electrons?",
+                "options": [
+                    "Electrons in outermost shell",
+                    "All electrons in atom",
+                    "Electrons in nucleus",
+                    "Free electrons"
+                ],
+                "correctAnswer": 0,
+                "solution": "Valence electrons are the electrons in an atom's outermost shell that can participate in chemical bonding."
+            },
+            {
+                "question": "What is electron affinity?",
+                "options": [
+                    "Energy change when atom gains electron",
+                    "Energy to remove electron",
+                    "Energy of nucleus",
+                    "Energy of neutrons"
+                ],
+                "correctAnswer": 0,
+                "solution": "Electron affinity is the energy change when a neutral atom gains an electron to form a negative ion."
+            },
+            {
+                "question": "What is ionization energy?",
+                "options": [
+                    "Energy needed to remove electron",
+                    "Energy to add electron",
+                    "Energy of nucleus",
+                    "Energy of protons"
+                ],
+                "correctAnswer": 0,
+                "solution": "Ionization energy is the energy required to remove an electron from a neutral atom to form a positive ion."
+            }
+        ]
+    },
+    "Chemical Bonding": {
+        "questions": [
+            {
+                "question": "What is a covalent bond?",
+                "options": [
+                    "Sharing of electrons between atoms",
+                    "Transfer of electrons between atoms",
+                    "Force between ions",
+                    "Force between molecules"
+                ],
+                "correctAnswer": 0,
+                "solution": "A covalent bond forms when atoms share electrons to achieve a stable electron configuration."
+            },
+            {
+                "question": "What is an ionic bond?",
+                "options": [
+                    "Electrostatic attraction between ions",
+                    "Sharing of electrons",
+                    "Force between molecules",
+                    "Force between atoms"
+                ],
+                "correctAnswer": 0,
+                "solution": "An ionic bond is the electrostatic attraction between oppositely charged ions formed by electron transfer."
+            },
+            {
+                "question": "What is a hydrogen bond?",
+                "options": [
+                    "Intermolecular force involving hydrogen",
+                    "Covalent bond with hydrogen",
+                    "Ionic bond with hydrogen",
+                    "Bond between hydrogen atoms"
+                ],
+                "correctAnswer": 0,
+                "solution": "A hydrogen bond is a special type of intermolecular force between a hydrogen atom bonded to a highly electronegative atom and another electronegative atom."
+            },
+            {
+                "question": "What is electronegativity?",
+                "options": [
+                    "Tendency to attract electrons in a bond",
+                    "Ability to form ions",
+                    "Number of electrons",
+                    "Charge of nucleus"
+                ],
+                "correctAnswer": 0,
+                "solution": "Electronegativity is the tendency of an atom to attract electrons when forming a chemical bond."
+            },
+            {
+                "question": "What is a polar bond?",
+                "options": [
+                    "Uneven sharing of electrons",
+                    "Equal sharing of electrons",
+                    "Transfer of electrons",
+                    "No sharing of electrons"
+                ],
+                "correctAnswer": 0,
+                "solution": "A polar bond occurs when electrons are shared unequally between atoms due to different electronegativities."
+            },
+            {
+                "question": "What is a double bond?",
+                "options": [
+                    "Sharing of two pairs of electrons",
+                    "Two single bonds",
+                    "Bond between two atoms",
+                    "Two ionic bonds"
+                ],
+                "correctAnswer": 0,
+                "solution": "A double bond involves the sharing of two pairs of electrons between two atoms."
+            },
+            {
+                "question": "What are van der Waals forces?",
+                "options": [
+                    "Weak intermolecular forces",
+                    "Strong ionic bonds",
+                    "Covalent bonds",
+                    "Metallic bonds"
+                ],
+                "correctAnswer": 0,
+                "solution": "Van der Waals forces are weak intermolecular forces that arise from temporary dipoles in molecules."
+            },
+            {
+                "question": "What is a metallic bond?",
+                "options": [
+                    "Electrons shared among many atoms",
+                    "Ionic bond in metals",
+                    "Covalent bond in metals",
+                    "Bond between non-metals"
+                ],
+                "correctAnswer": 0,
+                "solution": "A metallic bond involves the sharing of delocalized electrons among many metal atoms in a crystal structure."
+            },
+            {
+                "question": "What is bond length?",
+                "options": [
+                    "Distance between nuclei of bonded atoms",
+                    "Length of electron cloud",
+                    "Radius of atom",
+                    "Distance between molecules"
+                ],
+                "correctAnswer": 0,
+                "solution": "Bond length is the average distance between the nuclei of two bonded atoms."
+            },
+            {
+                "question": "What is bond energy?",
+                "options": [
+                    "Energy to break a chemical bond",
+                    "Energy of electrons",
+                    "Energy of nucleus",
+                    "Energy of molecule"
+                ],
+                "correctAnswer": 0,
+                "solution": "Bond energy is the energy required to break a chemical bond and separate the atoms."
+            }
+        ]
+    },
+    "Chemical Reactions": {
+        "questions": [
+            {
+                "question": "What is a chemical reaction?",
+                "options": [
+                    "Process where substances change into new substances",
+                    "Physical change of matter",
+                    "Change in temperature",
+                    "Change in pressure"
+                ],
+                "correctAnswer": 0,
+                "solution": "A chemical reaction is a process where substances (reactants) are converted into different substances (products) through the breaking and forming of chemical bonds."
+            },
+            {
+                "question": "What is a catalyst?",
+                "options": [
+                    "Substance that speeds up reaction without being consumed",
+                    "Reactant in chemical reaction",
+                    "Product of chemical reaction",
+                    "Substance that slows reaction"
+                ],
+                "correctAnswer": 0,
+                "solution": "A catalyst is a substance that increases the rate of a chemical reaction without being consumed in the process."
+            },
+            {
+                "question": "What is an exothermic reaction?",
+                "options": [
+                    "Releases heat to surroundings",
+                    "Absorbs heat from surroundings",
+                    "No heat change",
+                    "Changes pressure only"
+                ],
+                "correctAnswer": 0,
+                "solution": "An exothermic reaction releases heat energy to the surroundings during the reaction process."
+            },
+            {
+                "question": "What is chemical equilibrium?",
+                "options": [
+                    "Forward and reverse reactions occur at equal rates",
+                    "Reaction stops completely",
+                    "Products form completely",
+                    "Reactants remain unchanged"
+                ],
+                "correctAnswer": 0,
+                "solution": "Chemical equilibrium is reached when the rates of forward and reverse reactions become equal."
+            },
+            {
+                "question": "What is a precipitation reaction?",
+                "options": [
+                    "Formation of insoluble solid",
+                    "Formation of gas",
+                    "Formation of liquid",
+                    "Change in color only"
+                ],
+                "correctAnswer": 0,
+                "solution": "A precipitation reaction results in the formation of an insoluble solid (precipitate) from solution."
+            },
+            {
+                "question": "What is oxidation?",
+                "options": [
+                    "Loss of electrons",
+                    "Gain of electrons",
+                    "No electron change",
+                    "Loss of protons"
+                ],
+                "correctAnswer": 0,
+                "solution": "Oxidation is the loss of electrons by a substance during a chemical reaction."
+            },
+            {
+                "question": "What is reduction?",
+                "options": [
+                    "Gain of electrons",
+                    "Loss of electrons",
+                    "No electron change",
+                    "Gain of protons"
+                ],
+                "correctAnswer": 0,
+                "solution": "Reduction is the gain of electrons by a substance during a chemical reaction."
+            },
+            {
+                "question": "What is acid-base neutralization?",
+                "options": [
+                    "Reaction between acid and base to form salt and water",
+                    "Decomposition of acid",
+                    "Formation of base",
+                    "Precipitation reaction"
+                ],
+                "correctAnswer": 0,
+                "solution": "Neutralization is a reaction between an acid and a base that produces salt and water."
+            },
+            {
+                "question": "What is reaction rate?",
+                "options": [
+                    "Speed of chemical reaction",
+                    "Amount of products",
+                    "Temperature change",
+                    "Pressure change"
+                ],
+                "correctAnswer": 0,
+                "solution": "Reaction rate is the speed at which reactants are converted into products in a chemical reaction."
+            },
+            {
+                "question": "What is a reversible reaction?",
+                "options": [
+                    "Reaction that can proceed in both directions",
+                    "One-way reaction only",
+                    "Fast reaction",
+                    "Slow reaction"
+                ],
+                "correctAnswer": 0,
+                "solution": "A reversible reaction is one that can proceed in both forward and reverse directions under suitable conditions."
+            }
+        ]
+    }
+} 

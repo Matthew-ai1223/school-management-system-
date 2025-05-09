@@ -194,7 +194,16 @@
 
 	// Loading page
 	var loaderPage = function() {
-		$(".fh5co-loader").fadeOut("slow");
+		// Ensure the page content is visible
+		$('#page').css({
+			'opacity': '1',
+			'visibility': 'visible'
+		});
+		
+		// Remove the loader
+		$(".fh5co-loader").fadeOut("slow", function() {
+			$(this).remove();
+		});
 	};
 
 	var counter = function() {
@@ -220,12 +229,13 @@
 	var sliderMain = function() {
 		
 	  	$('#fh5co-hero .flexslider').flexslider({
-			animation: "slide",
-
+			animation: "fade",
 			easing: "swing",
-			direction: "vertical",
-
+			direction: "horizontal",
 			slideshowSpeed: 5000,
+			animationSpeed: 1000,
+			pauseOnHover: true,
+			controlNav: true,
 			directionNav: true,
 			start: function(){
 				setTimeout(function(){
@@ -239,13 +249,7 @@
 					$('.flex-active-slide').find('.slider-text').addClass('animated fadeInUp');
 				}, 500);
 			}
-
 	  	});
-
-	  	// $('#fh5co-hero .flexslider .slides > li').css('height', $(window).height());	
-	  	// $(window).resize(function(){
-	  	// 	$('#fh5co-hero .flexslider .slides > li').css('height', $(window).height());	
-	  	// });
 
 	};
 
@@ -261,22 +265,32 @@
 		}
 	};
 
-	var testimonialCarousel = function(){
-		
-		var owl = $('.owl-carousel-fullwidth');
-		owl.owlCarousel({
+	var testimonialCarousel = function() {
+		$('.testimonial-carousel').owlCarousel({
 			items: 1,
 			loop: true,
 			margin: 0,
-			nav: false,
+			nav: true,
 			dots: true,
-			smartSpeed: 800,
-			autoHeight: true,
 			autoplay: true,
 			autoplayTimeout: 5000,
-			autoplayHoverPause: true
+			autoplayHoverPause: true,
+			navText: [
+				"<i class='icon-arrow-left3'></i>",
+				"<i class='icon-arrow-right3'></i>"
+			],
+			responsive: {
+				0: {
+					items: 1
+				},
+				600: {
+					items: 1
+				},
+				1000: {
+					items: 1
+				}
+			}
 		});
-
 	};
 
 	
@@ -288,9 +302,8 @@
 		dropdown();
 		goToTop();
 		loaderPage();
-		counterWayPoint();
 		counter();
-		parallax();
+		counterWayPoint();
 		sliderMain();
 		testimonialCarousel();
 	});
