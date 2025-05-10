@@ -65,13 +65,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['success_message'] = "New field added successfully!";
     }
     
-    if (isset($_POST['delete_field'])) {
+    if (isset($_POST['delete_field']) && isset($_POST['field_id'])) {
         // Delete field
-        $sql = "UPDATE form_fields SET is_active = 0 WHERE id = ? AND application_type = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bind_param("is", $_POST['field_id'], $applicationType);
-        $stmt->execute();
-        $_SESSION['success_message'] = "Field removed successfully!";
+        $field_id = intval($_POST['field_id']);
+        
+        // First check if the field exists and belongs to the current application type
+        $check_sql = "SELECT id FROM form_fields WHERE id = ? AND application_type = ? AND is_active = 1";
+        $check_stmt = $conn->prepare($check_sql);
+        $check_stmt->bind_param("is", $field_id, $applicationType);
+        $check_stmt->execute();
+        $check_result = $check_stmt->get_result();
+        
+        if ($check_result->num_rows > 0) {
+            // Field exists and belongs to current application type, proceed with deletion
+            $sql = "UPDATE form_fields SET is_active = 0 WHERE id = ? AND application_type = ?";
+            $stmt = $conn->prepare($sql);
+            $stmt->bind_param("is", $field_id, $applicationType);
+            if ($stmt->execute()) {
+                $_SESSION['success_message'] = "Field removed successfully!";
+            } else {
+                $_SESSION['error_message'] = "Error removing field. Please try again.";
+            }
+        } else {
+            $_SESSION['error_message'] = "Invalid field or field does not belong to this application type.";
+        }
     }
     
     // Redirect to prevent form resubmission
@@ -133,6 +150,16 @@ $fields = $result->fetch_all(MYSQLI_ASSOC);
                         <?php 
                         echo $_SESSION['success_message'];
                         unset($_SESSION['success_message']);
+                        ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (isset($_SESSION['error_message'])): ?>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <?php 
+                        echo $_SESSION['error_message'];
+                        unset($_SESSION['error_message']);
                         ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
@@ -225,11 +252,13 @@ $fields = $result->fetch_all(MYSQLI_ASSOC);
                                         </div>
                                         <div class="col-md-2">
                                             <label class="form-label">Actions</label>
-                                            <button type="submit" name="delete_field" value="<?php echo $field['id']; ?>" 
-                                                    class="btn btn-danger btn-sm" 
-                                                    onclick="return confirm('Are you sure you want to remove this field?')">
-                                                Remove
-                                            </button>
+                                            <form method="POST" style="display: inline;">
+                                                <input type="hidden" name="field_id" value="<?php echo $field['id']; ?>">
+                                                <button type="submit" name="delete_field" class="btn btn-danger btn-sm" 
+                                                        onclick="return confirm('Are you sure you want to remove this field?')">
+                                                    <i class="bi bi-trash"></i> Remove
+                                                </button>
+                                            </form>
                                         </div>
                                         <div class="col-md-12 options-field" style="display: <?php echo $field['field_type'] === 'select' ? 'block' : 'none'; ?>;">
                                             <label class="form-label">Options (comma-separated)</label>

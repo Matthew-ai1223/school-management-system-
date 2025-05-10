@@ -32,35 +32,6 @@ function getFormFields($conn, $applicationType) {
     return $fields;
 }
 
-// Check if user is admin
-function isAdmin() {
-    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
-}
-
-// Handle form field addition (Admin only)
-if (isset($_POST['add_field']) && isAdmin()) {
-    $field_label = $_POST['field_label'];
-    $field_type = $_POST['field_type'];
-    $required = isset($_POST['required']) ? 1 : 0;
-    $field_order = isset($_POST['field_order']) ? $_POST['field_order'] : 0;
-    $options = isset($_POST['field_options']) ? $_POST['field_options'] : '';
-    
-    $sql = "INSERT INTO form_fields (field_label, field_type, required, field_order, options, application_type) 
-            VALUES (?, ?, ?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssiiss", $field_label, $field_type, $required, $field_order, $options, $applicationType);
-    $stmt->execute();
-}
-
-// Handle form field deletion (Admin only)
-if (isset($_POST['delete_field']) && isAdmin()) {
-    $field_id = $_POST['field_id'];
-    $sql = "UPDATE form_fields SET is_active = 0 WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $field_id);
-    $stmt->execute();
-}
-
 // Handle application submission
 if (isset($_POST['submit_application'])) {
     $fields = getFormFields($conn, $applicationType);
@@ -68,21 +39,75 @@ if (isset($_POST['submit_application'])) {
         'application_type' => $applicationType
     ];
     
+    // Create upload directory if it doesn't exist
+    $upload_dir = '../../../uploads/' . $applicationType . '/' . date('Y/m/d');
+    if (!file_exists($upload_dir)) {
+        mkdir($upload_dir, 0777, true);
+    }
+    
+    $has_error = false;
+    $error_message = '';
+    
     foreach ($fields as $field) {
         $field_name = "field_" . $field['id'];
-        if (isset($_POST[$field_name])) {
+        
+        if ($field['field_type'] === 'file' && isset($_FILES[$field_name])) {
+            $file = $_FILES[$field_name];
+            
+            if ($file['error'] === UPLOAD_ERR_NO_FILE) {
+                if ($field['required']) {
+                    $has_error = true;
+                    $error_message = "Please upload file for " . $field['field_label'];
+                    break;
+                }
+                continue;
+            }
+            
+            if ($file['error'] !== UPLOAD_ERR_OK) {
+                $has_error = true;
+                $error_message = "Error uploading file for " . $field['field_label'];
+                break;
+            }
+            
+            // Generate unique filename
+            $file_extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $new_filename = uniqid() . '_' . time() . '.' . $file_extension;
+            $upload_path = $upload_dir . '/' . $new_filename;
+            
+            // Move uploaded file
+            if (move_uploaded_file($file['tmp_name'], $upload_path)) {
+                // Store relative path in database
+                $relative_path = str_replace('../../../', '', $upload_path);
+                $application_data[$field_name] = $relative_path;
+            } else {
+                $has_error = true;
+                $error_message = "Failed to save uploaded file for " . $field['field_label'];
+                break;
+            }
+        } else if (isset($_POST[$field_name])) {
             $application_data[$field_name] = $_POST[$field_name];
+        } else if ($field['required']) {
+            $has_error = true;
+            $error_message = "Please fill in " . $field['field_label'];
+            break;
         }
     }
     
-    // Save application data to database
-    $sql = "INSERT INTO applications (applicant_data, application_type, submission_date) VALUES (?, ?, NOW())";
-    $stmt = $conn->prepare($sql);
-    $json_data = json_encode($application_data);
-    $stmt->bind_param("ss", $json_data, $applicationType);
-    $stmt->execute();
+    if (!$has_error) {
+        // Save application data to database
+        $sql = "INSERT INTO applications (applicant_data, application_type, submission_date) VALUES (?, ?, NOW())";
+        $stmt = $conn->prepare($sql);
+        $json_data = json_encode($application_data);
+        $stmt->bind_param("ss", $json_data, $applicationType);
+        if ($stmt->execute()) {
+            $_SESSION['success_message'] = "Application submitted successfully!";
+            header("Location: " . $_SERVER['PHP_SELF'] . "?type=" . $applicationType);
+            exit();
+        } else {
+            $error_message = "Failed to submit application. Please try again.";
+        }
+    }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -119,6 +144,16 @@ if (isset($_POST['submit_application'])) {
         .application-type-switch .btn-group {
             margin-bottom: 15px;
         }
+        .file-preview {
+            margin-top: 10px;
+        }
+        .file-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
@@ -129,76 +164,29 @@ if (isset($_POST['submit_application'])) {
             <h2><?php echo ucfirst($applicationType); ?> Application Form</h2>
         </div>
 
+        <?php if (isset($error_message)): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?php echo htmlspecialchars($error_message); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['success_message'])): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?php 
+                echo $_SESSION['success_message'];
+                unset($_SESSION['success_message']);
+                ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        <?php endif; ?>
+
         <div class="application-type-switch">
             <div class="btn-group">
                 <a href="?type=kiddies" class="btn btn-<?php echo $applicationType === 'kiddies' ? 'primary' : 'outline-primary'; ?>">Kiddies Application</a>
                 <a href="?type=college" class="btn btn-<?php echo $applicationType === 'college' ? 'primary' : 'outline-primary'; ?>">College Application</a>
             </div>
         </div>
-
-        <?php if (isAdmin()): ?>
-        <div class="admin-controls">
-            <h3>Admin Controls - <?php echo ucfirst($applicationType); ?> Form Fields</h3>
-            <form method="POST" class="mb-4">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <input type="text" name="field_label" class="form-control" placeholder="Field Label" required>
-                    </div>
-                    <div class="col-md-2">
-                        <select name="field_type" class="form-select" required>
-                            <option value="text">Text</option>
-                            <option value="email">Email</option>
-                            <option value="number">Number</option>
-                            <option value="date">Date</option>
-                            <option value="textarea">Text Area</option>
-                            <option value="select">Select</option>
-                            <option value="file">File Upload</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <input type="number" name="field_order" class="form-control" placeholder="Order" value="0">
-                    </div>
-                    <div class="col-md-2">
-                        <input type="text" name="field_options" class="form-control" placeholder="Options (comma-separated)">
-                    </div>
-                    <div class="col-md-1">
-                        <div class="form-check mt-2">
-                            <input type="checkbox" name="required" class="form-check-input" id="fieldRequired">
-                            <label class="form-check-label" for="fieldRequired">Required</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" name="add_field" class="btn btn-primary">Add Field</button>
-                    </div>
-                </div>
-            </form>
-
-            <div class="current-fields">
-                <h4>Current Form Fields</h4>
-                <?php
-                $fields = getFormFields($conn, $applicationType);
-                foreach ($fields as $field):
-                ?>
-                <div class="row g-2 mb-2 align-items-center">
-                    <div class="col">
-                        <span class="badge bg-secondary"><?php echo $field['field_order']; ?></span>
-                        <strong><?php echo htmlspecialchars($field['field_label']); ?></strong>
-                        <small class="text-muted">(<?php echo $field['field_type']; ?>)</small>
-                        <?php if ($field['required']): ?>
-                            <span class="text-danger">*</span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="col-auto">
-                        <form method="POST" style="display: inline;">
-                            <input type="hidden" name="field_id" value="<?php echo $field['id']; ?>">
-                            <button type="submit" name="delete_field" class="btn btn-danger btn-sm">Remove</button>
-                        </form>
-                    </div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-        <?php endif; ?>
 
         <form method="POST" class="application-form" enctype="multipart/form-data">
             <?php
@@ -233,7 +221,9 @@ if (isset($_POST['submit_application'])) {
                         ?>
                     </select>
                 <?php elseif ($field['field_type'] === 'file'): ?>
-                    <input type="file" class="form-control" id="<?php echo $field_id; ?>" name="<?php echo $field_id; ?>" <?php echo $required; ?>>
+                    <input type="file" class="form-control" id="<?php echo $field_id; ?>" name="<?php echo $field_id; ?>" <?php echo $required; ?> 
+                           onchange="previewFile(this)">
+                    <div id="<?php echo $field_id; ?>_preview" class="file-preview"></div>
                 <?php else: ?>
                     <input type="<?php echo $field['field_type']; ?>" 
                            class="form-control" 
@@ -252,11 +242,38 @@ if (isset($_POST['submit_application'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Show/hide options field based on field type selection
-        document.querySelector('select[name="field_type"]').addEventListener('change', function() {
-            const optionsField = document.querySelector('input[name="field_options"]');
-            optionsField.style.display = this.value === 'select' ? 'block' : 'none';
-        });
+        function previewFile(input) {
+            const preview = document.getElementById(input.id + '_preview');
+            const file = input.files[0];
+            
+            if (!file) {
+                preview.innerHTML = '';
+                return;
+            }
+            
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" alt="File preview">`;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = `
+                    <div class="mt-2">
+                        <i class="bi bi-file-earmark"></i>
+                        ${file.name} (${formatFileSize(file.size)})
+                    </div>
+                `;
+            }
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
     </script>
 </body>
 </html> 

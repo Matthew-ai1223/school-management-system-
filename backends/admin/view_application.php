@@ -52,10 +52,49 @@ function formatFieldValue($field, $value) {
     switch ($field['field_type']) {
         case 'file':
             if ($value) {
+                // Handle both absolute and relative paths
+                $file_path = $value;
+                if (!filter_var($value, FILTER_VALIDATE_URL)) {
+                    // If it's not a URL, assume it's a relative path
+                    $file_path = '../../' . ltrim($value, '/');
+                }
                 $file_name = basename($value);
-                return '<a href="' . htmlspecialchars($value) . '" target="_blank" class="btn btn-sm btn-primary">
-                            <i class="bi bi-file-earmark"></i> View ' . htmlspecialchars($file_name) . '
-                        </a>';
+                $file_extension = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+                
+                // Get icon based on file type
+                $icon_class = 'bi-file-earmark';
+                switch ($file_extension) {
+                    case 'pdf':
+                        $icon_class = 'bi-file-earmark-pdf';
+                        break;
+                    case 'doc':
+                    case 'docx':
+                        $icon_class = 'bi-file-earmark-word';
+                        break;
+                    case 'xls':
+                    case 'xlsx':
+                        $icon_class = 'bi-file-earmark-excel';
+                        break;
+                    case 'jpg':
+                    case 'jpeg':
+                    case 'png':
+                    case 'gif':
+                        $icon_class = 'bi-file-earmark-image';
+                        break;
+                }
+                
+                return sprintf(
+                    '<div class="file-preview mb-2">
+                        <a href="%s" target="_blank" class="btn btn-sm btn-primary">
+                            <i class="bi %s"></i> View %s
+                        </a>
+                        <small class="text-muted d-block mt-1">%s</small>
+                    </div>',
+                    htmlspecialchars($file_path),
+                    $icon_class,
+                    htmlspecialchars($file_name),
+                    formatFileSize($file_path)
+                );
             }
             return '<span class="text-muted">No file uploaded</span>';
         
@@ -74,6 +113,18 @@ function formatFieldValue($field, $value) {
         default:
             return htmlspecialchars($value);
     }
+}
+
+// Helper function to format file size
+function formatFileSize($file_path) {
+    if (!file_exists($file_path)) {
+        return 'File not found';
+    }
+    
+    $size = filesize($file_path);
+    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+    $power = $size > 0 ? floor(log($size, 1024)) : 0;
+    return number_format($size / pow(1024, $power), 2, '.', ',') . ' ' . $units[$power];
 }
 ?>
 <!DOCTYPE html>
