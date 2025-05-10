@@ -98,14 +98,14 @@
 				<div class="container">
 					<div class="row">
 						<div class="col-xs-2">
-							<div id="fh5co-logo"><a href="index.html"><img src="images/logo.png" alt="logo" style="width: 100px; height: 70px;"><span></span></a></div>
+							<div id="fh5co-logo"><a href="index.php"><img src="images/logo.png" alt="logo" style="width: 100px; height: 70px;"><span></span></a></div>
 						</div>
 						<div class="col-xs-10 text-right menu-1">
 							<ul>
-								<li><a href="index.html">Home</a></li>
-								<li><a href="gallery.html">Gallery</a></li>
-								<li class="active"><a href="about.html">About</a></li>
-								<li><a href="contact.html">Contact</a></li>
+								<li><a href="index.php">Home</a></li>
+								<li><a href="gallery.php">Gallery</a></li>
+								<li class="active"><a href="about.php">About</a></li>
+								<li><a href="contact.php">Contact</a></li>
 								<li class="btn-cta"><a href="#"><span>Student Login</span></a></li>
 								<li class="btn-cta"><a href="#"><span>Parent Login</span></a></li>
 								<li class="btn-cta"><a href="#"><span>Teacher Login</span></a></li>
@@ -166,7 +166,7 @@
 				<h2>Community Service</h2>
 				<p>We instill a sense of responsibility in our students. They learn to give back to their community through regular service projects and community outreach programs.</p>
 				<h2>Join the ACE Family</h2>
-				<p>We invite you to experience the ACE difference. To enroll your child, please <a href="contact.html">contact us today</a>. We look forward to welcoming you to our school community.</p>
+				<p>We invite you to experience the ACE difference. To enroll your child, please <a href="apply.php">contact us today</a>. We look forward to welcoming you to our school community.</p>
 			</div>
 			<!-- <div class="col-md-6">
 				<img class="img-responsive" src="images/img_bg_3.png" alt="Free HTML5 Bootstrap Template">
@@ -183,7 +183,7 @@
 					<h3>Limited Spaces Available</h3>
 					<div class="simply-countdown simply-countdown-one"></div>
 					<p><strong>Early Bird Registration Discount Available!</strong></p>
-					<p><a href="contact.html" class="btn btn-primary btn-lg btn-reg">Apply Now!</a></p>
+					<p><a href="apply.php" class="btn btn-primary btn-lg btn-reg">Apply Now!</a></p>
 				</div>
 			</div>
 		</div>
@@ -201,10 +201,10 @@
 				<div class="col-md-2 col-sm-4 col-xs-6 col-md-push-1 fh5co-widget">
 					<h3>Quick Links</h3>
 					<ul class="fh5co-footer-links">
-						<li><a href="index.html">Home</a></li>
-						<li><a href="gallery.html">Gallery</a></li>
-						<li><a href="about.html">About</a></li>
-						<li><a href="contact.html">Contact</a></li>
+						<li><a href="index.php">Home</a></li>
+						<li><a href="gallery.php">Gallery</a></li>
+						<li><a href="about.php">About</a></li>
+						<li><a href="contact.php">Contact</a></li>
 					</ul>
 				</div>
 				<div class="col-md-2 col-sm-4 col-xs-6 col-md-push-1 fh5co-widget">

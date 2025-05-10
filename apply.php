@@ -13,7 +13,7 @@
     <meta property="og:title" content="Apply to ACE College | Start Your Educational Journey">
     <meta property="og:description" content="Start your educational journey at ACE College Ibadan. Apply now for admission to our prestigious institution offering quality education from Nursery to Secondary level.">
     <meta property="og:image" content="https://www.acecollege.com/images/logo.png">
-    <meta property="og:url" content="https://www.acecollege.com/apply.html">
+    <meta property="og:url" content="https://www.acecollege.com/apply.php">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="ACE College">
     <meta property="og:locale" content="en_NG">
@@ -75,7 +75,7 @@
         "@type": "ListItem",
         "position": 2,
         "name": "Apply",
-        "item": "https://www.acecollege.com/apply.html"
+        "item": "https://www.acecollege.com/apply.php"
       }]
     }
     </script>
@@ -300,7 +300,7 @@
     </style>
 </head>
 <body>
-    <!-- Navigation Bar (reuse from index.html) -->
+    <!-- Navigation Bar (reuse from index.php) -->
     <nav class="fh5co-nav" role="navigation">
         <div class="top">
             <div class="container">
@@ -322,16 +322,16 @@
                 <div class="row">
                     <div class="col-xs-2">
                         <div id="fh5co-logo" style="display: flex; align-items: center; gap: 10px;">
-                            <a href="index.html"><img src="images/logo.png" alt="ACE College Logo" style="width: 100px; height: 70px;"></a>
-                            <a href="index.html"><img src="images/logo_2.jpg" alt="ACE Kiddies Logo" style="width: 70px; height: 70px; border-radius: 50%;"></a>
+                            <a href="index.php"><img src="images/logo.png" alt="ACE College Logo" style="width: 100px; height: 70px;"></a>
+                            <a href="index.php"><img src="images/logo_2.jpg" alt="ACE Kiddies Logo" style="width: 70px; height: 70px; border-radius: 50%;"></a>
                         </div>
                     </div>
                     <div class="col-xs-10 text-right menu-1">
                         <ul>
-                            <li><a href="index.html">Home</a></li>
-                            <li><a href="gallery.html">Gallery</a></li>
-                            <li><a href="about.html">About</a></li>
-                            <li><a href="contact.html">Contact</a></li>
+                            <li><a href="index.php">Home</a></li>
+                            <li><a href="gallery.php">Gallery</a></li>
+                            <li><a href="about.php">About</a></li>
+                            <li><a href="contact.php">Contact</a></li>
                         </ul>
                     </div>
                 </div>
@@ -417,10 +417,10 @@
 				<div class="col-md-2 col-sm-4 col-xs-6 col-md-push-1 fh5co-widget">
 					<h3>Quick Links</h3>
 					<ul class="fh5co-footer-links">
-						<li><a href="index.html">Home</a></li>
-						<li><a href="gallery.html">Gallery</a></li>
-						<li><a href="about.html">About</a></li>
-						<li><a href="contact.html">Contact</a></li>
+						<li><a href="index.php">Home</a></li>
+						<li><a href="gallery.php">Gallery</a></li>
+						<li><a href="about.php">About</a></li>
+						<li><a href="contact.php">Contact</a></li>
 					</ul>
 				</div>
 				<div class="col-md-2 col-sm-4 col-xs-6 col-md-push-1 fh5co-widget">
