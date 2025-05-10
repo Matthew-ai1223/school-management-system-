@@ -1,25 +1,43 @@
 <?php
-// Database connection configuration
-class Database {
-    private $host = "localhost";
-    private $db_name = "school_management";
-    private $username = "root";
-    private $password = "";
-    private $conn;
+require_once 'config.php';
 
-    // Get database connection
-    public function getConnection() {
-        $this->conn = null;
-        
+class Database {
+    private $connection;
+    private static $instance = null;
+
+    private function __construct() {
         try {
-            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->conn->exec("set names utf8");
-        } catch(PDOException $e) {
-            echo "Connection error: " . $e->getMessage();
+            $this->connection = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+            if ($this->connection->connect_error) {
+                throw new Exception("Connection failed: " . $this->connection->connect_error);
+            }
+            $this->connection->set_charset("utf8mb4");
+        } catch (Exception $e) {
+            die("Database connection failed: " . $e->getMessage());
         }
-        
-        return $this->conn;
+    }
+
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    public function getConnection() {
+        return $this->connection;
+    }
+
+    public function query($sql) {
+        return $this->connection->query($sql);
+    }
+
+    public function escape($value) {
+        return $this->connection->real_escape_string($value);
+    }
+
+    public function getLastId() {
+        return $this->connection->insert_id;
     }
 }
 ?> 
