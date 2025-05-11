@@ -7,38 +7,46 @@ $auth = new Auth();
 $auth->requireRole('admin');
 
 $db = Database::getInstance();
+$mysqli = $db->getConnection();
 $user = $auth->getCurrentUser();
 
 // Get statistics
 $stats = [
-    'total_students' => 0,
+    'total_applications' => 0,
     'pending_applications' => 0,
     'total_payments' => 0,
-    'total_exams' => 0
+    'approved_applications' => 0
 ];
 
-// Get total students
-$result = $db->query("SELECT COUNT(*) as count FROM students");
+// Get total applications
+$result = $mysqli->query("SELECT COUNT(*) as count FROM applications");
 if ($result) {
-    $stats['total_students'] = $result->fetch_assoc()['count'];
+    $stats['total_applications'] = $result->fetch_assoc()['count'];
 }
 
 // Get pending applications
-$result = $db->query("SELECT COUNT(*) as count FROM students WHERE status = 'pending'");
+$result = $mysqli->query("SELECT COUNT(*) as count FROM applications WHERE status = 'pending'");
 if ($result) {
     $stats['pending_applications'] = $result->fetch_assoc()['count'];
 }
 
+// Get approved applications
+$result = $mysqli->query("SELECT COUNT(*) as count FROM applications WHERE status = 'approved'");
+if ($result) {
+    $stats['approved_applications'] = $result->fetch_assoc()['count'];
+}
+
 // Get total payments
-$result = $db->query("SELECT COUNT(*) as count FROM payments");
+$result = $mysqli->query("SELECT COUNT(*) as count FROM application_payments WHERE status = 'completed'");
 if ($result) {
     $stats['total_payments'] = $result->fetch_assoc()['count'];
 }
 
-// Get total exams
-$result = $db->query("SELECT COUNT(*) as count FROM exam_results");
+// Get total amount from payments
+$result = $mysqli->query("SELECT SUM(amount) as total FROM application_payments WHERE status = 'completed'");
+$total_amount = 0;
 if ($result) {
-    $stats['total_exams'] = $result->fetch_assoc()['count'];
+    $total_amount = $result->fetch_assoc()['total'] ?? 0;
 }
 ?>
 <!DOCTYPE html>
@@ -66,10 +74,47 @@ if ($result) {
             padding: 20px;
         }
         .stat-card {
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 15px;
+            padding: 25px;
             margin-bottom: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .stat-card p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .stat-card .icon {
+            font-size: 2.5rem;
+            opacity: 0.2;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+        .activity-item {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .activity-item:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding: 20px;
         }
     </style>
 </head>
@@ -77,83 +122,44 @@ if ($result) {
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar p-3">
-                <h3 class="mb-4"><?php echo SCHOOL_NAME; ?></h3>
-                <div class="mb-4">
-                    <p class="mb-1">Welcome,</p>
-                    <h5><?php echo $user['name']; ?></h5>
-                </div>
-                <ul class="nav flex-column">
-                    <li class="nav-item mb-2">
-                        <a href="dashboard.php" class="nav-link active">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="students.php" class="nav-link">
-                            <i class="bi bi-people"></i> Students
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="applications.php" class="nav-link">
-                            <i class="bi bi-file-text"></i> Applications
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="payments.php" class="nav-link">
-                            <i class="bi bi-cash"></i> Payments
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="exams.php" class="nav-link">
-                            <i class="bi bi-pencil-square"></i> Exams
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="users.php" class="nav-link">
-                            <i class="bi bi-person"></i> Users
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="settings.php" class="nav-link">
-                            <i class="bi bi-gear"></i> Settings
-                        </a>
-                    </li>
-                    <li class="nav-item mt-4">
-                        <a href="logout.php" class="nav-link text-danger">
-                            <i class="bi bi-box-arrow-right"></i> Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
+            <?php include 'include/sidebar.php'; ?>
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
-                <h2 class="mb-4">Dashboard Overview</h2>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>Dashboard Overview</h2>
+                    <div class="text-muted">
+                        <?php echo date('l, F j, Y'); ?>
+                    </div>
+                </div>
                 
                 <div class="row">
                     <div class="col-md-3">
-                        <div class="stat-card bg-primary text-white">
-                            <h3><?php echo $stats['total_students']; ?></h3>
-                            <p class="mb-0">Total Students</p>
+                        <div class="stat-card bg-primary text-white position-relative">
+                            <i class="bi bi-file-text icon"></i>
+                            <h3><?php echo number_format($stats['total_applications']); ?></h3>
+                            <p class="mb-0">Total Applications</p>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="stat-card bg-warning text-white">
-                            <h3><?php echo $stats['pending_applications']; ?></h3>
+                        <div class="stat-card bg-warning text-white position-relative">
+                            <i class="bi bi-clock icon"></i>
+                            <h3><?php echo number_format($stats['pending_applications']); ?></h3>
                             <p class="mb-0">Pending Applications</p>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="stat-card bg-success text-white">
-                            <h3><?php echo $stats['total_payments']; ?></h3>
-                            <p class="mb-0">Total Payments</p>
+                        <div class="stat-card bg-success text-white position-relative">
+                            <i class="bi bi-check-circle icon"></i>
+                            <h3><?php echo number_format($stats['approved_applications']); ?></h3>
+                            <p class="mb-0">Approved Applications</p>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="stat-card bg-info text-white">
-                            <h3><?php echo $stats['total_exams']; ?></h3>
-                            <p class="mb-0">Total Exams</p>
+                        <div class="stat-card bg-info text-white position-relative">
+                            <i class="bi bi-cash icon"></i>
+                            <h3>₦<?php echo number_format($total_amount); ?></h3>
+                            <p class="mb-0">Total Payments</p>
                         </div>
                     </div>
                 </div>
@@ -167,19 +173,36 @@ if ($result) {
                             </div>
                             <div class="card-body">
                                 <?php
-                                $result = $db->query("SELECT * FROM students ORDER BY created_at DESC LIMIT 5");
+                                $result = $mysqli->query("
+                                    SELECT a.*, 
+                                           JSON_UNQUOTE(JSON_EXTRACT(a.applicant_data, '$.field_1')) as first_name,
+                                           JSON_UNQUOTE(JSON_EXTRACT(a.applicant_data, '$.field_2')) as last_name 
+                                    FROM applications a 
+                                    ORDER BY submission_date DESC LIMIT 5
+                                ");
                                 if ($result && $result->num_rows > 0):
                                     while ($row = $result->fetch_assoc()):
+                                        $name = trim($row['first_name'] . ' ' . $row['last_name']);
+                                        if (empty($name)) $name = "Applicant #" . $row['id'];
                                 ?>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <div>
-                                            <strong><?php echo $row['first_name'] . ' ' . $row['last_name']; ?></strong>
-                                            <br>
-                                            <small class="text-muted"><?php echo $row['application_type']; ?></small>
+                                    <div class="activity-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong><?php echo htmlspecialchars($name); ?></strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <?php echo ucfirst($row['application_type']); ?> Application
+                                                    <span class="ms-2">•</span>
+                                                    <span class="ms-2"><?php echo date('M j, Y', strtotime($row['submission_date'])); ?></span>
+                                                </small>
+                                            </div>
+                                            <span class="badge bg-<?php 
+                                                echo $row['status'] === 'pending' ? 'warning' : 
+                                                    ($row['status'] === 'approved' ? 'success' : 'danger'); 
+                                            ?>">
+                                                <?php echo ucfirst($row['status']); ?>
+                                            </span>
                                         </div>
-                                        <span class="badge bg-<?php echo $row['status'] === 'pending' ? 'warning' : ($row['status'] === 'registered' ? 'success' : 'danger'); ?>">
-                                            <?php echo ucfirst($row['status']); ?>
-                                        </span>
                                     </div>
                                 <?php
                                     endwhile;
@@ -198,22 +221,37 @@ if ($result) {
                             </div>
                             <div class="card-body">
                                 <?php
-                                $result = $db->query("SELECT p.*, s.first_name, s.last_name FROM payments p 
-                                                    JOIN students s ON p.student_id = s.id 
-                                                    ORDER BY p.payment_date DESC LIMIT 5");
+                                $result = $mysqli->query("
+                                    SELECT p.*, 
+                                           a.applicant_data,
+                                           JSON_UNQUOTE(JSON_EXTRACT(a.applicant_data, '$.field_1')) as first_name,
+                                           JSON_UNQUOTE(JSON_EXTRACT(a.applicant_data, '$.field_2')) as last_name
+                                    FROM application_payments p
+                                    JOIN applications a ON p.reference = JSON_UNQUOTE(JSON_EXTRACT(a.applicant_data, '$.payment_reference'))
+                                    WHERE p.status = 'completed'
+                                    ORDER BY p.payment_date DESC LIMIT 5
+                                ");
                                 if ($result && $result->num_rows > 0):
                                     while ($row = $result->fetch_assoc()):
+                                        $name = trim($row['first_name'] . ' ' . $row['last_name']);
+                                        if (empty($name)) $name = "Applicant #" . $row['id'];
                                 ?>
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <div>
-                                            <strong><?php echo $row['first_name'] . ' ' . $row['last_name']; ?></strong>
-                                            <br>
-                                            <small class="text-muted"><?php echo $row['payment_type']; ?></small>
-                                        </div>
-                                        <div class="text-end">
-                                            <strong>₦<?php echo number_format($row['amount'], 2); ?></strong>
-                                            <br>
-                                            <small class="text-muted"><?php echo $row['payment_method']; ?></small>
+                                    <div class="activity-item">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <strong><?php echo htmlspecialchars($name); ?></strong>
+                                                <br>
+                                                <small class="text-muted">
+                                                    <?php echo ucfirst($row['payment_method']); ?>
+                                                    <span class="ms-2">•</span>
+                                                    <span class="ms-2"><?php echo date('M j, Y', strtotime($row['payment_date'])); ?></span>
+                                                </small>
+                                            </div>
+                                            <div class="text-end">
+                                                <strong class="text-success">₦<?php echo number_format($row['amount'], 2); ?></strong>
+                                                <br>
+                                                <small class="text-muted"><?php echo $row['reference']; ?></small>
+                                            </div>
                                         </div>
                                     </div>
                                 <?php

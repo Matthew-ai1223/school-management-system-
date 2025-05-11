@@ -79,55 +79,7 @@ if (isset($_GET['pdf'])) {
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar p-3">
-                <h3 class="mb-4"><?php echo SCHOOL_NAME; ?></h3>
-                <div class="mb-4">
-                    <p class="mb-1">Welcome,</p>
-                    <h5><?php echo $user['name']; ?></h5>
-                </div>
-                <ul class="nav flex-column">
-                    <li class="nav-item mb-2">
-                        <a href="dashboard.php" class="nav-link">
-                            <i class="bi bi-speedometer2"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="students.php" class="nav-link">
-                            <i class="bi bi-people"></i> Students
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="applications.php" class="nav-link">
-                            <i class="bi bi-file-text"></i> Applications
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="payments.php" class="nav-link active">
-                            <i class="bi bi-cash"></i> Payments
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="exams.php" class="nav-link">
-                            <i class="bi bi-pencil-square"></i> Exams
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="users.php" class="nav-link">
-                            <i class="bi bi-person"></i> Users
-                        </a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="settings.php" class="nav-link">
-                            <i class="bi bi-gear"></i> Settings
-                        </a>
-                    </li>
-                    <li class="nav-item mt-4">
-                        <a href="logout.php" class="nav-link text-danger">
-                            <i class="bi bi-box-arrow-right"></i> Logout
-                        </a>
-                    </li>
-                </ul>
-            </div>
+            <?php include 'include/sidebar.php'; ?>
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">

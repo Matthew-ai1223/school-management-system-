@@ -2,6 +2,7 @@
 require_once '../auth.php';
 require_once '../config.php';
 require_once '../database.php';
+require_once '../payment_config.php';
 
 $auth = new Auth();
 $auth->requireRole('admin');
@@ -20,6 +21,17 @@ $application = $result->fetch_assoc();
 
 if (!$application) {
     die("Application not found");
+}
+
+// Get payment details
+$payment_data = null;
+$applicant_data = json_decode($application['applicant_data'], true);
+if (isset($applicant_data['payment_reference'])) {
+    $stmt = $mysqli->prepare("SELECT * FROM application_payments WHERE reference = ?");
+    $stmt->bind_param("s", $applicant_data['payment_reference']);
+    $stmt->execute();
+    $payment_result = $stmt->get_result();
+    $payment_data = $payment_result->fetch_assoc();
 }
 
 // Get form fields
@@ -44,8 +56,6 @@ if ($application['reviewed_by']) {
         $reviewer_name = $reviewer['first_name'] . ' ' . $reviewer['last_name'];
     }
 }
-
-$applicant_data = json_decode($application['applicant_data'], true);
 
 // Helper function to format field value based on type
 function formatFieldValue($field, $value) {
@@ -153,7 +163,7 @@ function formatFileSize($file_path) {
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <?php include 'sidebar.php'; ?>
+            <?php include 'include/sidebar.php'; ?>
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 p-4">
@@ -219,6 +229,94 @@ function formatFileSize($file_path) {
                                     <?php echo nl2br(htmlspecialchars($application['comments'])); ?>
                                 </div>
                             </div>
+                        </div>
+                        <?php endif; ?>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <a href="download_application_pdf.php?id=<?php echo $application['id']; ?>" class="btn btn-primary">
+                                    <i class="bi bi-download"></i> Download Application Details (PDF)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Information Section -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Payment Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <?php if ($payment_data): ?>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="field-label">Payment Reference</div>
+                                <div class="field-value">
+                                    <?php echo htmlspecialchars($payment_data['reference']); ?>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="field-label">Amount Paid</div>
+                                <div class="field-value">
+                                    ₦<?php echo number_format($payment_data['amount'], 2); ?>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="field-label">Payment Status</div>
+                                <div class="field-value">
+                                    <span class="badge bg-<?php 
+                                        echo $payment_data['status'] === 'completed' ? 'success' : 
+                                            ($payment_data['status'] === 'pending' ? 'warning' : 'danger'); 
+                                    ?>">
+                                        <?php echo ucfirst($payment_data['status']); ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="field-label">Payment Date</div>
+                                <div class="field-value">
+                                    <?php echo $payment_data['payment_date'] ? 
+                                        date('M d, Y H:i', strtotime($payment_data['payment_date'])) : 
+                                        '<span class="text-muted">Not completed</span>'; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <div class="field-label">Payment Method</div>
+                                <div class="field-value">
+                                    <?php echo ucfirst($payment_data['payment_method']); ?>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="field-label">Email Used</div>
+                                <div class="field-value">
+                                    <a href="mailto:<?php echo htmlspecialchars($payment_data['email']); ?>">
+                                        <?php echo htmlspecialchars($payment_data['email']); ?>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="field-label">Phone Number</div>
+                                <div class="field-value">
+                                    <?php echo htmlspecialchars($payment_data['phone']); ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php if ($payment_data['transaction_reference']): ?>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="field-label">Transaction Reference</div>
+                                <div class="field-value">
+                                    <?php echo htmlspecialchars($payment_data['transaction_reference']); ?>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        <?php else: ?>
+                        <div class="alert alert-warning mb-0">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            No payment information found for this application.
                         </div>
                         <?php endif; ?>
                     </div>
