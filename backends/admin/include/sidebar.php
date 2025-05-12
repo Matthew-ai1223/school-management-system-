@@ -55,7 +55,14 @@ if (!isset($user)) {
         <li class="nav-item" role="listitem">
             <a href="application_form_filed_update.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'application_form_filed_update.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'application_form_filed_update.php' ? 'page' : 'false'; ?>">
                 <i class="bi bi-list-check"></i>
-                <span class="nav-text">Form Fields</span>
+                <span class="nav-text">Application Fields</span>
+                <span class="hover-indicator"></span>
+            </a>
+        </li>
+        <li class="nav-item" role="listitem">
+            <a href="registration_form_filed_update.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'registration_form_filed_update.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'registration_form_filed_update.php' ? 'page' : 'false'; ?>">
+                <i class="bi bi-card-checklist"></i>
+                <span class="nav-text">Registration Fields</span>
                 <span class="hover-indicator"></span>
             </a>
         </li>

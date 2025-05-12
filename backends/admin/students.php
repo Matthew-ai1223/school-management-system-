@@ -7,35 +7,95 @@ $auth = new Auth();
 $auth->requireRole('admin');
 
 $db = Database::getInstance();
-$user = $auth->getCurrentUser();
+$mysqli = $db->getConnection();
 
-// Handle filters
+// Get filter parameters
 $application_type = $_GET['type'] ?? '';
 $status = $_GET['status'] ?? '';
 $search = $_GET['search'] ?? '';
 
-// Build query
+// Debug log
+error_log("Filter parameters: type=$application_type, status=$status, search=$search");
+
+// Base query
 $query = "SELECT * FROM students WHERE 1=1";
-if ($application_type) {
-    $query .= " AND application_type = '" . $db->escape($application_type) . "'";
+$params = [];
+$types = "";
+
+// Add filters
+if (!empty($application_type)) {
+    $query .= " AND application_type = ?";
+    $params[] = $application_type;
+    $types .= "s";
 }
-if ($status) {
-    $query .= " AND status = '" . $db->escape($status) . "'";
+
+if (!empty($status)) {
+    $query .= " AND status = ?";
+    $params[] = $status;
+    $types .= "s";
 }
-if ($search) {
-    $search = $db->escape($search);
-    $query .= " AND (first_name LIKE '%$search%' OR last_name LIKE '%$search%' OR registration_number LIKE '%$search%')";
+
+if (!empty($search)) {
+    $query .= " AND (first_name LIKE ? OR last_name LIKE ? OR registration_number LIKE ?)";
+    $search_param = "%$search%";
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $types .= "sss";
 }
+
+// Add ordering
 $query .= " ORDER BY created_at DESC";
 
-$result = $db->query($query);
+// Debug log
+error_log("SQL Query: $query");
+error_log("Parameters: " . print_r($params, true));
+error_log("Types: $types");
+
+// Execute the query directly first to test
+$test_result = $mysqli->query("SELECT COUNT(*) as count FROM students");
+error_log("Total students in database: " . $test_result->fetch_assoc()['count']);
+
+// Now try with prepared statement
+$stmt = $mysqli->prepare($query);
+if ($stmt === false) {
+    error_log("Prepare failed: " . $mysqli->error);
+} else {
+    if (!empty($params)) {
+        $stmt->bind_param($types, ...$params);
+    }
+    if (!$stmt->execute()) {
+        error_log("Execute failed: " . $stmt->error);
+    }
+    $result = $stmt->get_result();
+    error_log("Number of filtered results: " . ($result ? $result->num_rows : 0));
+}
+
+// Get the file paths in a separate query if needed
+$student_files = [];
+if ($result && $result->num_rows > 0) {
+    $student_ids = [];
+    while ($row = $result->fetch_assoc()) {
+        $student_ids[] = $row['id'];
+    }
+    if (!empty($student_ids)) {
+        $ids_str = implode(',', $student_ids);
+        $files_query = "SELECT entity_id, file_path FROM files WHERE entity_type = 'student' AND entity_id IN ($ids_str)";
+        $files_result = $mysqli->query($files_query);
+        while ($file = $files_result->fetch_assoc()) {
+            $student_files[$file['entity_id']] = $file['file_path'];
+        }
+    }
+    // Reset result pointer
+    $result->data_seek(0);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Students Management - <?php echo SCHOOL_NAME; ?></title>
+    <title>Students - <?php echo SCHOOL_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
@@ -54,6 +114,13 @@ $result = $db->query($query);
         .main-content {
             padding: 20px;
         }
+        .dropdown-item.active {
+            background-color: #e9ecef;
+            color: #000;
+        }
+        .status-btn {
+            min-width: 100px;
+        }
     </style>
 </head>
 <body>
@@ -65,13 +132,13 @@ $result = $db->query($query);
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Students Management</h2>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+                    <h2>Students</h2>
+                    <a href="add_student.php" class="btn btn-primary">
                         <i class="bi bi-plus"></i> Add New Student
-                    </button>
+                    </a>
                 </div>
 
-                <!-- Filters -->
+                <!-- Filter Form -->
                 <div class="card mb-4">
                     <div class="card-body">
                         <form method="GET" class="row g-3">
@@ -104,54 +171,84 @@ $result = $db->query($query);
                     </div>
                 </div>
 
-                <!-- Students List -->
+                <!-- Students Table -->
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Reg. Number</th>
+                                        <th>Photo</th>
+                                        <th>Reg Number</th>
                                         <th>Name</th>
                                         <th>Type</th>
+                                        <th>Status</th>
                                         <th>Parent Name</th>
                                         <th>Parent Phone</th>
-                                        <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if ($result && $result->num_rows > 0): ?>
-                                        <?php while ($row = $result->fetch_assoc()): ?>
+                                    <?php if ($result->num_rows > 0): ?>
+                                        <?php while ($student = $result->fetch_assoc()): ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($row['registration_number']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['first_name'] . ' ' . $row['last_name']); ?></td>
-                                                <td><?php echo ucfirst($row['application_type']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['parent_name']); ?></td>
-                                                <td><?php echo htmlspecialchars($row['parent_phone']); ?></td>
                                                 <td>
-                                                    <span class="badge bg-<?php echo $row['status'] === 'pending' ? 'warning' : ($row['status'] === 'registered' ? 'success' : 'danger'); ?>">
-                                                        <?php echo ucfirst($row['status']); ?>
-                                                    </span>
+                                                    <?php 
+                                                    $file_path = isset($student_files[$student['id']]) ? $student_files[$student['id']] : '';
+                                                    if (!empty($file_path)): 
+                                                    ?>
+                                                        <img src="<?php echo str_replace('../../', '../', $file_path); ?>" 
+                                                             alt="Student Photo" 
+                                                             class="rounded-circle"
+                                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                                    <?php else: ?>
+                                                        <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                                             style="width: 40px; height: 40px;">
+                                                            <i class="bi bi-person-fill"></i>
+                                                        </div>
+                                                    <?php endif; ?>
                                                 </td>
+                                                <td><?php echo htmlspecialchars($student['registration_number'] ?? ''); ?></td>
+                                                <td><?php echo htmlspecialchars(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')); ?></td>
+                                                <td><?php echo ucfirst($student['application_type'] ?? ''); ?></td>
                                                 <td>
-                                                    <div class="btn-group">
-                                                        <button type="button" class="btn btn-sm btn-info" onclick="viewStudent(<?php echo $row['id']; ?>)">
-                                                            <i class="bi bi-eye"></i>
+                                                    <div class="dropdown">
+                                                        <button class="btn btn-sm dropdown-toggle status-btn 
+                                                            <?php echo ($student['status'] ?? '') === 'pending' ? 'btn-warning' : 
+                                                                (($student['status'] ?? '') === 'registered' ? 'btn-success' : 'btn-danger'); ?>"
+                                                            type="button"
+                                                            data-bs-toggle="dropdown"
+                                                            aria-expanded="false">
+                                                            <?php echo ucfirst($student['status'] ?? ''); ?>
                                                         </button>
-                                                        <button type="button" class="btn btn-sm btn-primary" onclick="editStudent(<?php echo $row['id']; ?>)">
-                                                            <i class="bi bi-pencil"></i>
-                                                        </button>
-                                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteStudent(<?php echo $row['id']; ?>)">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
+                                                        <ul class="dropdown-menu">
+                                                            <li><a class="dropdown-item <?php echo ($student['status'] ?? '') === 'pending' ? 'active' : ''; ?>" 
+                                                                href="#" onclick="updateStatus(<?php echo $student['id']; ?>, 'pending')">Pending</a></li>
+                                                            <li><a class="dropdown-item <?php echo ($student['status'] ?? '') === 'registered' ? 'active' : ''; ?>" 
+                                                                href="#" onclick="updateStatus(<?php echo $student['id']; ?>, 'registered')">Registered</a></li>
+                                                            <li><a class="dropdown-item <?php echo ($student['status'] ?? '') === 'rejected' ? 'active' : ''; ?>" 
+                                                                href="#" onclick="updateStatus(<?php echo $student['id']; ?>, 'rejected')">Rejected</a></li>
+                                                        </ul>
                                                     </div>
+                                                </td>
+                                                <td><?php echo htmlspecialchars($student['parent_name'] ?? ''); ?></td>
+                                                <td><?php echo htmlspecialchars($student['parent_phone'] ?? ''); ?></td>
+                                                <td>
+                                                    <a href="student_details.php?id=<?php echo $student['id']; ?>" class="btn btn-sm btn-info">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <a href="edit_student.php?id=<?php echo $student['id']; ?>" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteStudent(<?php echo $student['id']; ?>)">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
                                                 </td>
                                             </tr>
                                         <?php endwhile; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="7" class="text-center">No students found</td>
+                                            <td colspan="8" class="text-center">No students found</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -163,129 +260,86 @@ $result = $db->query($query);
         </div>
     </div>
 
-    <!-- Add Student Modal -->
-    <div class="modal fade" id="addStudentModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Add New Student</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addStudentForm">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Application Type</label>
-                                <select name="application_type" class="form-select" required>
-                                    <option value="kiddies">Ace Kiddies</option>
-                                    <option value="college">Ace College</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Registration Number</label>
-                                <input type="text" name="registration_number" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">First Name</label>
-                                <input type="text" name="first_name" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Last Name</label>
-                                <input type="text" name="last_name" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Date of Birth</label>
-                                <input type="date" name="date_of_birth" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Gender</label>
-                                <select name="gender" class="form-select" required>
-                                    <option value="male">Male</option>
-                                    <option value="female">Female</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Address</label>
-                            <textarea name="address" class="form-control" rows="3" required></textarea>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Parent Name</label>
-                                <input type="text" name="parent_name" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Parent Phone</label>
-                                <input type="tel" name="parent_phone" class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Parent Email</label>
-                            <input type="email" name="parent_email" class="form-control">
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="saveStudent()">Save Student</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function viewStudent(id) {
-            // Implement view student details
-            window.location.href = 'student_details.php?id=' + id;
-        }
-
-        function editStudent(id) {
-            // Implement edit student
-            window.location.href = 'edit_student.php?id=' + id;
+        function updateStatus(id, status) {
+            console.log('Updating status:', { id, status });
+            
+            fetch('update_status.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'id=' + encodeURIComponent(id) + '&status=' + encodeURIComponent(status)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response:', data);
+                if (data.success) {
+                    // Update the button appearance
+                    const statusBtn = event.target.closest('.dropdown').querySelector('.status-btn');
+                    statusBtn.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+                    
+                    // Update button class
+                    statusBtn.classList.remove('btn-warning', 'btn-success', 'btn-danger');
+                    if (status === 'pending') {
+                        statusBtn.classList.add('btn-warning');
+                    } else if (status === 'registered') {
+                        statusBtn.classList.add('btn-success');
+                    } else {
+                        statusBtn.classList.add('btn-danger');
+                    }
+                    
+                    // Update dropdown active state
+                    const dropdownItems = event.target.closest('.dropdown-menu').querySelectorAll('.dropdown-item');
+                    dropdownItems.forEach(item => {
+                        item.classList.remove('active');
+                        if (item.textContent.toLowerCase() === status) {
+                            item.classList.add('active');
+                        }
+                    });
+                } else {
+                    console.error('Error from server:', data.message);
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error details:', error);
+                alert('An error occurred while updating the status: ' + error.message);
+            });
         }
 
         function deleteStudent(id) {
-            if (confirm('Are you sure you want to delete this student?')) {
-                // Implement delete student
+            if (confirm('Are you sure you want to delete this student? This action cannot be undone.')) {
                 fetch('delete_student.php', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: JSON.stringify({ id: id })
+                    body: 'id=' + id
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        location.reload();
+                        // Show success message
+                        alert(data.message);
+                        // Reload the page to refresh the list
+                        window.location.reload();
                     } else {
-                        alert('Error deleting student: ' + data.message);
+                        // Show error message
+                        alert('Error: ' + data.message);
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while deleting the student.');
                 });
             }
-        }
-
-        function saveStudent() {
-            const form = document.getElementById('addStudentForm');
-            const formData = new FormData(form);
-            
-            fetch('save_student.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert('Error saving student: ' + data.message);
-                }
-            });
         }
     </script>
 </body>

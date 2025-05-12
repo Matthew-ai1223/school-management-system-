@@ -15,12 +15,18 @@ $user = $auth->getCurrentUser();
 $student_id = $_GET['id'] ?? 0;
 
 // Fetch student details
-$query = "SELECT * FROM students WHERE id = ?";
+$query = "SELECT s.*, f.file_path, f.file_name 
+          FROM students s 
+          LEFT JOIN files f ON s.file_id = f.id 
+          WHERE s.id = ?";
 $stmt = $mysqli->prepare($query);
 $stmt->bind_param('i', $student_id);
 $stmt->execute();
 $result = $stmt->get_result();
 $student = $result->fetch_assoc();
+
+// Debug log
+error_log("Student data for ID $student_id: " . print_r($student, true));
 
 if (!$student) {
     header('Location: applications.php');
@@ -128,21 +134,42 @@ if (isset($_GET['pdf'])) {
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Registration Number:</strong> <?php echo htmlspecialchars($student['registration_number']); ?></p>
-                                <p><strong>Name:</strong> <?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?></p>
-                                <p><strong>Application Type:</strong> <?php echo ucfirst(str_replace('_', ' ', $student['application_type'])); ?></p>
-                                <p><strong>Status:</strong> 
-                                    <span class="badge bg-<?php echo $student['status'] === 'pending' ? 'warning' : ($student['status'] === 'registered' ? 'success' : 'danger'); ?> status-badge">
-                                        <?php echo ucfirst($student['status']); ?>
-                                    </span>
-                                </p>
+                            <div class="col-md-3 text-center mb-3">
+                                <?php if (!empty($student['file_path'])): ?>
+                                    <?php 
+                                    // Convert relative path to be relative to admin directory
+                                    $image_path = str_replace('../../', '../', $student['file_path']);
+                                    ?>
+                                    <img src="<?php echo $image_path; ?>" 
+                                         alt="Student Photo" 
+                                         class="img-fluid rounded-circle mb-2"
+                                         style="max-width: 150px; height: 150px;">
+                                <?php else: ?>
+                                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 150px; height: 150px; margin: 0 auto;">
+                                        <i class="bi bi-person-fill" style="font-size: 4rem;"></i>
+                                    </div>
+                                <?php endif; ?>
                             </div>
-                            <div class="col-md-6">
-                                <p><strong>Parent Name:</strong> <?php echo htmlspecialchars($student['parent_name']); ?></p>
-                                <p><strong>Parent Phone:</strong> <?php echo htmlspecialchars($student['parent_phone']); ?></p>
-                                <p><strong>Parent Email:</strong> <?php echo htmlspecialchars($student['parent_email']); ?></p>
-                                <p><strong>Application Date:</strong> <?php echo date('F j, Y', strtotime($student['created_at'])); ?></p>
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p><strong>Registration Number:</strong> <?php echo htmlspecialchars($student['registration_number'] ?? ''); ?></p>
+                                        <p><strong>Name:</strong> <?php echo htmlspecialchars(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')); ?></p>
+                                        <p><strong>Application Type:</strong> <?php echo ucfirst(str_replace('_', ' ', $student['application_type'] ?? '')); ?></p>
+                                        <p><strong>Status:</strong> 
+                                            <span class="badge bg-<?php echo ($student['status'] ?? '') === 'pending' ? 'warning' : (($student['status'] ?? '') === 'registered' ? 'success' : 'danger'); ?> status-badge">
+                                                <?php echo ucfirst($student['status'] ?? ''); ?>
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p><strong>Parent Name:</strong> <?php echo htmlspecialchars($student['parent_name'] ?? ''); ?></p>
+                                        <p><strong>Parent Phone:</strong> <?php echo htmlspecialchars($student['parent_phone'] ?? ''); ?></p>
+                                        <p><strong>Parent Email:</strong> <?php echo htmlspecialchars($student['parent_email'] ?? ''); ?></p>
+                                        <p><strong>Application Date:</strong> <?php echo $student['created_at'] ? date('F j, Y', strtotime($student['created_at'])) : ''; ?></p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

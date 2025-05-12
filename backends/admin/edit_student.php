@@ -59,8 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             parent_name = ?,
             parent_phone = ?,
             parent_email = ?,
-            status = ?,
-            updated_at = CURRENT_TIMESTAMP
+            status = ?
             WHERE id = ?";
             
         $stmt = $mysqli->prepare($query);
