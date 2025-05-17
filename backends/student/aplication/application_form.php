@@ -82,25 +82,94 @@ if (!$payment_verified) {
     exit();
 }
 
-// Function to get all form fields from database
-function getFormFields($conn, $applicationType) {
-    $sql = "SELECT * FROM form_fields WHERE is_active = 1 AND application_type = ? ORDER BY field_order";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("s", $applicationType);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $fields = [];
-    if ($result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-            $fields[] = $row;
-        }
-    }
+// Define the application form fields
+function getApplicationFields($applicationType) {
+    $fields = [
+        // Student Information
+        [
+            'id' => 'full_name',
+            'field_label' => 'Full Name',
+            'field_type' => 'text',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        [
+            'id' => 'dob',
+            'field_label' => 'Date of Birth',
+            'field_type' => 'date',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        [
+            'id' => 'gender',
+            'field_label' => 'Gender',
+            'field_type' => 'select',
+            'options' => 'Male,Female',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        [
+            'id' => 'previous_school',
+            'field_label' => 'Previous School Attended',
+            'field_type' => 'text',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        [
+            'id' => 'class_admission',
+            'field_label' => 'Class Seeking Admission Into',
+            'field_type' => 'select',
+            'options' => $applicationType === 'kiddies' ? 
+                'Pre-Nursery,Nursery 1,Nursery 2,Primary 1,Primary 2,Primary 3,Primary 4,Primary 5,Primary 6' : 
+                'JSS 1,JSS 2,JSS 3,SS 1,SS 2,SS 3',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        [
+            'id' => 'passport_photo',
+            'field_label' => 'Passport Photograph',
+            'field_type' => 'file',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        
+        // Parent Information
+        [
+            'id' => 'parent_name',
+            'field_label' => 'Parent/Guardian Name',
+            'field_type' => 'text',
+            'required' => true,
+            'field_group' => 'Parent Information'
+        ],
+        [
+            'id' => 'parent_phone',
+            'field_label' => 'Parent/Guardian Phone Number',
+            'field_type' => 'text',
+            'required' => true,
+            'field_group' => 'Parent Information'
+        ],
+        [
+            'id' => 'parent_email',
+            'field_label' => 'Parent/Guardian Email',
+            'field_type' => 'email',
+            'required' => true,
+            'field_group' => 'Parent Information'
+        ],
+        [
+            'id' => 'home_address',
+            'field_label' => 'Home Address',
+            'field_type' => 'textarea',
+            'required' => true,
+            'field_group' => 'Parent Information'
+        ]
+    ];
+    
     return $fields;
 }
 
 // Handle application submission
 if (isset($_POST['submit_application'])) {
-    $fields = getFormFields($conn, $applicationType);
+    $fields = getApplicationFields($applicationType);
     $application_data = [
         'application_type' => $applicationType
     ];
@@ -138,16 +207,31 @@ if (isset($_POST['submit_application'])) {
             // Generate unique filename
             $file_extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
             $new_filename = uniqid() . '_' . time() . '.' . $file_extension;
+            
+            // Special handling for passport photos - store in consistent location
+            if ($field['id'] === 'passport_photo') {
+                $upload_dir = '../../../uploads/passports/' . date('Y/m');
+            } else {
+                $upload_dir = '../../../uploads/' . $applicationType . '/' . date('Y/m/d');
+            }
+            
+            // Create directory if it doesn't exist
+            if (!file_exists($upload_dir)) {
+                mkdir($upload_dir, 0777, true);
+            }
+            
             $upload_path = $upload_dir . '/' . $new_filename;
+            $relative_path = str_replace('../../../', '', $upload_path);
             
             // Move uploaded file
             if (move_uploaded_file($file['tmp_name'], $upload_path)) {
-                // Store relative path in database
-                $relative_path = str_replace('../../../', '', $upload_path);
+                // Store relative path in database and log for debugging
                 $application_data[$field_name] = $relative_path;
+                error_log("File uploaded for field {$field['id']}: " . $relative_path);
             } else {
                 $has_error = true;
                 $error_message = "Failed to save uploaded file for " . $field['field_label'];
+                error_log("Failed to move uploaded file to: " . $upload_path);
                 break;
             }
         } else if (isset($_POST[$field_name])) {
@@ -170,14 +254,7 @@ if (isset($_POST['submit_application'])) {
         $stmt->bind_param("ss", $json_data, $applicationType);
         if ($stmt->execute()) {
             // Get the applicant's name from the form data
-            $applicantName = '';
-            foreach ($fields as $field) {
-                if (strpos(strtolower($field['field_label']), 'name') !== false) {
-                    $field_name = "field_" . $field['id'];
-                    $applicantName = $_POST[$field_name];
-                    break;
-                }
-            }
+            $applicantName = $_POST['field_full_name'] ?? '';
 
             // Store necessary data in session for success page
             $_SESSION['application_submitted'] = true;
@@ -435,45 +512,6 @@ if (isset($_POST['submit_application'])) {
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <!-- <nav class="fh5co-nav" role="navigation">
-        <div class="top">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xs-12 text-right">
-                        <p class="site">www.acecollege.com</p>
-                        <p class="num">Call: +234 803 465 0368</p>
-                        <ul class="fh5co-social">
-                            <li><a href="https://www.facebook.com/p/ACE-Model-College-100083036906992/"><i class="icon-facebook2"></i></a></li>
-                            <li><a href="https://www.instagram.com/ace_model_college/"><i class="icon-instagram"></i></a></li>
-                            <li><a href="https://www.youtube.com/@ace_model_college"><i class="icon-youtube"></i></a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="top-menu">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xs-2">
-                        <div id="fh5co-logo" style="display: flex; align-items: center; gap: 10px;">
-                            <a href="../../../index.html"><img src="../../../images/logo.png" alt="ACE College Logo" style="width: 100px; height: 70px;"></a>
-                            <a href="../../../index.html"><img src="../../../images/logo_2.jpg" alt="ACE Kiddies Logo" style="width: 70px; height: 70px; border-radius: 50%;"></a>
-                        </div>
-                    </div>
-                    <div class="col-xs-10 text-right menu-1">
-                        <ul>
-                            <li><a href="../../../index.html">Home</a></li>
-                            <li><a href="../../../gallery.html">Gallery</a></li>
-                            <li><a href="../../../about.html">About</a></li>
-                            <li><a href="../../../contact.html">Contact</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav> -->
-
     <div class="container form-container">
         <div class="school-header">
             <img src="../../../images/logo.png" alt="ACE Kiddies and College Logo" class="school-logo">
@@ -513,65 +551,71 @@ if (isset($_POST['submit_application'])) {
 
         <form method="POST" class="application-form" enctype="multipart/form-data">
             <?php
-            $fields = getFormFields($conn, $applicationType);
-            $currentGroup = '';
-            foreach ($fields as $field):
-                $field_id = "field_" . $field['id'];
-                $required = $field['required'] ? 'required' : '';
-                
-                // Check if this field belongs to a new group
-                if (!empty($field['field_group']) && $field['field_group'] !== $currentGroup):
-                    if ($currentGroup !== '') echo '</div>'; // Close previous group
-                    $currentGroup = $field['field_group'];
+            $fields = getApplicationFields($applicationType);
+            $fieldGroups = [];
+            
+            // First pass: organize fields by group
+            foreach ($fields as $field) {
+                $groupName = !empty($field['field_group']) ? $field['field_group'] : 'Other Information';
+                if (!isset($fieldGroups[$groupName])) {
+                    $fieldGroups[$groupName] = [];
+                }
+                $fieldGroups[$groupName][] = $field;
+            }
+            
+            // Second pass: display fields by group
+            foreach ($fieldGroups as $groupName => $groupFields):
             ?>
                 <div class="field-group">
-                    <h3 class="field-group-title"><?php echo htmlspecialchars($currentGroup); ?></h3>
-            <?php
-                endif;
-            ?>
-            <div class="mb-4">
-                <label for="<?php echo $field_id; ?>" class="form-label">
-                    <?php echo htmlspecialchars($field['field_label']); ?>
-                    <?php if ($field['required']): ?>
-                        <span class="text-danger">*</span>
-                    <?php endif; ?>
-                </label>
-                
-                <?php if ($field['field_type'] === 'textarea'): ?>
-                    <textarea class="form-control" id="<?php echo $field_id; ?>" name="<?php echo $field_id; ?>" <?php echo $required; ?>
-                              placeholder="Enter <?php echo strtolower($field['field_label']); ?>"></textarea>
-                <?php elseif ($field['field_type'] === 'select'): ?>
-                    <select class="form-select" id="<?php echo $field_id; ?>" name="<?php echo $field_id; ?>" <?php echo $required; ?>>
-                        <option value="">Select <?php echo strtolower($field['field_label']); ?></option>
-                        <?php
-                        $options = explode(',', $field['options']);
-                        foreach ($options as $option):
-                            $option = trim($option);
-                            if (!empty($option)):
-                        ?>
-                        <option value="<?php echo htmlspecialchars($option); ?>"><?php echo htmlspecialchars($option); ?></option>
-                        <?php 
-                            endif;
-                        endforeach; 
-                        ?>
-                    </select>
-                <?php elseif ($field['field_type'] === 'file'): ?>
-                    <input type="file" class="form-control" id="<?php echo $field_id; ?>" name="<?php echo $field_id; ?>" <?php echo $required; ?> 
-                           accept="<?php echo $field['file_types'] ?? '*/*'; ?>"
-                           onchange="previewFile(this)">
-                    <div id="<?php echo $field_id; ?>_preview" class="file-preview"></div>
-                <?php else: ?>
-                    <input type="<?php echo $field['field_type']; ?>" 
-                           class="form-control" 
-                           id="<?php echo $field_id; ?>" 
-                           name="<?php echo $field_id; ?>"
-                           placeholder="Enter <?php echo strtolower($field['field_label']); ?>"
-                           <?php echo $required; ?>>
-                <?php endif; ?>
-            </div>
-            <?php endforeach; 
-            if ($currentGroup !== '') echo '</div>'; // Close last group if exists
-            ?>
+                    <h3 class="field-group-title"><?php echo htmlspecialchars($groupName); ?></h3>
+                    
+                    <?php foreach ($groupFields as $field):
+                        $field_id = "field_" . $field['id'];
+                        $required = $field['required'] ? 'required' : '';
+                    ?>
+                    <div class="mb-4">
+                        <label for="<?php echo $field_id; ?>" class="form-label">
+                            <?php echo htmlspecialchars($field['field_label']); ?>
+                            <?php if ($field['required']): ?>
+                                <span class="text-danger">*</span>
+                            <?php endif; ?>
+                        </label>
+                        
+                        <?php if ($field['field_type'] === 'textarea'): ?>
+                            <textarea class="form-control" id="<?php echo $field_id; ?>" name="<?php echo $field_id; ?>" <?php echo $required; ?>
+                                      placeholder="Enter <?php echo strtolower($field['field_label']); ?>"></textarea>
+                        <?php elseif ($field['field_type'] === 'select'): ?>
+                            <select class="form-select" id="<?php echo $field_id; ?>" name="<?php echo $field_id; ?>" <?php echo $required; ?>>
+                                <option value="">Select <?php echo strtolower($field['field_label']); ?></option>
+                                <?php
+                                $options = explode(',', $field['options']);
+                                foreach ($options as $option):
+                                    $option = trim($option);
+                                    if (!empty($option)):
+                                ?>
+                                <option value="<?php echo htmlspecialchars($option); ?>"><?php echo htmlspecialchars($option); ?></option>
+                                <?php 
+                                    endif;
+                                endforeach; 
+                                ?>
+                            </select>
+                        <?php elseif ($field['field_type'] === 'file'): ?>
+                            <input type="file" class="form-control" id="<?php echo $field_id; ?>" name="<?php echo $field_id; ?>" <?php echo $required; ?> 
+                                   accept="<?php echo $field['file_types'] ?? 'image/*'; ?>"
+                                   onchange="previewFile(this)">
+                            <div id="<?php echo $field_id; ?>_preview" class="file-preview"></div>
+                        <?php else: ?>
+                            <input type="<?php echo $field['field_type']; ?>" 
+                                   class="form-control" 
+                                   id="<?php echo $field_id; ?>" 
+                                   name="<?php echo $field_id; ?>"
+                                   placeholder="Enter <?php echo strtolower($field['field_label']); ?>"
+                                   <?php echo $required; ?>>
+                        <?php endif; ?>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endforeach; ?>
 
             <div class="text-center mt-4">
                 <button type="submit" name="submit_application" class="btn btn-primary btn-lg">

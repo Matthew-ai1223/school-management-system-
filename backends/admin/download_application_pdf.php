@@ -18,11 +18,12 @@ class ApplicationDetailsPDF extends FPDF {
         parent::__construct();
         // Check if logo exists in multiple possible locations
         $possiblePaths = [
-            __DIR__ . '/../../../assets/images/logo.png',
+            __DIR__ . '/../../../../images/logo.png',
             __DIR__ . '/../../../assets/img/logo.png',
             __DIR__ . '/../../assets/images/logo.png',
             __DIR__ . '/../../assets/img/logo.png',
-            'C:/xampp/htdocs/ACE MODEL COLLEGE/assets/images/logo.png'
+            'C:/xampp/htdocs/ACE MODEL COLLEGE/assets/images/logo.png',
+            'C:/xampp/htdocs/ACE MODEL COLLEGE/images/logo.png'
         ];
 
         foreach ($possiblePaths as $path) {
@@ -100,6 +101,86 @@ class ApplicationDetailsPDF extends FPDF {
         $this->SetDrawColor(200, 200, 200);
         $this->Line(10, $this->GetY(), 200, $this->GetY());
         $this->Ln(2);
+    }
+    
+    // Helper function to display passport photo
+    function AddPassportPhoto($photoPath) {
+        if (!$photoPath) return;
+        
+        error_log("Trying to display passport photo: " . $photoPath);
+        
+        // Try different ways to access the passport photo
+        $possiblePaths = [
+            // Direct path as provided
+            $photoPath,
+            // Remove any leading slash to make it relative
+            ltrim($photoPath, '/'),
+            // Path relative to document root
+            $_SERVER['DOCUMENT_ROOT'] . '/' . ltrim($photoPath, '/'),
+            // Path with various directory adjustments
+            '../../../' . ltrim($photoPath, '/'),
+            '../../' . ltrim($photoPath, '/'),
+            '../' . ltrim($photoPath, '/'),
+            // Specific to the application structure
+            dirname(__DIR__, 3) . '/' . ltrim($photoPath, '/'),
+            // Special case for XAMPP on Windows
+            'C:/xampp/htdocs/' . ltrim($photoPath, '/'),
+            // Direct paths for Windows
+            'C:/xampp/htdocs/ACE MODEL COLLEGE/' . ltrim($photoPath, '/')
+        ];
+        
+        $validPath = null;
+        foreach ($possiblePaths as $path) {
+            if (file_exists($path)) {
+                $validPath = $path;
+                error_log("Found valid passport photo path: " . $path);
+                break;
+            } else {
+                error_log("Tried path but not found: " . $path);
+            }
+        }
+        
+        // Current Y position
+        $startY = $this->GetY();
+        $rightColumnX = 140;
+        
+        if ($validPath) {
+            try {
+                // Get image info to determine type
+                $imgInfo = getimagesize($validPath);
+                if ($imgInfo) {
+                    // Valid image, add to PDF
+                    $this->Image($validPath, $rightColumnX, $startY, 50);
+                    error_log("Successfully added image to PDF");
+                } else {
+                    error_log("Invalid image format for passport photo: " . $validPath);
+                    $this->DrawPlaceholderImage($rightColumnX, $startY, '(Invalid Format)');
+                }
+            } catch (Exception $e) {
+                error_log("Error adding passport photo to PDF: " . $e->getMessage() . " (Path: $validPath)");
+                $this->DrawPlaceholderImage($rightColumnX, $startY, '(Error Loading)');
+            }
+        } else {
+            // Log that we couldn't find the image
+            error_log("Could not find passport photo at any of the attempted paths for: $photoPath");
+            $this->DrawPlaceholderImage($rightColumnX, $startY, '(Not Found)');
+        }
+        
+        // Return to normal position and add enough space after the photo
+        $this->SetY($startY + 55); // Ensure there's enough space after the photo
+    }
+    
+    // Helper to draw placeholder when image can't be loaded
+    function DrawPlaceholderImage($x, $y, $message) {
+        $this->SetDrawColor(200, 200, 200);
+        $this->SetFillColor(240, 240, 240);
+        $this->Rect($x, $y, 50, 50, 'DF');
+        $this->SetFont('Arial', '', 8);
+        $this->SetXY($x, $y + 20);
+        $this->Cell(50, 10, 'Passport Photo', 0, 1, 'C');
+        $this->SetFont('Arial', '', 7);
+        $this->SetXY($x, $y + 30);
+        $this->Cell(50, 10, $message, 0, 1, 'C');
     }
 }
 
@@ -207,8 +288,47 @@ try {
             
             // Applicant Details Section
             $pdf->AddSectionHeader('Applicant Details');
+            
+            // Check for passport photo field and display it first
+            $passportPhotoPath = null;
+            foreach ($applicant_data as $key => $value) {
+                if (strpos($key, 'field_passport_photo') === 0 || $key === 'field_passport_photo') {
+                    $passportPhotoPath = $value;
+                    break;
+                }
+            }
+            
+            // Display passport photo if found
+            if ($passportPhotoPath) {
+                $pdf->AddPassportPhoto($passportPhotoPath);
+            }
+            
+            // Display class seeking admission with emphasis (if exists)
+            $classAdmission = null;
+            foreach ($applicant_data as $key => $value) {
+                if (strpos($key, 'field_class_admission') === 0) {
+                    $classAdmission = $value;
+                    // Display class with special formatting
+                    $pdf->SetFont('Arial', 'B', 10);
+                    $pdf->Cell(60, 8, 'Class Seeking Admission:', 0, 0);
+                    $pdf->SetFont('Arial', 'B', 11);
+                    $pdf->SetTextColor(0, 102, 204); // Blue color for emphasis
+                    $pdf->Cell(0, 8, $classAdmission, 0, 1);
+                    $pdf->SetTextColor(0, 0, 0); // Reset text color
+                    $pdf->SetDrawColor(200, 200, 200);
+                    $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
+                    $pdf->Ln(2);
+                    break;
+                }
+            }
+            
+            // Display other fields
             foreach ($form_fields as $field) {
                 $field_value = $applicant_data['field_' . $field['id']] ?? '';
+                // Skip passport photo field since we've displayed it separately
+                if ($field['id'] === 'passport_photo' || $field['id'] === 'class_admission') {
+                    continue;
+                }
                 
                 // Format the field value based on type
                 if ($field['field_type'] === 'file' && $field_value) {
@@ -319,8 +439,48 @@ try {
 
         // Applicant Details Section
         $pdf->AddSectionHeader('Applicant Details');
+        
+        // Check for passport photo field and display it first
+        $passportPhotoPath = null;
+        foreach ($applicant_data as $key => $value) {
+            if (strpos($key, 'field_passport_photo') === 0 || $key === 'field_passport_photo') {
+                $passportPhotoPath = $value;
+                break;
+            }
+        }
+        
+        // Display passport photo if found
+        if ($passportPhotoPath) {
+            $pdf->AddPassportPhoto($passportPhotoPath);
+        }
+        
+        // Display class seeking admission with emphasis (if exists)
+        $classAdmission = null;
+        foreach ($applicant_data as $key => $value) {
+            if (strpos($key, 'field_class_admission') === 0) {
+                $classAdmission = $value;
+                // Display class with special formatting
+                $pdf->SetFont('Arial', 'B', 10);
+                $pdf->Cell(60, 8, 'Class Seeking Admission:', 0, 0);
+                $pdf->SetFont('Arial', 'B', 11);
+                $pdf->SetTextColor(0, 102, 204); // Blue color for emphasis
+                $pdf->Cell(0, 8, $classAdmission, 0, 1);
+                $pdf->SetTextColor(0, 0, 0); // Reset text color
+                $pdf->SetDrawColor(200, 200, 200);
+                $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
+                $pdf->Ln(2);
+                break;
+            }
+        }
+        
+        // Display other fields
         foreach ($form_fields as $field) {
             $field_value = $applicant_data['field_' . $field['id']] ?? '';
+            
+            // Skip passport photo field since we've displayed it separately
+            if ($field['id'] === 'passport_photo' || $field['id'] === 'class_admission') {
+                continue;
+            }
             
             // Format the field value based on type
             if ($field['field_type'] === 'file' && $field_value) {

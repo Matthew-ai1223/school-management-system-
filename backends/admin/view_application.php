@@ -34,17 +34,6 @@ if (isset($applicant_data['payment_reference'])) {
     $payment_data = $payment_result->fetch_assoc();
 }
 
-// Get form fields
-$fields_query = "SELECT * FROM form_fields WHERE application_type = ? AND is_active = 1 ORDER BY field_order";
-$stmt = $mysqli->prepare($fields_query);
-$stmt->bind_param("s", $application['application_type']);
-$stmt->execute();
-$fields_result = $stmt->get_result();
-$form_fields = [];
-while ($field = $fields_result->fetch_assoc()) {
-    $form_fields[] = $field;
-}
-
 // Get reviewer details if application was reviewed
 $reviewer_name = '';
 if ($application['reviewed_by']) {
@@ -55,6 +44,91 @@ if ($application['reviewed_by']) {
     if ($reviewer = $reviewer_result->fetch_assoc()) {
         $reviewer_name = $reviewer['first_name'] . ' ' . $reviewer['last_name'];
     }
+}
+
+// Define application form fields
+function getApplicationFields($applicationType) {
+    $fields = [
+        // Student Information
+        [
+            'id' => 'full_name',
+            'field_label' => 'Full Name',
+            'field_type' => 'text',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        [
+            'id' => 'dob',
+            'field_label' => 'Date of Birth',
+            'field_type' => 'date',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        [
+            'id' => 'gender',
+            'field_label' => 'Gender',
+            'field_type' => 'select',
+            'options' => 'Male,Female',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        [
+            'id' => 'previous_school',
+            'field_label' => 'Previous School Attended',
+            'field_type' => 'text',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        [
+            'id' => 'class_admission',
+            'field_label' => 'Class Seeking Admission Into',
+            'field_type' => 'select',
+            'options' => $applicationType === 'kiddies' ? 
+                'Pre-Nursery,Nursery 1,Nursery 2,Primary 1,Primary 2,Primary 3,Primary 4,Primary 5,Primary 6' : 
+                'JSS 1,JSS 2,JSS 3,SS 1,SS 2,SS 3',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        [
+            'id' => 'passport_photo',
+            'field_label' => 'Passport Photograph',
+            'field_type' => 'file',
+            'required' => true,
+            'field_group' => 'Student Information'
+        ],
+        
+        // Parent Information
+        [
+            'id' => 'parent_name',
+            'field_label' => 'Parent/Guardian Name',
+            'field_type' => 'text',
+            'required' => true,
+            'field_group' => 'Parent Information'
+        ],
+        [
+            'id' => 'parent_phone',
+            'field_label' => 'Parent/Guardian Phone Number',
+            'field_type' => 'text',
+            'required' => true,
+            'field_group' => 'Parent Information'
+        ],
+        [
+            'id' => 'parent_email',
+            'field_label' => 'Parent/Guardian Email',
+            'field_type' => 'email',
+            'required' => true,
+            'field_group' => 'Parent Information'
+        ],
+        [
+            'id' => 'home_address',
+            'field_label' => 'Home Address',
+            'field_type' => 'textarea',
+            'required' => true,
+            'field_group' => 'Parent Information'
+        ]
+    ];
+    
+    return $fields;
 }
 
 // Helper function to format field value based on type
@@ -90,6 +164,24 @@ function formatFieldValue($field, $value) {
                     case 'png':
                     case 'gif':
                         $icon_class = 'bi-file-earmark-image';
+                        
+                        // For passport photo, display the image directly
+                        if ($field['id'] === 'passport_photo') {
+                            return sprintf(
+                                '<div class="passport-preview">
+                                    <img src="%s" alt="Passport" class="img-fluid rounded">
+                                    <div class="mt-2">
+                                        <a href="%s" target="_blank" class="btn btn-sm btn-primary">
+                                            <i class="bi %s"></i> View Full Size
+                                        </a>
+                                    </div>
+                                </div>',
+                                htmlspecialchars($file_path),
+                                htmlspecialchars($file_path),
+                                $icon_class
+                            );
+                        }
+                        
                         break;
                 }
                 
@@ -109,6 +201,10 @@ function formatFieldValue($field, $value) {
             return '<span class="text-muted">No file uploaded</span>';
         
         case 'select':
+            // Highlight the class admission field with a badge
+            if ($field['id'] === 'class_admission') {
+                return sprintf('<span class="badge bg-primary">%s</span>', htmlspecialchars($value));
+            }
             return htmlspecialchars($value);
             
         case 'date':
@@ -156,6 +252,31 @@ function formatFileSize($file_path) {
         .status-badge {
             font-size: 0.9rem;
             padding: 0.5rem 1rem;
+        }
+        .passport-preview {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+        }
+        .passport-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border: 5px solid #fff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .field-group {
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .field-group-title {
+            color: #0d6efd;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
         }
     </style>
 </head>
@@ -236,6 +357,63 @@ function formatFileSize($file_path) {
                                 <a href="download_application_pdf.php?id=<?php echo $application['id']; ?>" class="btn btn-primary">
                                     <i class="bi bi-download"></i> Download Application Details (PDF)
                                 </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Applicant Information Summary Card -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Applicant Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-3 text-center">
+                                <?php 
+                                $passport_path = '';
+                                if (isset($applicant_data['field_passport_photo'])) {
+                                    $passport_path = '../../' . ltrim($applicant_data['field_passport_photo'], '/');
+                                    echo '<img src="' . htmlspecialchars($passport_path) . '" alt="Passport" class="img-fluid rounded" style="max-height: 150px; max-width: 150px; border: 5px solid #fff; box-shadow: 0 0 20px rgba(0,0,0,0.1);">';
+                                } else {
+                                    echo '<div class="p-5 bg-light rounded"><i class="bi bi-person" style="font-size: 3rem; color: #6c757d;"></i></div>';
+                                }
+                                ?>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="field-label">Full Name</div>
+                                        <div class="field-value">
+                                            <h5><?php echo htmlspecialchars($applicant_data['field_full_name'] ?? 'N/A'); ?></h5>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="field-label">Class Seeking Admission Into</div>
+                                        <div class="field-value">
+                                            <h5><span class="badge bg-primary"><?php echo htmlspecialchars($applicant_data['field_class_admission'] ?? 'N/A'); ?></span></h5>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="field-label">Parent/Guardian Name</div>
+                                        <div class="field-value">
+                                            <?php echo htmlspecialchars($applicant_data['field_parent_name'] ?? 'N/A'); ?>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="field-label">Parent/Guardian Contact</div>
+                                        <div class="field-value">
+                                            <?php 
+                                            $phone = $applicant_data['field_parent_phone'] ?? '';
+                                            $email = $applicant_data['field_parent_email'] ?? '';
+                                            echo $phone ? htmlspecialchars($phone) : '';
+                                            echo $phone && $email ? ' | ' : '';
+                                            echo $email ? '<a href="mailto:' . htmlspecialchars($email) . '">' . htmlspecialchars($email) . '</a>' : '';
+                                            echo !$phone && !$email ? 'N/A' : '';
+                                            ?>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -322,28 +500,50 @@ function formatFileSize($file_path) {
                     </div>
                 </div>
 
+                <!-- Application Details Section -->
                 <div class="card">
                     <div class="card-header">
                         <h5 class="card-title mb-0">Application Details</h5>
                     </div>
                     <div class="card-body">
-                        <div class="row">
-                            <?php foreach ($form_fields as $field): 
-                                $field_value = $applicant_data['field_' . $field['id']] ?? '';
-                            ?>
-                            <div class="col-md-6 mb-4">
-                                <div class="field-label">
-                                    <?php echo htmlspecialchars($field['field_label']); ?>
-                                    <?php if ($field['required']): ?>
-                                        <span class="text-danger">*</span>
-                                    <?php endif; ?>
+                        <?php 
+                        // Get fields for the application type
+                        $form_fields = getApplicationFields($application['application_type']);
+                        
+                        // Group fields by their group
+                        $field_groups = [];
+                        foreach ($form_fields as $field) {
+                            $group = $field['field_group'] ?? 'Other Information';
+                            if (!isset($field_groups[$group])) {
+                                $field_groups[$group] = [];
+                            }
+                            $field_groups[$group][] = $field;
+                        }
+                        
+                        // Display fields by group
+                        foreach ($field_groups as $group_name => $group_fields):
+                        ?>
+                        <div class="field-group">
+                            <h4 class="field-group-title"><?php echo htmlspecialchars($group_name); ?></h4>
+                            <div class="row">
+                                <?php foreach ($group_fields as $field): 
+                                    $field_value = $applicant_data['field_' . $field['id']] ?? '';
+                                ?>
+                                <div class="col-md-6 mb-4">
+                                    <div class="field-label">
+                                        <?php echo htmlspecialchars($field['field_label']); ?>
+                                        <?php if ($field['required']): ?>
+                                            <span class="text-danger">*</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="field-value">
+                                        <?php echo formatFieldValue($field, $field_value); ?>
+                                    </div>
                                 </div>
-                                <div class="field-value">
-                                    <?php echo formatFieldValue($field, $field_value); ?>
-                                </div>
+                                <?php endforeach; ?>
                             </div>
-                            <?php endforeach; ?>
                         </div>
+                        <?php endforeach; ?>
                     </div>
                 </div>
 

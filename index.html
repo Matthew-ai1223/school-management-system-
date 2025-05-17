@@ -37,7 +37,7 @@
 	  "url": "https://www.acecollege.com",
 	  "logo": "https://www.acecollege.com/images/logo.png",
 	  "sameAs": [
-	    "https://www.facebook.com/p/ACE-Model-College-100083036906992/",
+	    "https://www.facebook.com/profile.php?id=100083036906992",
 	    "https://www.instagram.com/ace_model_college/",
 	    "https://www.youtube.com/@ace_model_college"
 	  ],
@@ -89,19 +89,6 @@
 	}
 	</script>
 
-	<!-- 
-	//////////////////////////////////////////////////////
-
-	FREE HTML5 TEMPLATE 
-	DESIGNED & DEVELOPED by FreeHTML5.co
-		
-	Website: 		http://freehtml5.co/
-	Email: 			info@freehtml5.co
-	Twitter: 		http://twitter.com/fh5co
-	Facebook: 		https://www.facebook.com/fh5co
-
-	//////////////////////////////////////////////////////
-	 -->
 
   	<!-- Facebook and Twitter integration -->
 	<meta property="og:title" content=""/>
@@ -1276,6 +1263,67 @@
 	    flex-direction: column;
 	    height: 100%;
 	}
+
+	/* Address styling in footer */
+	.address-container {
+	    padding: 10px;
+	    border-radius: 8px;
+	    background-color: rgba(0, 0, 0, 0.2);
+	    margin-top: 10px;
+	}
+
+	.address-item {
+	    display: flex;
+	    align-items: flex-start;
+	    line-height: 1.5;
+	    padding: 8px;
+	    border-left: 3px solid #d3ee06;
+	    border-radius: 0 4px 4px 0;
+	    background-color: rgba(255, 255, 255, 0.05);
+	    transition: all 0.3s ease;
+	}
+
+	.address-item:hover {
+	    background-color: rgba(255, 255, 255, 0.1);
+	    border-left-width: 5px;
+	    transform: translateX(3px);
+	}
+
+	.address-item i {
+	    font-size: 18px;
+	    margin-top: 2px;
+	    flex-shrink: 0;
+	}
+
+	.address-item .address-content {
+	    display: flex;
+	    flex-wrap: wrap;
+	}
+
+	.address-item .address-label {
+	    font-weight: 700;
+	    color: #d3ee06;
+	    margin-right: 5px;
+	}
+
+	@media (max-width: 768px) {
+	    .address-item {
+	        flex-direction: column;
+	    }
+	    
+	    .address-item i {
+	        margin-bottom: 5px;
+	    }
+	    
+	    .address-item .address-content {
+	        display: block;
+	    }
+	    
+	    .address-item .address-label {
+	        display: block;
+	        margin-bottom: 3px;
+	    }
+	}
 	</style>
 
 	<!-- SEO Optimization Start -->
@@ -1328,7 +1376,7 @@
 	    "email": "info@acecollege.com"
 	  },
 	  "sameAs": [
-	    "https://www.facebook.com/p/ACE-Model-College-100083036906992/",
+	    "https://www.facebook.com/profile.php?id=100083036906992",
 	    "https://www.instagram.com/ace_model_college/",
 	    "https://www.youtube.com/@ace_model_college"
 	  ]
@@ -1349,7 +1397,7 @@
 						<p class="site">www.acecollege.com</p>
 						<p class="num">Call: +234 803 465 0368</p>
 						<ul class="fh5co-social">
-							<li><a href="https://www.facebook.com/p/ACE-Model-College-100083036906992/"><i class="icon-facebook2"></i></a></li>
+							<li><a href="https://www.facebook.com/profile.php?id=100083036906992"><i class="icon-facebook2"></i></a></li>
 							<li><a href="https://www.instagram.com/ace_model_college/"><i class="icon-instagram"></i></a></li>
 							<li><a href="https://www.youtube.com/@ace_model_college"><i class="icon-youtube"></i></a></li>
 						</ul>
@@ -2052,13 +2100,32 @@
 				<div class="col-md-2 col-sm-4 col-xs-6 col-md-push-1 fh5co-widget">
 					<h3>Connect with Us</h3>
 					<div style="margin: 18px 0 8px 0;">
-						<a href="https://www.facebook.com/p/ACE-Model-College-100083036906992/" target="_blank" style="margin:0 8px; color:#3b5998; font-size:22px;"><i class="icon-facebook2"></i></a>
+						<a href="https://www.facebook.com/profile.php?id=100083036906992" target="_blank" style="margin:0 8px; color:#3b5998; font-size:22px;"><i class="icon-facebook2"></i></a>
 						<a href="https://www.instagram.com/ace_model_college/" target="_blank" style="margin:0 8px; color:#E1306C; font-size:22px;"><i class="icon-instagram"></i></a>
 						<a href="https://www.youtube.com/@ace_model_college" target="_blank" style="margin:0 8px; color:#FF0000; font-size:22px;"><i class="icon-youtube"></i></a>
 					</div>
 					<div style="margin-top:8px; font-size:15px; color:#d3ee06;">
 						<i class="icon-mail" style="margin-right:6px; color:#dbe20e;"></i> info@acecollege.com
 					</div>
+					<div style="margin-top:15px; font-size:15px; color:#fff;">
+						<div class="address-container">
+							<div class="address-item">
+								<i class="icon-location" style="color:#d3ee06;"></i> 
+								<div class="address-content" style="margin-left:10px;">
+									<span class="address-label">College:</span>
+									<span>Beside Agodi Baptist Church Opposite Loyola College Second Gate, Odejayi Ibadan Oyo State</span>
+								</div>
+							</div>
+							<div class="address-item" style="margin-top:12px;">
+								<i class="icon-location" style="color:#d3ee06;"></i> 
+								<div class="address-content" style="margin-left:10px;">
+									<span class="address-label">Kiddies:</span>
+									<span>Makinde Avenue, Off RSK Street, Opposite ST. Claire Secondary School Small Gate, Odejayi Agodi Gate, Ibadan Oyo State</span>
+								</div>
+							</div>
+						</div>
+					</div>
+
 				</div>
 			</div>
 			<div class="row copyright">
@@ -2640,6 +2707,67 @@
 	    display: flex;
 	    flex-direction: column;
 	    height: 100%;
+	}
+
+	/* Address styling in footer */
+	.address-container {
+	    padding: 10px;
+	    border-radius: 8px;
+	    background-color: rgba(0, 0, 0, 0.2);
+	    margin-top: 10px;
+	}
+
+	.address-item {
+	    display: flex;
+	    align-items: flex-start;
+	    line-height: 1.5;
+	    padding: 8px;
+	    border-left: 3px solid #d3ee06;
+	    border-radius: 0 4px 4px 0;
+	    background-color: rgba(255, 255, 255, 0.05);
+	    transition: all 0.3s ease;
+	}
+
+	.address-item:hover {
+	    background-color: rgba(255, 255, 255, 0.1);
+	    border-left-width: 5px;
+	    transform: translateX(3px);
+	}
+
+	.address-item i {
+	    font-size: 18px;
+	    margin-top: 2px;
+	    flex-shrink: 0;
+	}
+
+	.address-item .address-content {
+	    display: flex;
+	    flex-wrap: wrap;
+	}
+
+	.address-item .address-label {
+	    font-weight: 700;
+	    color: #d3ee06;
+	    margin-right: 5px;
+	}
+
+	@media (max-width: 768px) {
+	    .address-item {
+	        flex-direction: column;
+	    }
+	    
+	    .address-item i {
+	        margin-bottom: 5px;
+	    }
+	    
+	    .address-item .address-content {
+	        display: block;
+	    }
+	    
+	    .address-item .address-label {
+	        display: block;
+	        margin-bottom: 3px;
+	    }
 	}
 	</style>
 

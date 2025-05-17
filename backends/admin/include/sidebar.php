@@ -94,6 +94,11 @@ if (!isset($user)) {
                 <span class="hover-indicator"></span>
             </a>
         </li>
+        <li class="nav-item">
+            <a href="registration_number_settings.php" class="nav-link">
+                <i class="bi bi-123"></i> Registration Numbers
+            </a>
+        </li>
         <li class="nav-item mt-4" role="listitem">
             <a href="logout.php" class="nav-link text-danger" onclick="return confirm('Are you sure you want to logout?')">
                 <i class="bi bi-box-arrow-right"></i>
@@ -271,37 +276,37 @@ if (!isset($user)) {
     transform: translateX(0);
 }
 
-/* Responsive Styles */
+/* Mobile sidebar styles */
 @media (max-width: 767.98px) {
     .sidebar {
         transform: translateX(-100%);
-        width: 280px !important;
-        backdrop-filter: blur(10px);
-        background: rgba(33, 37, 41, 0.95);
+        width: 80% !important;
+        max-width: 300px;
     }
-
-    .sidebar.show {
-        transform: translateX(0);
-    }
-
+    
     .main-content {
-        padding-top: 4rem !important;
+        margin-left: 0 !important;
+        width: 100% !important;
     }
     
-    .sidebar-toggle {
-        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .sidebar.show + .main-content .sidebar-toggle {
-        left: calc(280px + 1rem);
+    #sidebar-close {
+        display: block !important;
     }
 }
 
 @media (min-width: 768px) {
-    .sidebar-toggle, #sidebar-close {
+    .sidebar {
+        transform: translateX(0) !important;
+    }
+    
+    .sidebar-toggle {
         display: none !important;
     }
-
+    
+    #sidebar-close {
+        display: none !important;
+    }
+    
     .main-content {
         margin-left: 25%;
     }
@@ -393,87 +398,43 @@ if (!isset($user)) {
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.querySelector('.sidebar-toggle');
-    const closeBtn = document.getElementById('sidebar-close');
-    const mainContent = document.querySelector('.main-content');
-    
-    // Toggle sidebar on mobile
-    toggleBtn?.addEventListener('click', function() {
-        sidebar.classList.add('show');
-        sidebar.classList.add('animating-in');
-        toggleBtn.setAttribute('aria-expanded', 'true');
-        setTimeout(() => {
-            sidebar.classList.remove('animating-in');
-        }, 300);
-    });
-
-    // Close sidebar on mobile
-    closeBtn?.addEventListener('click', function() {
-        sidebar.classList.add('animating-out');
-        toggleBtn.setAttribute('aria-expanded', 'false');
-        setTimeout(() => {
-            sidebar.classList.remove('show');
-            sidebar.classList.remove('animating-out');
-        }, 300);
-    });
-
-    // Handle window resize
-    let resizeTimer;
-    window.addEventListener('resize', function() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mobile sidebar toggle
+        const toggleButton = document.querySelector('.sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const closeButton = document.getElementById('sidebar-close');
+        
+        if (toggleButton && sidebar) {
+            toggleButton.addEventListener('click', function() {
+                const isExpanded = this.getAttribute('aria-expanded') === 'true';
+                this.setAttribute('aria-expanded', !isExpanded);
+                
+                if (window.innerWidth < 768) {
+                    sidebar.style.transform = isExpanded ? 'translateX(-100%)' : 'translateX(0)';
+                    document.body.style.overflow = isExpanded ? '' : 'hidden';
+                }
+            });
+        }
+        
+        if (closeButton && sidebar) {
+            closeButton.addEventListener('click', function() {
+                sidebar.style.transform = 'translateX(-100%)';
+                document.body.style.overflow = '';
+                
+                if (toggleButton) {
+                    toggleButton.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+        
+        // Handle resize events to reset sidebar state on window resize
+        window.addEventListener('resize', function() {
             if (window.innerWidth >= 768) {
-                sidebar.classList.remove('show');
-                toggleBtn.setAttribute('aria-expanded', 'false');
-            }
-        }, 250);
-    });
-
-    // Handle escape key to close sidebar
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && sidebar.classList.contains('show')) {
-            closeBtn.click();
-        }
-    });
-
-    // Close sidebar when clicking outside
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth < 768 && 
-            !sidebar.contains(e.target) && 
-            !toggleBtn.contains(e.target) && 
-            sidebar.classList.contains('show')) {
-            closeBtn.click();
-        }
-    });
-
-    // Add smooth transition for toggle button position
-    const updateTogglePosition = () => {
-        if (window.innerWidth < 768) {
-            const sidebarWidth = sidebar.offsetWidth;
-            if (sidebar.classList.contains('show')) {
-                toggleBtn.style.left = `${sidebarWidth + 16}px`;
-            } else {
-                toggleBtn.style.left = '1rem';
-            }
-        } else {
-            toggleBtn.style.left = '';
-        }
-    };
-
-    // Update toggle position on sidebar toggle
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.attributeName === 'class') {
-                updateTogglePosition();
+                sidebar.style.transform = '';
+                document.body.style.overflow = '';
+            } else if (sidebar.style.transform === '') {
+                sidebar.style.transform = 'translateX(-100%)';
             }
         });
     });
-
-    observer.observe(sidebar, { attributes: true });
-
-    // Initial position
-    updateTogglePosition();
-});
 </script> 

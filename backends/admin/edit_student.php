@@ -162,7 +162,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
                                 <div class="col-md-6">
                                     <label for="application_type" class="form-label">Application Type</label>
-                                    <input type="text" class="form-control" id="application_type" value="<?php echo ucfirst(str_replace('_', ' ', $student['application_type'])); ?>" readonly>
+                                    <input type="text" class="form-control" id="application_type" value="<?php 
+                                        // Determine application type based on registration number
+                                        $regNumber = $student['registration_number'] ?? '';
+                                        $appType = $student['application_type'] ?? '';
+                                        
+                                        if (!empty($regNumber)) {
+                                            if (strpos($regNumber, 'COL') !== false) {
+                                                echo 'Ace College';
+                                            } elseif (strpos($regNumber, 'KID') !== false) {
+                                                echo 'Ace Kiddies';
+                                            } else {
+                                                echo ucfirst(str_replace('_', ' ', $appType));
+                                            }
+                                        } else {
+                                            echo ucfirst(str_replace('_', ' ', $appType));
+                                        }
+                                    ?>" readonly>
                                 </div>
                             </div>
 

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Class Field Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .button {
+            display: inline-block;
+            background-color: #4361ee;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .button:hover {
+            background-color: #3f37c9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fix Class/Level Field in Registration System</h1>
+    
+    <p>Click the buttons below to run the fix scripts:</p>
+    
+    <div>
+        <a href="check_db_structure.php" class="button">1. Check Database Structure</a>
+    </div>
+    
+    <div>
+        <a href="add_class_column.php" class="button">2. Add Class Column & Form Field</a>
+    </div>
+    
+    <div>
+        <a href="backends/student/registration/reg_form.php" class="button">3. Go to Registration Form</a>
+    </div>
+    
+    <div>
+        <a href="backends/admin/student_details.php?id=1" class="button">4. Check Student Details</a>
+    </div>
+    
+    <h2>Manual SQL Commands (if needed)</h2>
+    
+    <pre>
+    -- Add class column to students table
+    ALTER TABLE students ADD COLUMN class VARCHAR(50) NULL AFTER email;
+    
+    -- Add Class/Level field to registration form fields (kiddies)
+    INSERT INTO registration_form_fields 
+    (field_label, field_type, field_order, required, options, registration_type, field_category, is_active) 
+    VALUES ('Class/Level', 'text', 10, 1, '', 'kiddies', 'student_info', 1);
+    
+    -- Add Class/Level field to registration form fields (college)
+    INSERT INTO registration_form_fields 
+    (field_label, field_type, field_order, required, options, registration_type, field_category, is_active) 
+    VALUES ('Class/Level', 'text', 10, 1, '', 'college', 'student_info', 1);
+    </pre>
+</body>
+</html> 

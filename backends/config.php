@@ -6,10 +6,10 @@ define('DB_PASS', '');
 define('DB_NAME', 'ace_school_system');
 
 // Application Settings
-define('SCHOOL_NAME', 'ACE MODEL COLLEGE');
-define('SCHOOL_ADDRESS', 'Your School Address');
-define('SCHOOL_PHONE', 'Your School Phone');
-define('SCHOOL_EMAIL', 'your@email.com');
+define('SCHOOL_NAME', 'ACE COLLEGE');
+define('SCHOOL_ADDRESS', 'Beside Agodi Baptist Church Opposite Loyola College Second Gate, Odejayi Ibadan Oyo State');
+define('SCHOOL_PHONE', '+234 803 465 0368');
+define('SCHOOL_EMAIL', 'acemodelcollege@gmail.com');
 
 // Application Types
 define('APP_TYPE_KIDDIES', 'kiddies');

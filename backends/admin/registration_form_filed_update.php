@@ -7,6 +7,14 @@ require_once '../auth.php';
 $db = Database::getInstance();
 $conn = $db->getConnection();
 
+// Define field categories
+$fieldCategories = [
+    'student_info' => 'Student Information',
+    'parent_info' => 'Parent/Guardian Information',
+    'guardian_info' => 'Guardian Info (Optional)',
+    'medical_info' => 'Medical Background (Optional)'
+];
+
 // Handle form submission
 if (isset($_POST['submit_registration'])) {
     try {
@@ -69,6 +77,13 @@ if (isset($_POST['submit_registration'])) {
                 } elseif ($field['required']) {
                     throw new Exception("Required file missing for " . $field['field_label']);
                 }
+            } elseif ($field['field_type'] === 'checkbox' && isset($_POST[$field_name])) {
+                // Handle checkbox fields (multiple values as comma-separated)
+                if (is_array($_POST[$field_name])) {
+                    $field_data[$field['field_label']] = implode(', ', $_POST[$field_name]);
+                } else {
+                    $field_data[$field['field_label']] = $_POST[$field_name];
+                }
             } else {
                 // Handle other field types
                 $value = $_POST[$field_name] ?? '';
@@ -111,7 +126,7 @@ if (isset($_POST['submit_registration'])) {
 
     } catch (Exception $e) {
         $_SESSION['error_message'] = $e->getMessage();
-        header("Location: ../../student/registratoin/reg_form.php?type=" . $registrationType);
+        header("Location: ../../student/registration/reg_form.php?type=" . $registrationType);
         exit;
     }
 }
