@@ -1324,6 +1324,39 @@
 	        margin-bottom: 3px;
 	    }
 	}
+
+	/* Footer Styling Improvements */
+	#fh5co-footer {
+	    padding-top: 60px;
+	    padding-bottom: 30px;
+	}
+	
+	#fh5co-footer .fh5co-footer-links li a:hover {
+	    color: #d3ee06 !important;
+	    padding-left: 5px;
+	}
+	
+	#fh5co-footer .fh5co-footer-links li a:hover i {
+	    transform: translateX(3px);
+	}
+	
+	#fh5co-footer .fh5co-footer-links li a i {
+	    transition: transform 0.3s ease;
+	}
+	
+	.social-icon-link:hover {
+	    transform: translateY(-3px);
+	}
+	
+	@media (max-width: 768px) {
+	    #fh5co-footer .fh5co-widget {
+	        margin-bottom: 30px;
+	    }
+	    
+	    #fh5co-footer .address-container {
+	        margin-bottom: 20px;
+	    }
+	}
 	</style>
 
 	<!-- SEO Optimization Start -->
@@ -2071,55 +2104,73 @@
 		<div class="overlay"></div>
 		<div class="container">
 			<div class="row row-pb-md">
-				<div class="col-md-3 fh5co-widget" style="text-align:center;">
-					<img src="images/logo.png" alt="ACE College Logo" style="width:90px; height:65px; margin-bottom:15px; display:block; margin-left:auto; margin-right:auto;">
-					<h3>About ACE College</h3>
-					<p>ACE College is committed to providing quality education that develops academic excellence, moral values, and leadership skills in our students. Our dedicated staff and modern facilities create an ideal learning environment.</p>
+				<!-- About Section -->
+				<div class="col-md-4 col-sm-6 fh5co-widget">
+					<div style="text-align:center; margin-bottom: 20px;">
+						<img src="images/logo.png" alt="ACE College Logo" style="width:90px; height:65px; margin-bottom:15px; display:block; margin-left:auto; margin-right:auto;">
+						<h3 style="color: #fff; font-weight: 700; margin-bottom: 15px;">About ACE College</h3>
+						<p style="color: rgba(255,255,255,0.8); line-height: 1.7; font-size: 15px; margin-bottom: 25px; padding: 0 10px;">ACE College is committed to providing quality education that develops academic excellence, moral values, and leadership skills in our students. Our dedicated staff and modern facilities create an ideal learning environment.</p>
+					</div>
+				</div>
+
+				<!-- Quick Links -->
+				<div class="col-md-2 col-sm-6 col-xs-6 fh5co-widget">
+					<h3 style="color: #fff; font-weight: 700; margin-bottom: 20px; font-size: 18px;">Quick Links</h3>
+					<ul class="fh5co-footer-links" style="padding-left: 0; list-style: none;">
+						<li style="margin-bottom: 8px;"><a href="index.html" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Home</a></li>
+						<li style="margin-bottom: 8px;"><a href="gallery.html" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Gallery</a></li>
+						<li style="margin-bottom: 8px;"><a href="free_CBT/cbt.html" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Take CBT Test</a></li>
+						<li style="margin-bottom: 8px;"><a href="about.html" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>About</a></li>
+						<li style="margin-bottom: 8px;"><a href="contact.html" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Contact</a></li>
+					</ul>
+				</div>
+
+				<!-- Portals -->
+				<div class="col-md-2 col-sm-6 col-xs-6 fh5co-widget">
+					<h3 style="color: #fff; font-weight: 700; margin-bottom: 20px; font-size: 18px;">Portals</h3>
+					<ul class="fh5co-footer-links" style="padding-left: 0; list-style: none;">
+						<li style="margin-bottom: 8px;"><a href="apply.html" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Apply Now</a></li>
+						<li style="margin-bottom: 8px;"><a href="#" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Student Login</a></li>
+						<li style="margin-bottom: 8px;"><a href="#" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Parent Login</a></li>
+						<li style="margin-bottom: 8px;"><a href="#" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Teacher Login</a></li>
+						<li style="margin-bottom: 8px;"><a href="#" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Admin Login</a></li>
+					</ul>
+				</div>
+
+				<!-- Contact & Locations -->
+				<div class="col-md-4 col-sm-12 fh5co-widget">
+					<h3 style="color: #fff; font-weight: 700; margin-bottom: 20px; font-size: 18px;">Connect with Us</h3>
 					
-				</div>
-				<div class="col-md-2 col-sm-4 col-xs-6 col-md-push-1 fh5co-widget">
-					<h3>Quick Links</h3>
-					<ul class="fh5co-footer-links">
-						<li><a href="index.html">Home</a></li>
-						<li><a href="gallery.html">Gallery</a></li>
-						<li><a href="free_CBT/cbt.html">Take CBT Test</a></li>
-						<li><a href="about.html">About</a></li>
-						<li><a href="contact.html">Contact</a></li>
-					</ul>
-				</div>
-				<div class="col-md-2 col-sm-4 col-xs-6 col-md-push-1 fh5co-widget">
-					<h3>Portals</h3>
-					<ul class="fh5co-footer-links">
-						<li><a href="apply.html">Apply Now</a></li>
-						<li><a href="#">Student Login</a></li>
-						<li><a href="#">Parent Login</a></li>
-						<li><a href="#">Teacher Login</a></li>
-						<li><a href="#">Admin Login</a></li>
-					</ul>
-				</div>
-				<div class="col-md-2 col-sm-4 col-xs-6 col-md-push-1 fh5co-widget">
-					<h3>Connect with Us</h3>
-					<div style="margin: 18px 0 8px 0;">
-						<a href="https://www.facebook.com/profile.php?id=100083036906992" target="_blank" style="margin:0 8px; color:#3b5998; font-size:22px;"><i class="icon-facebook2"></i></a>
-						<a href="https://www.instagram.com/ace_model_college/" target="_blank" style="margin:0 8px; color:#E1306C; font-size:22px;"><i class="icon-instagram"></i></a>
-						<a href="https://www.youtube.com/@ace_model_college" target="_blank" style="margin:0 8px; color:#FF0000; font-size:22px;"><i class="icon-youtube"></i></a>
+					<!-- Social Media -->
+					<div style="margin-bottom: 20px; display: flex; align-items: center; justify-content: flex-start;">
+						<a href="https://www.facebook.com/profile.php?id=100083036906992" target="_blank" class="social-icon-link" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); margin-right: 10px; color: #3b5998; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+							<i class="icon-facebook2" style="font-size: 18px;"></i>
+						</a>
+						<a href="https://www.instagram.com/ace_model_college/" target="_blank" class="social-icon-link" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); margin-right: 10px; color: #E1306C; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+							<i class="icon-instagram" style="font-size: 18px;"></i>
+						</a>
+						<a href="https://www.youtube.com/@ace_model_college" target="_blank" class="social-icon-link" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); margin-right: 10px; color: #FF0000; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+							<i class="icon-youtube" style="font-size: 18px;"></i>
+						</a>
+						<a href="mailto:info@acecollege.com" style="display: inline-flex; align-items: center; color: rgba(255,255,255,0.8); margin-left: 5px;">
+							<i class="icon-mail" style="color:#d3ee06; margin-right: 8px;"></i> info@acecollege.com
+						</a>
 					</div>
-					<div style="margin-top:8px; font-size:15px; color:#d3ee06;">
-						<i class="icon-mail" style="margin-right:6px; color:#dbe20e;"></i> info@acecollege.com
-					</div>
-					<div style="margin-top:20px; font-size:15px; color:#fff;">
+					
+					<!-- Location Info -->
+					<div style="margin-top:15px; font-size:15px; color:#fff;">
 						<div class="address-container" style="box-shadow: 0 5px 15px rgba(0,0,0,0.25); border-radius: 12px; overflow: hidden; background: rgba(0,0,0,0.15);">
 							<h4 style="background: rgba(0,0,0,0.3); margin: 0; padding: 13px 15px; color: #d3ee06; font-weight: 700; font-size: 16px; letter-spacing: 1px; border-bottom: 2px solid rgba(211, 238, 6, 0.3); text-align: center;">
 								<i class="icon-map2" style="margin-right: 6px;"></i> OUR LOCATIONS
 							</h4>
 							<div style="padding: 15px;">
 								<div class="address-item" style="margin-bottom: 15px; border-radius: 6px; background: rgba(255,255,255,0.05); padding: 12px; transition: all 0.3s ease; border-left: 3px solid #d3ee06; cursor: pointer; display: flex;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.transform='translateX(5px)';this.style.borderLeftWidth='5px'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.transform='translateX(0)';this.style.borderLeftWidth='3px'">
-								<i class="icon-location" style="color:#d3ee06; font-size: 22px; padding: 4px; flex-shrink: 0;"></i> 
-								<div class="address-content" style="margin-left:12px; flex: 1;">
-									<span class="address-label" style="font-size: 16px; text-transform: uppercase; display: block; margin-bottom: 6px; color: #d3ee06; font-weight: 700;">College Campus:</span>
-									<span style="line-height: 1.6; display: block; color: rgba(255,255,255,0.9);">Beside Agodi Baptist Church Opposite Loyola College Second Gate, Odejayi Ibadan Oyo State</span>
+									<i class="icon-location" style="color:#d3ee06; font-size: 22px; padding: 4px; flex-shrink: 0;"></i> 
+									<div class="address-content" style="margin-left:12px; flex: 1;">
+										<span class="address-label" style="font-size: 16px; text-transform: uppercase; display: block; margin-bottom: 6px; color: #d3ee06; font-weight: 700;">College Campus:</span>
+										<span style="line-height: 1.6; display: block; color: rgba(255,255,255,0.9);">Beside Agodi Baptist Church Opposite Loyola College Second Gate, Odejayi Ibadan Oyo State</span>
+									</div>
 								</div>
-							</div>
 								<div class="address-item" style="border-radius: 6px; background: rgba(255,255,255,0.05); padding: 12px; transition: all 0.3s ease; border-left: 3px solid #d3ee06; cursor: pointer; display: flex;" onmouseover="this.style.background='rgba(255,255,255,0.1)';this.style.transform='translateX(5px)';this.style.borderLeftWidth='5px'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.transform='translateX(0)';this.style.borderLeftWidth='3px'">
 									<i class="icon-location" style="color:#d3ee06; font-size: 22px; padding: 4px; flex-shrink: 0;"></i> 
 									<div class="address-content" style="margin-left:12px; flex: 1;">
@@ -2134,11 +2185,13 @@
 					</div>
 				</div>
 			</div>
-			<div class="row copyright">
+
+			<!-- Copyright Section -->
+			<div class="row copyright" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
 				<div class="col-md-12 text-center">
-					<p>
+					<p style="color: rgba(255,255,255,0.6);">
 						<small class="block">&copy; <span id="footer-year"></span> ACE College. All Rights Reserved.</small> 
-						<small class="block"><a href="https://adeniyiolalekanportfolio.vercel.app/">Designed by ACE College IT Department <span><i class="icon-heart2" aria-hidden="true"></i>View Portfolio</span></a></small>
+						<small class="block"><a href="https://adeniyiolalekanportfolio.vercel.app/" style="color: rgba(255,255,255,0.8);">Designed by ACE College IT Department <span><i class="icon-heart2" aria-hidden="true" style="color: #d3ee06;"></i> View Portfolio</span></a></small>
 					</p>
 				</div>
 			</div>
@@ -2773,6 +2826,39 @@
 	    .address-item .address-label {
 	        display: block;
 	        margin-bottom: 3px;
+	    }
+	}
+
+	/* Footer Styling Improvements */
+	#fh5co-footer {
+	    padding-top: 60px;
+	    padding-bottom: 30px;
+	}
+	
+	#fh5co-footer .fh5co-footer-links li a:hover {
+	    color: #d3ee06 !important;
+	    padding-left: 5px;
+	}
+	
+	#fh5co-footer .fh5co-footer-links li a:hover i {
+	    transform: translateX(3px);
+	}
+	
+	#fh5co-footer .fh5co-footer-links li a i {
+	    transition: transform 0.3s ease;
+	}
+	
+	.social-icon-link:hover {
+	    transform: translateY(-3px);
+	}
+	
+	@media (max-width: 768px) {
+	    #fh5co-footer .fh5co-widget {
+	        margin-bottom: 30px;
+	    }
+	    
+	    #fh5co-footer .address-container {
+	        margin-bottom: 20px;
 	    }
 	}
 	</style>
