@@ -190,6 +190,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             margin-right: 5px;
         }
 
+        .registration-link {
+            display: inline-block;
+            color: var(--accent-color);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .registration-link:hover {
+            color: var(--primary-color);
+            text-decoration: none;
+            transform: translateY(-2px);
+        }
+
         .alert-danger {
             background-color: #fff0f0;
             color: #e53935;
@@ -224,6 +238,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
             </form>
             
             <div class="text-center">
+                <div class="mt-4 mb-3">
+                    <span class="text-muted">New student?</span>
+                    <a href="reg_form.php" class="registration-link">
+                        <i class="fas fa-user-plus mr-1"></i> Register Now
+                    </a>
+                </div>
+                
                 <a href="../../../index.html" class="homepage-link">
                     <i class="fas fa-home"></i> Back to Homepage
                 </a>

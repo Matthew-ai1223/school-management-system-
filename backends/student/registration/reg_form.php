@@ -248,6 +248,58 @@ foreach ($fields as $field) {
                 width: 50%;
             }
         }
+        
+        .registration-type-selector {
+            margin-bottom: 15px;
+        }
+        
+        .btn-group-lg > .btn {
+            padding: 15px 25px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-group-lg > .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-group-lg > .btn.btn-primary {
+            background-image: linear-gradient(135deg, #4e54c8, #3f51b5);
+            border: none;
+            color: white;
+        }
+        
+        .btn-group-lg > .btn.btn-outline-primary {
+            border-width: 2px;
+            font-weight: 600;
+            color: #4e54c8;
+            border-color: #4e54c8;
+        }
+        
+        .btn-group-lg > .btn.btn-outline-primary:hover {
+            background-color: #4e54c8;
+            color: white;
+        }
+        
+        .registration-confirmation {
+            background-color: #e8f0fe;
+            color: #3f51b5;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-top: 15px;
+            display: inline-block;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #4e54c8;
+        }
+        
+        .registration-confirmation i {
+            margin-right: 8px;
+            color: #4e54c8;
+        }
     </style>
 </head>
 <body>
@@ -258,13 +310,31 @@ foreach ($fields as $field) {
                     <div class="card-header">
                         <h3 class="text-center mb-3">Student Registration</h3>
                         <div class="text-center">
-                            <div class="btn-group">
-                                <a href="?type=kiddies" class="btn btn-<?php echo $registrationType === 'kiddies' ? 'primary' : 'outline-primary'; ?>">
-                                    <i class="fas fa-child me-2"></i>Ace Kiddies
-                                </a>
-                                <a href="?type=college" class="btn btn-<?php echo $registrationType === 'college' ? 'primary' : 'outline-primary'; ?>">
-                                    <i class="fas fa-graduation-cap me-2"></i>Ace College
-                                </a>
+                            <div class="registration-type-selector">
+                                <div class="guidance-text mb-3">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>Please select your school type:</strong> 
+                                        Choose "Ace Kiddies" for primary school students or "Ace College" for secondary school students.
+                                    </div>
+                                </div>
+                                <div class="btn-group btn-group-lg">
+                                    <a href="?type=kiddies" class="btn btn-<?php echo $registrationType === 'kiddies' ? 'primary' : 'outline-primary'; ?> fw-bold">
+                                        <i class="fas fa-child me-2"></i>Ace Kiddies
+                                    </a>
+                                    <a href="?type=college" class="btn btn-<?php echo $registrationType === 'college' ? 'primary' : 'outline-primary'; ?> fw-bold">
+                                        <i class="fas fa-graduation-cap me-2"></i>Ace College
+                                    </a>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="registration-confirmation">
+                                        <?php if($registrationType === 'kiddies'): ?>
+                                            <i class="fas fa-info-circle"></i> You are registering for <strong>Ace Kiddies</strong> (Primary School)
+                                        <?php else: ?>
+                                            <i class="fas fa-info-circle"></i> You are registering for <strong>Ace College</strong> (Secondary School)
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -301,7 +371,8 @@ foreach ($fields as $field) {
                         <div id="paymentVerificationForm" class="form-section">
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
-                                Please enter your payment reference to proceed with registration.
+                                Please enter your payment reference to proceed with registration. <br>
+                                <strong>Note:</strong> Use your card number as the payment reference or the payment reference number on your application receipt.
                             </div>
                             <form id="verifyPaymentForm" onsubmit="return verifyPayment(event)">
                                 <div class="mb-3">

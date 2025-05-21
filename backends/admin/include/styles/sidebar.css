@@ -1,0 +1,420 @@
+/* Reset and Base Styles */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+body.sidebar-open {
+    overflow: hidden;
+}
+
+.sidebar {
+    min-height: 100vh;
+    height: 100%;
+    width: 260px;
+    background: #1e2a3a;
+    color: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1030;
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    padding: 1rem;
+}
+
+/* Logo Styles */
+.logo-container {
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 0;
+}
+
+.logo-container h3 {
+    color: white;
+    font-size: 1.4rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.logo-underline {
+    height: 3px;
+    background: linear-gradient(90deg, #4CAF50 0%, rgba(76, 175, 80, 0) 100%);
+    margin-top: 5px;
+    width: 50%;
+    transition: width 0.3s ease;
+}
+
+.logo-container:hover .logo-underline {
+    width: 80%;
+}
+
+/* User Info Styles */
+.user-info {
+    padding: 1rem 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(76, 175, 80, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(76, 175, 80, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.user-avatar i {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.user-details {
+    flex: 1;
+    overflow: hidden;
+}
+
+.user-details h5 {
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 1rem;
+    color: white;
+    font-weight: 500;
+}
+
+.welcome-text {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 5px;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(76, 175, 80, 0.2);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Navigation Styles */
+.sidebar-nav {
+    padding-bottom: 2rem;
+}
+
+.sidebar-nav .nav-item {
+    margin-bottom: 5px;
+    position: relative;
+}
+
+.sidebar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    color: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: 400;
+    position: relative;
+}
+
+.sidebar-nav .nav-link:hover, 
+.sidebar-nav .nav-link:focus {
+    color: white;
+    background-color: rgba(76, 175, 80, 0.15);
+    text-decoration: none;
+}
+
+.sidebar-nav .nav-link.active,
+.sidebar-nav .nav-item.active > .nav-link:not(.has-dropdown) {
+    color: white;
+    background-color: rgba(76, 175, 80, 0.25);
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-nav .nav-link i:first-child {
+    margin-right: 10px;
+    font-size: 1.1rem;
+    min-width: 20px;
+    text-align: center;
+    color: rgba(76, 175, 80, 0.8);
+}
+
+.sidebar-nav .nav-link span {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Dropdown Menu Styles */
+.sidebar-nav .dropdown-icon {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.sidebar-nav .has-dropdown.open .dropdown-icon {
+    transform: rotate(180deg);
+}
+
+.sidebar-nav .dropdown-menu {
+    list-style: none;
+    padding: 0;
+    padding-left: 2rem;
+    margin: 0.5rem 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease, margin 0.5s ease;
+    display: block;
+    background-color: #000000;
+    border-radius: 6px;
+}
+
+.sidebar-nav .nav-item.active > .dropdown-menu {
+    max-height: 1000px;
+    margin: 0.5rem 0;
+    border-left: 2px solid rgba(76, 175, 80, 0.5);
+}
+
+.sidebar-nav .dropdown-menu li {
+    margin: 5px 0;
+}
+
+.sidebar-nav .dropdown-menu a {
+    display: block;
+    padding: 8px 12px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+.sidebar-nav .dropdown-menu a:hover,
+.sidebar-nav .dropdown-menu a:focus {
+    color: #4CAF50;
+    background-color: #121212;
+    text-decoration: none;
+    padding-left: 15px;
+}
+
+.sidebar-nav .dropdown-menu a.active {
+    color: white;
+    background-color: rgba(76, 175, 80, 0.25);
+    font-weight: 500;
+}
+
+.sidebar-nav .dropdown-menu a.active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 70%;
+    background-color: #4CAF50;
+    border-radius: 0 3px 3px 0;
+}
+
+/* Sidebar Menu Active Indicator */
+.sidebar-nav .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 70%;
+    width: 4px;
+    background-color: #4CAF50;
+    border-radius: 0 4px 4px 0;
+    opacity: 0.7;
+}
+
+/* Logout Button */
+.sidebar-nav .nav-link.text-danger {
+    color: #ff6b6b;
+    font-weight: 500;
+    margin-top: 1rem;
+}
+
+.sidebar-nav .nav-link.text-danger:hover {
+    background-color: rgba(255, 107, 107, 0.1);
+    color: #ff8585;
+}
+
+.sidebar-nav .nav-link.text-danger i {
+    color: #ff6b6b;
+}
+
+/* Badge Styles */
+.badge {
+    display: inline-block;
+    padding: 3px 6px;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 10px;
+    margin-left: 5px;
+}
+
+.badge-danger {
+    color: white;
+    background-color: #e74c3c;
+}
+
+/* Toggle Button Styles */
+.sidebar-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1031;
+    padding: 10px;
+    border-radius: 6px;
+    background: #1e2a3a;
+    border: none;
+    transition: all 0.2s ease;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+.sidebar-toggle i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.sidebar-toggle:hover,
+.sidebar-toggle:focus {
+    background: #2a3b4d;
+    outline: none;
+}
+
+/* Close Button */
+#sidebar-close {
+    display: none;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+#sidebar-close:hover,
+#sidebar-close:focus {
+    color: white;
+    outline: none;
+}
+
+/* Overlay */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1029;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    display: block;
+    opacity: 1;
+}
+
+/* Responsive Styles */
+@media (max-width: 767.98px) {
+    .sidebar {
+        transform: translateX(-105%);
+        width: 85%;
+        max-width: 300px;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .sidebar-toggle {
+        display: flex;
+    }
+    
+    #sidebar-close {
+        display: block;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .sidebar {
+        transform: translateX(0) !important;
+    }
+    
+    .main-content {
+        margin-left: 260px;
+        width: calc(100% - 260px);
+        transition: margin 0.3s ease, width 0.3s ease;
+    }
+}
+
+/* Scrollbar Styles */
+.sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.sidebar-nav {
+    animation: fadeIn 0.3s ease;
+} 

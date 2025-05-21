@@ -4,7 +4,7 @@ require_once '../config.php';
 
 $auth = new Auth();
 
-if ($auth->isLoggedIn()) {
+if ($auth->isLoggedIn() && $_SESSION['role'] == 'admin') {
     header('Location: dashboard.php');
     exit();
 }
@@ -18,11 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($username) || empty($password)) {
         $error = 'Please enter both username and password';
     } else {
-        if ($auth->login($username, $password)) {
+        if ($auth->adminLogin($username, $password)) {
             header('Location: dashboard.php');
             exit();
         } else {
-            $error = 'Invalid username or password';
+            $error = 'Invalid admin credentials';
         }
     }
 }

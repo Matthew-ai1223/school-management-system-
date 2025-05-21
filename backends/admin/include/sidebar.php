@@ -4,14 +4,36 @@ if (!isset($user)) {
     $auth = new Auth();
     $user = $auth->getCurrentUser();
 }
+
+// Initialize database connection if not already available
+if (!isset($conn)) {
+    require_once __DIR__ . '/../../database.php';
+    $db = Database::getInstance();
+    $conn = $db->getConnection();
+}
+
+// Create styles directory if it doesn't exist
+$stylesDir = __DIR__ . '/styles';
+if (!file_exists($stylesDir)) {
+    mkdir($stylesDir, 0755, true);
+}
+
+// Determine current page for active state
+$currentPage = basename($_SERVER['PHP_SELF']);
 ?>
+<!-- Sidebar CSS -->
+<link rel="stylesheet" href="include/styles/sidebar.css">
+
 <!-- Mobile Toggle Button -->
 <button class="btn btn-dark d-md-none sidebar-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="sidebar">
     <i class="bi bi-list"></i>
 </button>
 
-<div class="col-md-3 col-lg-2 sidebar p-3" id="sidebar" role="navigation" aria-label="Main navigation">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Overlay for mobile -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="logo-container">
             <h3 class="mb-0" title="<?php echo SCHOOL_NAME; ?>"><?php echo SCHOOL_NAME; ?></h3>
             <div class="logo-underline"></div>
@@ -19,422 +41,261 @@ if (!isset($user)) {
         <button class="btn-close d-md-none" id="sidebar-close" aria-label="Close navigation menu"></button>
     </div>
     
-    <div class="user-info mb-4">
+    <div class="user-info">
         <div class="user-avatar">
             <i class="bi bi-person-circle"></i>
         </div>
         <div class="user-details">
             <p class="welcome-text mb-1">Welcome,</p>
             <h5 title="<?php echo $user['name']; ?>"><?php echo $user['name']; ?></h5>
-            <span class="role-badge"><?php echo ucfirst($user['role']); ?></span>
+            <span class="role-badge"><?php echo ucfirst((string)$user['role']); ?></span>
         </div>
     </div>
 
-    <ul class="nav flex-column" role="list">
-        <li class="nav-item" role="listitem">
-            <a href="dashboard.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'dashboard.php' ? 'page' : 'false'; ?>">
-                <i class="bi bi-speedometer2"></i>
-                <span class="nav-text">Dashboard</span>
-                <span class="hover-indicator"></span>
-            </a>
-        </li>
-        <li class="nav-item" role="listitem">
-            <a href="students.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'students.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'students.php' ? 'page' : 'false'; ?>">
-                <i class="bi bi-people"></i>
-                <span class="nav-text">Students</span>
-                <span class="hover-indicator"></span>
-            </a>
-        </li>
-        <li class="nav-item" role="listitem">
-            <a href="applications.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'applications.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'applications.php' ? 'page' : 'false'; ?>">
-                <i class="bi bi-file-text"></i>
-                <span class="nav-text">Applications</span>
-                <span class="hover-indicator"></span>
-            </a>
-        </li>
-        <li class="nav-item" role="listitem">
-            <a href="application_form_filed_update.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'application_form_filed_update.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'application_form_filed_update.php' ? 'page' : 'false'; ?>">
-                <i class="bi bi-list-check"></i>
-                <span class="nav-text">Application Fields</span>
-                <span class="hover-indicator"></span>
-            </a>
-        </li>
-        <li class="nav-item" role="listitem">
-            <a href="registration_form_filed_update.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'registration_form_filed_update.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'registration_form_filed_update.php' ? 'page' : 'false'; ?>">
-                <i class="bi bi-card-checklist"></i>
-                <span class="nav-text">Registration Fields</span>
-                <span class="hover-indicator"></span>
-            </a>
-        </li>
-        <li class="nav-item" role="listitem">
-            <a href="payments.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'payments.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'payments.php' ? 'page' : 'false'; ?>">
-                <i class="bi bi-cash"></i>
-                <span class="nav-text">Payments</span>
-                <span class="hover-indicator"></span>
-            </a>
-        </li>
-        <li class="nav-item" role="listitem">
-            <a href="exams.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'exams.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'exams.php' ? 'page' : 'false'; ?>">
-                <i class="bi bi-pencil-square"></i>
-                <span class="nav-text">Exams</span>
-                <span class="hover-indicator"></span>
-            </a>
-        </li>
-        <li class="nav-item" role="listitem">
-            <a href="users.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'users.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'users.php' ? 'page' : 'false'; ?>">
-                <i class="bi bi-person"></i>
-                <span class="nav-text">Users</span>
-                <span class="hover-indicator"></span>
-            </a>
-        </li>
-        <li class="nav-item" role="listitem">
-            <a href="settings.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'active' : ''; ?>" aria-current="<?php echo basename($_SERVER['PHP_SELF']) === 'settings.php' ? 'page' : 'false'; ?>">
-                <i class="bi bi-gear"></i>
-                <span class="nav-text">Settings</span>
-                <span class="hover-indicator"></span>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="registration_number_settings.php" class="nav-link">
-                <i class="bi bi-123"></i> Registration Numbers
-            </a>
-        </li>
-        <li class="nav-item mt-4" role="listitem">
-            <a href="logout.php" class="nav-link text-danger" onclick="return confirm('Are you sure you want to logout?')">
-                <i class="bi bi-box-arrow-right"></i>
-                <span class="nav-text">Logout</span>
-                <span class="hover-indicator"></span>
-            </a>
-        </li>
-    </ul>
+    <nav class="sidebar-nav">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a href="dashboard.php" class="nav-link <?php echo $currentPage === 'dashboard.php' ? 'active' : ''; ?>">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            
+            <!-- Students -->
+            <li class="nav-item <?php echo in_array($currentPage, ['students.php', 'student_details.php', 'edit_student.php']) ? 'active' : ''; ?>">
+                <a href="#students-menu" class="nav-link has-dropdown <?php echo in_array($currentPage, ['students.php', 'student_details.php', 'edit_student.php']) ? 'open' : ''; ?>">
+                    <i class="bi bi-people"></i>
+                    <span>Students</span>
+                    <i class="dropdown-icon bi bi-chevron-down"></i>
+                </a>
+                <ul class="dropdown-menu" id="students-menu">
+                    <li><a href="students.php" class="<?php echo $currentPage === 'students.php' ? 'active' : ''; ?>">All Students</a></li>
+                    <!-- <li><a href="student_details.php" class="<?php echo $currentPage === 'student_details.php' ? 'active' : ''; ?>">Student Details</a></li> -->
+                </ul>
+            </li>
+            
+            <!-- Applications -->
+            <li class="nav-item <?php echo in_array($currentPage, ['applications.php', 'view_application.php', 'download_application_pdf.php']) ? 'active' : ''; ?>">
+                <a href="#applications-menu" class="nav-link has-dropdown <?php echo in_array($currentPage, ['applications.php', 'view_application.php', 'download_application_pdf.php']) ? 'open' : ''; ?>">
+                    <i class="bi bi-file-text"></i>
+                    <span>Applications</span>
+                    <i class="dropdown-icon bi bi-chevron-down"></i>
+                </a>
+                <ul class="dropdown-menu" id="applications-menu">
+                    <li><a href="applications.php" class="<?php echo $currentPage === 'applications.php' ? 'active' : ''; ?>">All Applications</a></li>
+                    <!-- <li><a href="view_application.php" class="<?php echo $currentPage === 'view_application.php' ? 'active' : ''; ?>">View Application</a></li>
+                    <li><a href="download_application_pdf.php" class="<?php echo $currentPage === 'download_application_pdf.php' ? 'active' : ''; ?>">Download PDF</a></li> -->
+                </ul>
+            </li>
+            
+            <!-- Forms -->
+            <li class="nav-item <?php echo in_array($currentPage, ['application_form_filed_update.php', 'registration_form_filed_update.php', 'registration_form_management.php']) ? 'active' : ''; ?>">
+                <a href="#forms-menu" class="nav-link has-dropdown <?php echo in_array($currentPage, ['application_form_filed_update.php', 'registration_form_filed_update.php', 'registration_form_management.php']) ? 'open' : ''; ?>">
+                    <i class="bi bi-list-check"></i>
+                    <span>Form Management</span>
+                    <i class="dropdown-icon bi bi-chevron-down"></i>
+                </a>
+                <ul class="dropdown-menu" id="forms-menu">
+                    <li><a href="application_form_filed_update.php" class="<?php echo $currentPage === 'application_form_filed_update.php' ? 'active' : ''; ?>">Application Fields</a></li>
+                    <li><a href="registration_form_filed_update.php" class="<?php echo $currentPage === 'registration_form_filed_update.php' ? 'active' : ''; ?>">Registration Fields</a></li>
+                    <!-- <li><a href="registration_form_management.php" class="<?php echo $currentPage === 'registration_form_management.php' ? 'active' : ''; ?>">Form Management</a></li> -->
+                </ul>
+            </li>
+            
+            <!-- Payments -->
+            <li class="nav-item <?php echo in_array($currentPage, ['payments.php', 'payment_details.php', 'payment_verification.php', 'update_student_payment.php']) ? 'active' : ''; ?>">
+                <a href="#payments-menu" class="nav-link has-dropdown <?php echo in_array($currentPage, ['payments.php', 'payment_details.php', 'payment_verification.php', 'update_student_payment.php']) ? 'open' : ''; ?>">
+                    <i class="bi bi-cash"></i>
+                    <span>Payments</span>
+                    <i class="dropdown-icon bi bi-chevron-down"></i>
+                </a>
+                <ul class="dropdown-menu" id="payments-menu">
+                    <li><a href="payments.php" class="<?php echo $currentPage === 'payments.php' ? 'active' : ''; ?>">All Payments</a></li>
+                    <li><a href="payment_details.php" class="<?php echo $currentPage === 'payment_details.php' ? 'active' : ''; ?>">Payment Details</a></li>
+                    <li><a href="payment_verification.php" class="<?php echo $currentPage === 'payment_verification.php' ? 'active' : ''; ?>">Verify Payments</a></li>
+                    <li><a href="update_student_payment.php" class="<?php echo $currentPage === 'update_student_payment.php' ? 'active' : ''; ?>">Update Student Payment</a></li>
+                </ul>
+            </li>
+            
+            <!-- Exams -->
+            <li class="nav-item <?php echo in_array($currentPage, ['exams.php', 'exam_details.php', 'edit_exam.php']) ? 'active' : ''; ?>">
+                <a href="#exams-menu" class="nav-link has-dropdown <?php echo in_array($currentPage, ['exams.php', 'exam_details.php', 'edit_exam.php']) ? 'open' : ''; ?>">
+                    <i class="bi bi-pencil-square"></i>
+                    <span>Exams</span>
+                    <i class="dropdown-icon bi bi-chevron-down"></i>
+                </a>
+                <ul class="dropdown-menu" id="exams-menu">
+                    <li><a href="exams.php" class="<?php echo $currentPage === 'exams.php' ? 'active' : ''; ?>">All Exams</a></li>
+                    <li><a href="exam_details.php" class="<?php echo $currentPage === 'exam_details.php' ? 'active' : ''; ?>">Exam Details</a></li>
+                    <li><a href="edit_exam.php" class="<?php echo $currentPage === 'edit_exam.php' ? 'active' : ''; ?>">Edit Exam</a></li>
+                </ul>
+            </li>
+            
+            <!-- Staff -->
+            <li class="nav-item <?php echo in_array($currentPage, ['manage_teachers.php', 'pending_teachers.php', 'class_teachers.php']) ? 'active' : ''; ?>">
+                <a href="#staff-menu" class="nav-link has-dropdown <?php echo in_array($currentPage, ['manage_teachers.php', 'pending_teachers.php', 'class_teachers.php']) ? 'open' : ''; ?>">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Staff Management</span>
+                    <i class="dropdown-icon bi bi-chevron-down"></i>
+                </a>
+                <ul class="dropdown-menu" id="staff-menu">
+                    <li><a href="manage_teachers.php" class="<?php echo $currentPage === 'manage_teachers.php' ? 'active' : ''; ?>">Manage Teachers</a></li>
+                    <li>
+                        <a href="pending_teachers.php" class="<?php echo $currentPage === 'pending_teachers.php' ? 'active' : ''; ?>">
+                            Pending Registrations
+                            <?php 
+                            // Count pending teacher registrations
+                            $pendingCount = 0;
+                            $countQuery = "SELECT COUNT(*) as count FROM users WHERE role = 'teacher' AND status = 'pending'";
+                            $countResult = $conn->query($countQuery);
+                            if ($countResult && $countResult->num_rows > 0) {
+                                $pendingCount = $countResult->fetch_assoc()['count'];
+                            }
+                            if ($pendingCount > 0): 
+                            ?>
+                            <span class="badge badge-danger"><?php echo $pendingCount; ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+                    <li><a href="class_teachers.php" class="<?php echo $currentPage === 'class_teachers.php' ? 'active' : ''; ?>">Class Teachers</a></li>
+                </ul>
+            </li>
+            
+            <!-- System -->
+            <li class="nav-item <?php echo in_array($currentPage, ['users.php', 'settings.php', 'registration_number_settings.php', 'setup_admin.php']) ? 'active' : ''; ?>">
+                <a href="#system-menu" class="nav-link has-dropdown <?php echo in_array($currentPage, ['users.php', 'settings.php', 'registration_number_settings.php', 'setup_admin.php']) ? 'open' : ''; ?>">
+                    <i class="bi bi-gear"></i>
+                    <span>System</span>
+                    <i class="dropdown-icon bi bi-chevron-down"></i>
+                </a>
+                <ul class="dropdown-menu" id="system-menu">
+                    <li><a href="users.php" class="<?php echo $currentPage === 'users.php' ? 'active' : ''; ?>">Users</a></li>
+                    <li><a href="settings.php" class="<?php echo $currentPage === 'settings.php' ? 'active' : ''; ?>">Settings</a></li>
+                    <li><a href="registration_number_settings.php" class="<?php echo $currentPage === 'registration_number_settings.php' ? 'active' : ''; ?>">Registration Numbers</a></li>
+                    <li><a href="setup_admin.php" class="<?php echo $currentPage === 'setup_admin.php' ? 'active' : ''; ?>">Setup Admin</a></li>
+                </ul>
+            </li>
+            
+            <!-- Logout -->
+            <li class="nav-item mt-4">
+                <a href="logout.php" class="nav-link text-danger" onclick="return confirm('Are you sure you want to logout?')">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </div>
 
-<style>
-/* Base Sidebar Styles */
-.sidebar {
-    min-height: 100vh;
-    background: linear-gradient(145deg, #2c3338, #343a40);
-    color: white;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-y: auto;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
-}
-
-/* Logo Styles */
-.logo-container {
-    position: relative;
-}
-
-.logo-underline {
-    height: 2px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
-    margin-top: 5px;
-    width: 50%;
-    transition: width 0.3s ease;
-}
-
-.logo-container:hover .logo-underline {
-    width: 80%;
-}
-
-/* Sidebar Toggle Button */
-.sidebar-toggle {
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    z-index: 1031;
-    padding: 0.75rem;
-    border-radius: 12px;
-    backdrop-filter: blur(10px);
-    background: rgba(33, 37, 41, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 45px;
-    height: 45px;
-}
-
-.sidebar-toggle i {
-    font-size: 1.5rem;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.sidebar-toggle:hover {
-    background: rgba(33, 37, 41, 1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-1px);
-}
-
-.sidebar-toggle:active {
-    transform: scale(0.95);
-}
-
-.sidebar-toggle[aria-expanded="true"] i {
-    transform: rotate(90deg);
-}
-
-/* User Info Styles */
-.user-info {
-    padding: 1.5rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.user-avatar {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.user-avatar i {
-    font-size: 1.5rem;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.user-details {
-    flex: 1;
-}
-
-.welcome-text {
-    font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.6);
-    margin-bottom: 0.25rem;
-}
-
-.role-badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 1rem;
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-/* Navigation Links */
-.sidebar .nav-link {
-    color: rgba(255, 255, 255, 0.8);
-    padding: 0.75rem 1rem;
-    border-radius: 0.75rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    margin-bottom: 0.375rem;
-    display: flex;
-    align-items: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.sidebar .nav-link:hover {
-    color: white;
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(5px);
-}
-
-.sidebar .nav-link.active {
-    color: white;
-    background: rgba(255, 255, 255, 0.15);
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar .nav-link i {
-    margin-right: 0.75rem;
-    font-size: 1.1rem;
-    width: 1.5rem;
-    text-align: center;
-    transition: transform 0.2s ease;
-}
-
-.sidebar .nav-link:hover i {
-    transform: scale(1.1);
-}
-
-.hover-indicator {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 100%);
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-}
-
-.sidebar .nav-link:hover .hover-indicator {
-    transform: translateX(0);
-}
-
-/* Mobile sidebar styles */
-@media (max-width: 767.98px) {
-    .sidebar {
-        transform: translateX(-100%);
-        width: 80% !important;
-        max-width: 300px;
-    }
-    
-    .main-content {
-        margin-left: 0 !important;
-        width: 100% !important;
-    }
-    
-    #sidebar-close {
-        display: block !important;
-    }
-}
-
-@media (min-width: 768px) {
-    .sidebar {
-        transform: translateX(0) !important;
-    }
-    
-    .sidebar-toggle {
-        display: none !important;
-    }
-    
-    #sidebar-close {
-        display: none !important;
-    }
-    
-    .main-content {
-        margin-left: 25%;
-    }
-}
-
-@media (min-width: 992px) {
-    .main-content {
-        margin-left: 16.666667%;
-    }
-}
-
-/* Scrollbar Styles */
-.sidebar::-webkit-scrollbar {
-    width: 5px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
-}
-
-/* Animations */
-@keyframes slideIn {
-    from { transform: translateX(-100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(-100%); opacity: 0; }
-}
-
-.sidebar.animating-in {
-    animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-.sidebar.animating-out {
-    animation: slideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-/* Loading State */
-.nav-link.loading {
-    position: relative;
-    overflow: hidden;
-}
-
-.nav-link.loading::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.1),
-        transparent
-    );
-    animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-}
-
-/* Add focus styles for accessibility */
-.sidebar-toggle:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25), 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Add touch target size for mobile */
-@media (max-width: 576px) {
-    .sidebar-toggle {
-        width: 50px;
-        height: 50px;
-    }
-}
-</style>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Mobile sidebar toggle
-        const toggleButton = document.querySelector('.sidebar-toggle');
-        const sidebar = document.getElementById('sidebar');
-        const closeButton = document.getElementById('sidebar-close');
+/**
+ * Sidebar Navigation Script
+ * Handles sidebar functionality including dropdowns, mobile responsiveness, and smooth scrolling
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const toggleButton = document.querySelector('.sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const closeButton = document.getElementById('sidebar-close');
+    const overlay = document.getElementById('sidebar-overlay');
+    const dropdownLinks = document.querySelectorAll('.sidebar-nav .has-dropdown');
+    const navLinks = document.querySelectorAll('.sidebar-nav .nav-link:not(.has-dropdown)');
+    
+    // Toggle sidebar on mobile devices
+    function toggleSidebar() {
+        const isVisible = sidebar.classList.contains('show');
         
-        if (toggleButton && sidebar) {
-            toggleButton.addEventListener('click', function() {
-                const isExpanded = this.getAttribute('aria-expanded') === 'true';
-                this.setAttribute('aria-expanded', !isExpanded);
-                
-                if (window.innerWidth < 768) {
-                    sidebar.style.transform = isExpanded ? 'translateX(-100%)' : 'translateX(0)';
-                    document.body.style.overflow = isExpanded ? '' : 'hidden';
+        if (isVisible) {
+            hideSidebar();
+        } else {
+            showSidebar();
+        }
+    }
+    
+    // Show sidebar on mobile
+    function showSidebar() {
+        sidebar.classList.add('show');
+        overlay.classList.add('show');
+        document.body.classList.add('sidebar-open');
+        
+        if (toggleButton) {
+            toggleButton.setAttribute('aria-expanded', 'true');
+        }
+    }
+    
+    // Hide sidebar on mobile
+    function hideSidebar() {
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+        document.body.classList.remove('sidebar-open');
+        
+        if (toggleButton) {
+            toggleButton.setAttribute('aria-expanded', 'false');
+        }
+    }
+    
+    // Event Listeners
+    if (toggleButton) {
+        toggleButton.addEventListener('click', toggleSidebar);
+    }
+    
+    if (closeButton) {
+        closeButton.addEventListener('click', hideSidebar);
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', hideSidebar);
+    }
+    
+    // Handle dropdown toggling
+    dropdownLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const parentItem = this.closest('.nav-item');
+            
+            // Toggle current dropdown
+            this.classList.toggle('open');
+            parentItem.classList.toggle('active');
+            
+            // If you want only one dropdown open at a time, uncomment this:
+            /*
+            dropdownLinks.forEach(otherLink => {
+                if (otherLink !== link) {
+                    otherLink.classList.remove('open');
+                    otherLink.closest('.nav-item').classList.remove('active');
                 }
             });
-        }
-        
-        if (closeButton && sidebar) {
-            closeButton.addEventListener('click', function() {
-                sidebar.style.transform = 'translateX(-100%)';
-                document.body.style.overflow = '';
-                
-                if (toggleButton) {
-                    toggleButton.setAttribute('aria-expanded', 'false');
-                }
-            });
-        }
-        
-        // Handle resize events to reset sidebar state on window resize
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 768) {
-                sidebar.style.transform = '';
-                document.body.style.overflow = '';
-            } else if (sidebar.style.transform === '') {
-                sidebar.style.transform = 'translateX(-100%)';
+            */
+        });
+    });
+    
+    // Close sidebar when clicking regular links on mobile
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth < 768) {
+                setTimeout(hideSidebar, 150);
             }
         });
     });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 768) {
+            hideSidebar();
+        }
+    });
+    
+    // Scroll to active menu item
+    const activeNavItem = document.querySelector('.sidebar-nav .nav-item.active');
+    if (activeNavItem) {
+        setTimeout(() => {
+            activeNavItem.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest'
+            });
+        }, 300);
+    }
+});
 </script> 

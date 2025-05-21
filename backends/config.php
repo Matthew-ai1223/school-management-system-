@@ -7,7 +7,8 @@ define('DB_NAME', 'ace_school_system');
 
 // Application Settings
 define('SCHOOL_NAME', 'ACE COLLEGE');
-define('SCHOOL_ADDRESS', 'Beside Agodi Baptist Church Opposite Loyola College Second Gate, Odejayi Ibadan Oyo State');
+define('SCHOOL_SHORT_NAME', 'ACE');
+define('SCHOOL_ADDRESS', 'Beside Agodi Baptist Church Opposite Loyola College Second Gate, Odejayi Ibadan');
 define('SCHOOL_PHONE', '+234 803 465 0368');
 define('SCHOOL_EMAIL', 'acemodelcollege@gmail.com');
 

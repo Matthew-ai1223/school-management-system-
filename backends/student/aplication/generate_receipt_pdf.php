@@ -51,7 +51,7 @@ class ApplicationPDF extends FPDF {
         // Add slogan
         $this->SetFont("Arial", "I", 12);
         $this->SetTextColor(128, 128, 128); // Gray color
-        $this->Cell(($this->hasLogo ? 165 : 190), 8, '"Excellent with Integrity"', 0, 1, "C");
+        $this->Cell(($this->hasLogo ? 165 : 190), 8, 'Motto: Excellence with Integrity', 0, 1, "C");
         
         // Add decorative line
         $this->SetDrawColor(0, 51, 102); // Navy blue

@@ -1,6 +1,7 @@
 <?php
 require_once '../../config.php';
 require_once '../../database.php';
+require_once '../../utils.php';  // Add this line to include the utils file
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
@@ -22,12 +23,67 @@ $registration_number = $_SESSION['registration_number'];
 $db = Database::getInstance();
 $conn = $db->getConnection();
 
-// Get student details
-$stmt = $conn->prepare("SELECT * FROM students WHERE id = ?");
+// Ensure both admission_number and registration_number columns exist
+ensureStudentNumberColumns($conn);
+
+// Get student details - using a more robust approach
+$stmt = $conn->prepare("SELECT *, COALESCE(admission_number, registration_number) AS display_number FROM students WHERE id = ?");
+if (!$stmt) {
+    die("Error preparing statement: " . $conn->error);
+}
+
+$stmt->bind_param("i", $student_id);
+$result = $stmt->execute();
+if (!$result) {
+    die("Error executing query: " . $stmt->error);
+}
+
+$studentResult = $stmt->get_result();
+if ($studentResult->num_rows === 0) {
+    // No student found with this ID
+    $student = null;
+    $_SESSION['error'] = "Student record not found. Please contact administration.";
+} else {
+    $student = $studentResult->fetch_assoc();
+    // Store for debug
+    $_SESSION['debug_raw_student'] = $student;
+}
+
+// Get teacher activities for this student
+$activitiesQuery = "SELECT cta.*, ct.user_id as teacher_user_id
+                   FROM class_teacher_activities cta
+                   JOIN class_teachers ct ON cta.class_teacher_id = ct.id
+                   WHERE cta.student_id = ?
+                   ORDER BY cta.activity_date DESC, cta.created_at DESC
+                   LIMIT 10";
+
+$stmt = $conn->prepare($activitiesQuery);
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
-$result = $stmt->get_result();
-$student = $result->fetch_assoc();
+$activitiesResult = $stmt->get_result();
+$teacherActivities = [];
+
+while ($row = $activitiesResult->fetch_assoc()) {
+    $teacherActivities[] = $row;
+}
+
+// Get teacher comments for this student
+$commentsQuery = "SELECT ctc.*, ct.user_id as teacher_user_id
+                  FROM class_teacher_comments ctc
+                  JOIN class_teachers ct ON ctc.class_teacher_id = ct.id
+                  WHERE ctc.student_id = ?
+                  ORDER BY ctc.created_at DESC
+                  LIMIT 10";
+
+$stmt = $conn->prepare($commentsQuery);
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+$commentsResult = $stmt->get_result();
+$teacherComments = [];
+
+while ($row = $commentsResult->fetch_assoc()) {
+    $teacherComments[] = $row;
+}
 
 // Initialize student photo from database
 $student_photo = '';
@@ -147,6 +203,56 @@ if ($payments_result && $payments_result->num_rows > 0) {
 function formatDate($date) {
     return date('M d, Y', strtotime($date));
 }
+
+// Debug student data
+if (isset($student)) {
+    $_SESSION['student_debug'] = [
+        'id' => $student['id'] ?? 'N/A',
+        'first_name' => $student['first_name'] ?? 'N/A',
+        'last_name' => $student['last_name'] ?? 'N/A',
+        'registration_number' => $student['display_number'] ?? $student['registration_number'] ?? $student['admission_number'] ?? 'N/A',
+        'gender' => $student['gender'] ?? 'N/A',
+        'date_of_birth' => $student['date_of_birth'] ?? 'N/A',
+        'fetch_success' => 'Yes'
+    ];
+} else {
+    $_SESSION['student_debug'] = ['fetch_success' => 'No', 'message' => 'Student record not found'];
+}
+
+// Get student information if student ID is provided
+$studentName = '';
+if ($student_id > 0) {
+    $stmt = $conn->prepare("SELECT first_name, last_name FROM students WHERE id = ?");
+    $stmt->bind_param("i", $student_id);
+    $stmt->execute();
+    $nameResult = $stmt->get_result();
+    if ($nameRow = $nameResult->fetch_assoc()) {
+        $studentName = $nameRow['first_name'] . ' ' . $nameRow['last_name'];
+    }
+}
+
+// Get announcements for this student
+$announcementsQuery = "
+    SELECT a.*, ct.user_id as teacher_user_id
+    FROM announcements a
+    JOIN class_teachers ct ON a.class_teacher_id = ct.id
+    WHERE a.student_id = ? OR a.student_id IS NULL
+    ORDER BY a.created_at DESC
+    LIMIT 10
+";
+
+$stmt = $conn->prepare($announcementsQuery);
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+$announcementsResult = $stmt->get_result();
+$studentAnnouncements = [];
+
+while ($row = $announcementsResult->fetch_assoc()) {
+    $studentAnnouncements[] = $row;
+}
+
+// Process form submission
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -163,6 +269,184 @@ function formatDate($date) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.css">
+    
+    <!-- JavaScript Libraries - Load early -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <!-- Custom Tab Navigation Script - Must be in head -->
+    <script>
+        // Simple custom tab system - defined globally
+        function showTab(tabName) {
+            console.log('Showing tab: ' + tabName);
+            
+            // Debug - list all available tab IDs
+            var allTabElements = document.querySelectorAll('.tab-pane');
+            console.log('Available tabs:');
+            for (var i = 0; i < allTabElements.length; i++) {
+                console.log(' - ' + allTabElements[i].id);
+            }
+            
+            // Hide all tabs
+            var allTabs = document.querySelectorAll('.tab-pane');
+            for (var i = 0; i < allTabs.length; i++) {
+                allTabs[i].style.display = 'none';
+            }
+            
+            // Show the selected tab
+            var selectedTab = document.getElementById(tabName);
+            if (selectedTab) {
+                selectedTab.style.display = 'block';
+                console.log('Successfully showed tab: ' + tabName);
+            } else {
+                console.error('Tab not found: ' + tabName);
+                
+                // Try direct case-insensitive matching first
+                var tabFound = false;
+                allTabElements.forEach(function(tab) {
+                    if (tab.id.toLowerCase() === tabName.toLowerCase()) {
+                        tab.style.display = 'block';
+                        console.log('Found case-insensitive match: ' + tab.id);
+                        tabFound = true;
+                    }
+                });
+                
+                if (!tabFound) {
+                    // Try to find tab with similar ID
+                    allTabElements.forEach(function(tab) {
+                        if (tab.id.toLowerCase().includes(tabName.toLowerCase())) {
+                            tab.style.display = 'block';
+                            console.log('Found similar tab: ' + tab.id);
+                            tabFound = true;
+                        }
+                    });
+                }
+                
+                if (!tabFound) {
+                    // Default to dashboard if no similar tab found
+                    var dashboard = document.getElementById('dashboard');
+                    if (dashboard) {
+                        dashboard.style.display = 'block';
+                    }
+                }
+            }
+            
+            // Update navigation active state
+            var navLinks = document.querySelectorAll('.sidebar .nav-link');
+            for (var i = 0; i < navLinks.length; i++) {
+                navLinks[i].classList.remove('active');
+            }
+            
+            var activeLink = document.getElementById(tabName + '-link');
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            // Close mobile sidebar if needed
+            if (window.innerWidth < 992) {
+                var sidebar = document.querySelector('.sidebar');
+                if (sidebar) {
+                    sidebar.classList.remove('mobile-active');
+                }
+            }
+            
+            // If profile tab is selected, show default subtab
+            if (tabName === 'profile') {
+                setTimeout(function() {
+                    showProfileTab('personal-info');
+                }, 50);
+            }
+            
+            return false;
+        }
+        
+        // Function to handle profile subtabs
+        function showProfileTab(subtabId) {
+            console.log('Showing profile subtab: ' + subtabId);
+            
+            // Hide all subtabs
+            var allSubtabs = document.querySelectorAll('#profileTabsContent .tab-pane');
+            for (var i = 0; i < allSubtabs.length; i++) {
+                allSubtabs[i].style.display = 'none';
+            }
+            
+            // Show selected subtab
+            var selectedSubtab = document.getElementById(subtabId);
+            if (selectedSubtab) {
+                selectedSubtab.style.display = 'block';
+            } else {
+                console.error('Subtab not found: ' + subtabId);
+                return false;
+            }
+            
+            // Update active link
+            var subtabLinks = document.querySelectorAll('#profileTabs .nav-link');
+            for (var i = 0; i < subtabLinks.length; i++) {
+                subtabLinks[i].classList.remove('active');
+            }
+            
+            var activeSubtabLink = document.querySelector('#profileTabs .nav-link[href="#' + subtabId + '"]');
+            if (activeSubtabLink) {
+                activeSubtabLink.classList.add('active');
+            }
+            
+            return false;
+        }
+        
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            console.log('Toggling sidebar');
+            var sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('mobile-active');
+            } else {
+                console.error('Sidebar element not found');
+            }
+            return false;
+        }
+        
+        // Initialize when page is fully loaded
+        window.addEventListener('load', function() {
+            console.log('Page fully loaded - initializing tabs');
+            
+            // Add mobile styles
+            var style = document.createElement('style');
+            style.textContent = `
+                @media (max-width: 991.98px) {
+                    .sidebar {
+                        position: fixed;
+                        left: -250px;
+                        top: 0;
+                        height: 100%;
+                        z-index: 1050;
+                        transition: left 0.3s ease;
+                    }
+                    .sidebar.mobile-active {
+                        left: 0;
+                    }
+                    .main-content {
+                        margin-left: 0;
+                    }
+                }
+                
+                /* Tab display properties */
+                .tab-pane {
+                    display: none;
+                }
+                
+                #dashboard.tab-pane.active {
+                    display: block;
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Show dashboard by default
+            setTimeout(function() {
+                showTab('dashboard');
+            }, 100);
+        });
+    </script>
     
     <style>
         :root {
@@ -185,6 +469,20 @@ function formatDate($date) {
             --sidebar-width: 250px;      /* Sidebar Width */
         }
 
+        /* Force tab content to display properly */
+        .tab-content > .tab-pane {
+            display: none;
+        }
+        
+        .tab-content > .active {
+            display: block !important;
+        }
+        
+        /* Additional styles to ensure tab content is visible */
+        .show {
+            display: block !important;
+        }
+        
         html, body {
             height: 100%;
             background-color: #f8f9fa;
@@ -695,11 +993,208 @@ function formatDate($date) {
         #imagePreview img {
             border: 1px solid #ddd;
         }
+
+        /* Profile Section Styling */
+        .profile-card {
+            border-radius: 10px;
+            overflow: hidden;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .profile-image-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .profile-image {
+            transition: all 0.3s ease;
+        }
+
+        .profile-image:hover {
+            transform: scale(1.02);
+        }
+
+        .change-photo-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 123, 255, 0.8);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .change-photo-btn:hover {
+            background: rgba(0, 123, 255, 1);
+            transform: scale(1.1);
+        }
+
+        .student-badge {
+            background: #e6f7ff;
+            color: #0056b3;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .class-badge {
+            background: #e3f2fd;
+            color: #1a237e;
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 0 -5px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px 10px;
+            margin: 0 5px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: #e9ecef;
+            transform: translateY(-3px);
+        }
+
+        .stat-icon-container {
+            width: 40px;
+            height: 40px;
+            background: #e3f2fd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        .stat-icon {
+            color: #1a237e;
+            font-size: 18px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0d47a1;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .profile-tabs-container {
+            margin-bottom: 20px;
+        }
+
+        .profile-tabs {
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+
+        .profile-tabs .nav-link {
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: #6c757d;
+            font-weight: 600;
+            padding: 10px 15px;
+        }
+
+        .profile-tabs .nav-link.active {
+            color: #1a237e;
+            border-bottom-color: #1a237e;
+            background: transparent;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e3f2fd;
+            color: #333;
+        }
+
+        .profile-details {
+            padding: 0 5px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: #6c757d;
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 15px;
+            color: #343a40;
+            font-weight: 500;
+        }
+
+        .text-warning {
+            color: #ffc107 !important;
+        }
+
+        @media (max-width: 767px) {
+            .stats-container {
+                flex-direction: column;
+            }
+            
+            .stat-card {
+                margin: 5px 0;
+            }
+            
+            .profile-actions {
+                flex-direction: column;
+            }
+            
+            .profile-actions .btn {
+                margin-right: 0 !important;
+                margin-bottom: 10px;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Toggle Button for Responsive Menu -->
-    <button class="nav-toggle" id="navToggle">
+    <button class="nav-toggle" id="navToggle" onclick="toggleSidebar(); return false;">
         <i class="fas fa-bars"></i>
     </button>
 
@@ -713,33 +1208,43 @@ function formatDate($date) {
                 </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#dashboard" data-toggle="tab">
+                        <a class="nav-link active" id="dashboard-link" href="#" onclick="javascript:showTab('dashboard'); return false;">
                             <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#profile" data-toggle="tab">
+                        <a class="nav-link" id="profile-link" href="#" onclick="javascript:showTab('profile'); return false;">
                             <i class="fas fa-user"></i> Profile
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#exams" data-toggle="tab">
+                        <a class="nav-link" id="exams-link" href="#" onclick="javascript:showTab('exams'); return false;">
                             <i class="fas fa-file-alt"></i> Exams & Results
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#payments" data-toggle="tab">
+                        <a class="nav-link" id="cbt-exams-link" href="#" onclick="javascript:showTab('cbt-exams'); return false;">
+                            <i class="fas fa-laptop"></i> CBT Exams
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="payments-link" href="#" onclick="javascript:showTab('payments'); return false;">
                             <i class="fas fa-money-bill-wave"></i> Payments
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#calendar" data-toggle="tab">
+                        <a class="nav-link" id="calendar-link" href="#" onclick="javascript:showTab('calendar'); return false;">
                             <i class="fas fa-calendar-alt"></i> Calendar
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#announcements" data-toggle="tab">
+                        <a class="nav-link" id="announcements-link" href="#" onclick="javascript:showTab('announcements'); return false;">
                             <i class="fas fa-bullhorn"></i> Announcements
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="teacher-feedback-link" href="#" onclick="javascript:showTab('teacher-feedback'); return false;">
+                            <i class="fas fa-clipboard-check"></i> Teacher Feedback
                         </a>
                     </li>
                 </ul>
@@ -797,9 +1302,34 @@ function formatDate($date) {
                 </div> -->
                 <?php endif; ?>
                 
-                <div class="tab-content">
+                <?php if(isset($_SESSION['debug_raw_student']) && ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == '::1')): ?>
+                <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
+                    <h5><i class="fas fa-bug"></i> Raw Student Data</h5>
+                    <div>
+                        <pre><?php print_r($_SESSION['debug_raw_student']); ?></pre>
+                    </div>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <?php endif; ?>
+                
+                <?php if(isset($_SESSION['student_debug']) && ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == '::1')): ?>
+                <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+                    <h5><i class="fas fa-info-circle"></i> Student Data Debug</h5>
+                    <div>
+                        <pre><?php print_r($_SESSION['student_debug']); ?></pre>
+                    </div>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <?php endif; ?>
+                
+                <!-- Tab Content -->
+                <div class="tab-content" id="mainTabContent" style="min-height: 500px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                     <!-- Dashboard Tab -->
-                    <div class="tab-pane fade show active" id="dashboard">
+                    <div class="tab-pane show active" id="dashboard">
                         <div class="row">
                             <div class="col-md-4 mb-4">
                                 <div class="dashboard-card card-primary">
@@ -846,13 +1376,65 @@ function formatDate($date) {
                                 <div class="dashboard-card">
                                     <h4><i class="fas fa-bell"></i> Recent Announcements</h4>
                                     <div class="announcement-list">
-                                        <div class="alert alert-info">
-                                            <h5>Welcome to the New Session</h5>
-                                            <p>The new academic session has begun. Please ensure all fees are paid before the deadline.</p>
-                                            <small class="text-muted"><i class="far fa-clock mr-1"></i> Today</small>
-                                        </div>
+                                        <?php if (count($studentAnnouncements) > 0): ?>
+                                            <div class="alert alert-<?php 
+                                                $alertClass = 'info'; 
+                                                switch($studentAnnouncements[0]['type']) {
+                                                    case 'academic': $alertClass = 'primary'; break;
+                                                    case 'exam': $alertClass = 'warning'; break;
+                                                    case 'event': $alertClass = 'success'; break;
+                                                    case 'payment': $alertClass = 'danger'; break;
+                                                    case 'important': $alertClass = 'dark'; break;
+                                                }
+                                                echo $alertClass;
+                                            ?>">
+                                                <h5><?php echo htmlspecialchars($studentAnnouncements[0]['title']); ?></h5>
+                                                <p><?php echo htmlspecialchars(substr($studentAnnouncements[0]['content'], 0, 100) . (strlen($studentAnnouncements[0]['content']) > 100 ? '...' : '')); ?></p>
+                                                <small class="text-muted"><i class="far fa-clock mr-1"></i> <?php echo date('M d, Y', strtotime($studentAnnouncements[0]['created_at'])); ?></small>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="alert alert-info">
+                                                <h5>Welcome to the New Session</h5>
+                                                <p>No announcements available yet.</p>
+                                            </div>
+                                        <?php endif; ?>
                                         <a href="#announcements" data-toggle="tab" class="btn btn-sm btn-link">View All Announcements</a>
                                     </div>
+                                </div>
+                                
+                                <div class="dashboard-card mt-4">
+                                    <h4><i class="fas fa-clipboard-check"></i> Teacher Feedback</h4>
+                                    <?php if (count($teacherActivities) > 0 || count($teacherComments) > 0): ?>
+                                        <?php if (count($teacherActivities) > 0): ?>
+                                            <div class="mb-3">
+                                                <div class="alert alert-warning mb-2">
+                                                    <strong><?php echo ucfirst($teacherActivities[0]['activity_type']); ?>:</strong> 
+                                                    <?php echo substr($teacherActivities[0]['description'], 0, 70) . (strlen($teacherActivities[0]['description']) > 70 ? '...' : ''); ?>
+                                                    <small class="d-block text-muted mt-1">
+                                                        <i class="far fa-calendar-alt mr-1"></i> <?php echo date('M d, Y', strtotime($teacherActivities[0]['activity_date'])); ?>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <?php if (count($teacherComments) > 0): ?>
+                                            <div class="mb-3">
+                                                <div class="alert alert-secondary mb-2">
+                                                    <strong><?php echo ucfirst($teacherComments[0]['comment_type']); ?>:</strong> 
+                                                    <?php echo substr($teacherComments[0]['comment'], 0, 70) . (strlen($teacherComments[0]['comment']) > 70 ? '...' : ''); ?>
+                                                    <small class="d-block text-muted mt-1">
+                                                        <i class="far fa-clock mr-1"></i> <?php echo date('M d, Y', strtotime($teacherComments[0]['created_at'])); ?>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                        
+                                        <a href="#teacher-feedback" data-toggle="tab" class="btn btn-sm btn-link">View All Teacher Feedback</a>
+                                    <?php else: ?>
+                                        <div class="alert alert-light">
+                                            <p class="mb-0">No recent feedback available from your teacher.</p>
+                                        </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -890,10 +1472,99 @@ function formatDate($date) {
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Teacher Activities Section -->
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <div class="dashboard-card card-warning">
+                                    <h4><i class="fas fa-clipboard-list"></i> Recent Activities</h4>
+                                    <?php if (count($teacherActivities) > 0): ?>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 15%">Date</th>
+                                                    <th style="width: 15%">Type</th>
+                                                    <th>Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($teacherActivities as $activity): ?>
+                                                <tr>
+                                                    <td><?php echo date('M d, Y', strtotime($activity['activity_date'])); ?></td>
+                                                    <td>
+                                                        <?php 
+                                                        $typeClass = '';
+                                                        switch ($activity['activity_type']) {
+                                                            case 'attendance': $typeClass = 'badge-info'; break;
+                                                            case 'behavioral': $typeClass = 'badge-warning'; break;
+                                                            case 'academic': $typeClass = 'badge-success'; break;
+                                                            case 'health': $typeClass = 'badge-danger'; break;
+                                                            default: $typeClass = 'badge-secondary';
+                                                        }
+                                                        ?>
+                                                        <span class="badge <?php echo $typeClass; ?>">
+                                                            <?php echo ucfirst($activity['activity_type']); ?>
+                                                        </span>
+                                                    </td>
+                                                    <td><?php echo $activity['description']; ?></td>
+                                                </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <?php else: ?>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> No activities have been recorded for you by your class teacher.
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Teacher Comments Section -->
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <div class="dashboard-card card-secondary">
+                                    <h4><i class="fas fa-comments"></i> Teacher Comments</h4>
+                                    <?php if (count($teacherComments) > 0): ?>
+                                    <div class="direct-chat-messages" style="height: auto;">
+                                        <?php foreach ($teacherComments as $comment): ?>
+                                        <div class="direct-chat-msg">
+                                            <div class="direct-chat-infos clearfix">
+                                                <span class="direct-chat-name float-left">Class Teacher</span>
+                                                <span class="direct-chat-timestamp float-right">
+                                                    <?php echo date('M d, Y H:i', strtotime($comment['created_at'])); ?>
+                                                </span>
+                                            </div>
+                                            <div class="direct-chat-img">
+                                                <i class="fas fa-user-circle fa-2x"></i>
+                                            </div>
+                                            <div class="direct-chat-text">
+                                                <strong><?php echo ucfirst($comment['comment_type']); ?>:</strong>
+                                                <?php echo nl2br($comment['comment']); ?>
+                                                <?php if (!empty($comment['term'])): ?>
+                                                <small class="text-muted d-block mt-1">
+                                                    Term: <?php echo $comment['term']; ?>, 
+                                                    Session: <?php echo $comment['session']; ?>
+                                                </small>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <?php else: ?>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> No comments have been added by your class teacher.
+                                    </div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Profile Tab -->
-                    <div class="tab-pane fade" id="profile">
+                    <div class="tab-pane" id="profile">
                         <?php if(isset($_SESSION['error'])): ?>
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
@@ -931,9 +1602,9 @@ function formatDate($date) {
                         <?php endif; ?>
                         
                         <div class="row">
-                            <div class="col-md-4 mb-4">
-                                <div class="dashboard-card text-center">
-                                    <div class="passport-container mb-4">
+                            <div class="col-lg-4 mb-4">
+                                <div class="dashboard-card profile-card shadow">
+                                    <div class="passport-container text-center mb-4">
                                         <?php 
                                         // Sanitize registration number for file path
                                         $safe_registration = str_replace('/', '_', $registration_number);
@@ -941,155 +1612,396 @@ function formatDate($date) {
                                         $default_avatar = '../../../images/avatar-placeholder.png';
                                         $display_image = file_exists($passport_path) ? $passport_path : $default_avatar;
                                         ?>
-                                        <div class="position-relative d-inline-block">
-                                            <img src="<?php echo $display_image; ?>" alt="Student Passport" class="img-fluid rounded-circle" style="width: 180px; height: 180px; object-fit: cover; border: 5px solid #e3f2fd;">
+                                        <div class="position-relative d-inline-block profile-image-container">
+                                            <img src="<?php echo $display_image; ?>" alt="Student Passport" class="img-fluid rounded-circle profile-image" style="width: 180px; height: 180px; object-fit: cover; border: 5px solid #e3f2fd; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                                             <a href="#" class="change-photo-btn" data-toggle="modal" data-target="#changePassportModal">
                                                 <i class="fas fa-camera"></i>
                                             </a>
                                         </div>
-                                        <h4 class="mt-3"><?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?></h4>
-                                        <p class="text-muted"><?php echo htmlspecialchars($registration_number); ?></p>
+                                        <h4 class="mt-3 mb-1 font-weight-bold"><?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?></h4>
+                                        <div class="student-badge mb-2"><?php echo htmlspecialchars($registration_number); ?></div>
+                                        
+                                        <?php if (isset($student['class'])): ?>
+                                        <div class="class-badge mb-3">
+                                            <i class="fas fa-graduation-cap mr-1"></i> <?php echo htmlspecialchars($student['class'] ?? 'Not assigned'); ?>
+                                        </div>
+                                        <?php endif; ?>
                                     </div>
                                     
                                     <div class="profile-stats mb-4">
-                                        <div class="stat-card">
-                                            <i class="fas fa-file-alt stat-icon"></i>
-                                            <div class="stat-value"><?php echo count($exam_results); ?></div>
-                                            <div class="stat-label">Exams</div>
-                                        </div>
-                                        <div class="stat-card">
-                                            <i class="fas fa-trophy stat-icon"></i>
-                                            <div class="stat-value">
-                                                <?php 
-                                                $passed = 0;
-                                                foreach($exam_results as $exam) {
-                                                    if($exam['status'] === 'passed') $passed++;
-                                                }
-                                                echo $passed;
-                                                ?>
+                                        <div class="stats-container">
+                                            <div class="stat-card">
+                                                <div class="stat-icon-container">
+                                                    <i class="fas fa-file-alt stat-icon"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="stat-value"><?php echo count($exam_results); ?></div>
+                                                    <div class="stat-label">Exams</div>
+                                                </div>
                                             </div>
-                                            <div class="stat-label">Passed</div>
+                                            <div class="stat-card">
+                                                <div class="stat-icon-container">
+                                                    <i class="fas fa-trophy stat-icon"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="stat-value">
+                                                        <?php 
+                                                        $passed = 0;
+                                                        foreach($exam_results as $exam) {
+                                                            if($exam['status'] === 'passed') $passed++;
+                                                        }
+                                                        echo $passed;
+                                                        ?>
+                                                    </div>
+                                                    <div class="stat-label">Passed</div>
+                                                </div>
+                                            </div>
+                                            <div class="stat-card">
+                                                <div class="stat-icon-container">
+                                                    <i class="fas fa-chart-line stat-icon"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="stat-value">
+                                                        <?php 
+                                                        echo (count($exam_results) > 0) 
+                                                            ? round(($passed / count($exam_results)) * 100) . '%' 
+                                                            : '0%';
+                                                        ?>
+                                                    </div>
+                                                    <div class="stat-label">Success</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     
-                                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#editProfileModal">
-                                        <i class="fas fa-user-edit mr-2"></i> Edit Profile
-                                    </button>
+                                    <div class="profile-actions d-flex justify-content-between">
+                                        <button type="button" class="btn btn-primary flex-grow-1 mr-2" data-toggle="modal" data-target="#editProfileModal">
+                                            <i class="fas fa-user-edit mr-2"></i> Edit Profile
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary flex-grow-1" onclick="window.print()">
+                                            <i class="fas fa-print mr-2"></i> Print
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="col-md-8 mb-4">
-                                <div class="dashboard-card">
-                                    <h4><i class="fas fa-user-circle"></i> Student Information</h4>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Full Name:</strong> <?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?>
+                            <div class="col-lg-8 mb-4">
+                                <div class="profile-tabs-container">
+                                    <ul class="nav nav-tabs profile-tabs" id="profileTabs" role="tablist">
+                                        <li class="nav-item">
+                                            <a class="nav-link active" id="personal-tab" onclick="showProfileTab('personal-info'); return false;" href="#personal-info" role="tab">
+                                                <i class="fas fa-user mr-2"></i> Personal
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="family-tab" onclick="showProfileTab('family-info'); return false;" href="#family-info" role="tab">
+                                                <i class="fas fa-users mr-2"></i> Family
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="medical-tab" onclick="showProfileTab('medical-info'); return false;" href="#medical-info" role="tab">
+                                                <i class="fas fa-heartbeat mr-2"></i> Medical
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    
+                                    <div class="tab-content profile-tab-content" id="profileTabsContent">
+                                        <!-- Personal Information Tab -->
+                                        <div class="tab-pane fade show active" id="personal-info" role="tabpanel">
+                                            <div class="dashboard-card shadow-sm">
+                                                <h4 class="section-title"><i class="fas fa-user-circle text-primary mr-2"></i> Student Information</h4>
+                                                <div class="profile-details">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Full Name</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Registration Number</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['display_number'] ?? $student['registration_number'] ?? $student['admission_number'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Date of Birth</div>
+                                                                <div class="info-value"><?php echo isset($student['date_of_birth']) ? formatDate($student['date_of_birth']) : 'N/A'; ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Gender</div>
+                                                                <div class="info-value"><?php echo ucfirst(htmlspecialchars($student['gender'] ?? 'N/A')); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Nationality</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['nationality'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">State</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['state'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Email</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['email'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Contact Address</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['contact_address'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Registration Number:</strong> <?php echo htmlspecialchars($student['registration_number']); ?>
+                                        
+                                        <!-- Family Information Tab -->
+                                        <div class="tab-pane fade" id="family-info" role="tabpanel">
+                                            <div class="dashboard-card shadow-sm mb-4">
+                                                <h4 class="section-title"><i class="fas fa-male text-primary mr-2"></i> Father's Information</h4>
+                                                <div class="profile-details">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Father's Name</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['father_s_name'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Father's Occupation</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['father_s_occupation'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Contact Number</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['father_s_contact_phone_number_s_'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Office Address</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['father_s_office_address'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="dashboard-card shadow-sm mb-4">
+                                                <h4 class="section-title"><i class="fas fa-female text-primary mr-2"></i> Mother's Information</h4>
+                                                <div class="profile-details">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Mother's Name</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['mother_s_name'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Mother's Occupation</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['mother_s_occupation'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Contact Number</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['mother_s_contact_phone_number_s_'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Office Address</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['mother_s_office_address'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <?php if (!empty($student['guardian_name']) || !empty($student['child_lives_with'])): ?>
+                                            <div class="dashboard-card shadow-sm">
+                                                <h4 class="section-title"><i class="fas fa-user-shield text-primary mr-2"></i> Guardian Information</h4>
+                                                <div class="profile-details">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Guardian Name</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['guardian_name'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Guardian Occupation</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['guardian_occupation'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Contact Number</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['guardian_contact_phone_number'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Child Lives With</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['child_lives_with'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Office Address</div>
+                                                                <div class="info-value"><?php echo htmlspecialchars($student['guardian_office_address'] ?? 'N/A'); ?></div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <?php endif; ?>
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Date of Birth:</strong> <?php echo isset($student['date_of_birth']) ? formatDate($student['date_of_birth']) : 'N/A'; ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Gender:</strong> <?php echo ucfirst(htmlspecialchars($student['gender'] ?? 'N/A')); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Nationality:</strong> <?php echo htmlspecialchars($student['nationality'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>State:</strong> <?php echo htmlspecialchars($student['state'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Email:</strong> <?php echo htmlspecialchars($student['email'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-12 mb-3">
-                                            <strong>Contact Address:</strong> <?php echo htmlspecialchars($student['contact_address'] ?? 'N/A'); ?>
+                                        
+                                        <!-- Medical Information Tab -->
+                                        <div class="tab-pane fade" id="medical-info" role="tabpanel">
+                                            <div class="dashboard-card shadow-sm">
+                                                <h4 class="section-title"><i class="fas fa-heartbeat text-primary mr-2"></i> Medical Information</h4>
+                                                <div class="profile-details">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Blood Group</div>
+                                                                <div class="info-value<?php echo empty($student['blood_group']) ? ' text-warning' : ''; ?>">
+                                                                    <?php echo !empty($student['blood_group']) ? htmlspecialchars($student['blood_group']) : 'Not Provided'; ?>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Genotype</div>
+                                                                <div class="info-value<?php echo empty($student['genotype']) ? ' text-warning' : ''; ?>">
+                                                                    <?php echo !empty($student['genotype']) ? htmlspecialchars($student['genotype']) : 'Not Provided'; ?>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="info-item">
+                                                                <div class="info-label">Allergies</div>
+                                                                <div class="info-value">
+                                                                    <?php echo !empty($student['allergies']) ? htmlspecialchars($student['allergies']) : 'None reported'; ?>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <div class="dashboard-card">
-                                    <h4><i class="fas fa-user-friends"></i> Father's Information</h4>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Father's Name:</strong> <?php echo htmlspecialchars($student['father_s_name'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Father's Occupation:</strong> <?php echo htmlspecialchars($student['father_s_occupation'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-12 mb-3">
-                                            <strong>Office Address:</strong> <?php echo htmlspecialchars($student['father_s_office_address'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Contact Number:</strong> <?php echo htmlspecialchars($student['father_s_contact_phone_number_s_'] ?? 'N/A'); ?>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="dashboard-card">
-                                    <h4><i class="fas fa-female"></i> Mother's Information</h4>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Mother's Name:</strong> <?php echo htmlspecialchars($student['mother_s_name'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Mother's Occupation:</strong> <?php echo htmlspecialchars($student['mother_s_occupation'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-12 mb-3">
-                                            <strong>Office Address:</strong> <?php echo htmlspecialchars($student['mother_s_office_address'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Contact Number:</strong> <?php echo htmlspecialchars($student['mother_s_contact_phone_number_s_'] ?? 'N/A'); ?>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <?php if (!empty($student['guardian_name']) || !empty($student['child_lives_with'])): ?>
-                                <div class="dashboard-card">
-                                    <h4><i class="fas fa-user-shield"></i> Guardian Information</h4>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Guardian Name:</strong> <?php echo htmlspecialchars($student['guardian_name'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Guardian Occupation:</strong> <?php echo htmlspecialchars($student['guardian_occupation'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-12 mb-3">
-                                            <strong>Office Address:</strong> <?php echo htmlspecialchars($student['guardian_office_address'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Contact Number:</strong> <?php echo htmlspecialchars($student['guardian_contact_phone_number'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Child Lives With:</strong> <?php echo htmlspecialchars($student['child_lives_with'] ?? 'N/A'); ?>
-                                        </div>
-                                    </div>
-                                </div>
-                                <?php endif; ?>
-
-                                <?php if (!empty($student['blood_group']) || !empty($student['genotype']) || !empty($student['allergies'])): ?>
-                                <div class="dashboard-card">
-                                    <h4><i class="fas fa-heartbeat"></i> Medical Information</h4>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Blood Group:</strong> <?php echo htmlspecialchars($student['blood_group'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <strong>Genotype:</strong> <?php echo htmlspecialchars($student['genotype'] ?? 'N/A'); ?>
-                                        </div>
-                                        <div class="col-md-12 mb-3">
-                                            <strong>Allergies:</strong> <?php echo htmlspecialchars($student['allergies'] ?? 'None'); ?>
-                                        </div>
-                                    </div>
-                                </div>
-                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Exams Tab -->
-                    <div class="tab-pane fade" id="exams">
+                    <div class="tab-pane" id="exams">
+                        <!-- Available CBT Exams Section -->
+                        <div class="dashboard-card mb-4">
+                            <h4><i class="fas fa-pen-fancy"></i> Available CBT Exams</h4>
+                            
+                            <?php
+                            // Get student's class
+                            $student_id = $_SESSION['student_id'];
+                            $classQuery = "SELECT class FROM students WHERE id = ?";
+                            $stmt = $conn->prepare($classQuery);
+                            $stmt->bind_param("i", $student_id);
+                            $stmt->execute();
+                            $classResult = $stmt->get_result();
+                            $studentClass = "";
+                            
+                            if ($row = $classResult->fetch_assoc()) {
+                                $studentClass = $row['class'];
+                            }
+                            
+                            // Get available exams for this student's class
+                            $examsQuery = "SELECT e.*, s.name AS subject_name,
+                                          (SELECT COUNT(*) FROM cbt_student_exams WHERE exam_id = e.id AND student_id = ?) AS attempt_count 
+                                          FROM cbt_exams e
+                                          JOIN subjects s ON e.subject_id = s.id
+                                          WHERE (e.class_id = ? OR e.class_id = ?)
+                                          AND e.is_active = 1
+                                          AND NOW() BETWEEN e.start_datetime AND e.end_datetime
+                                          ORDER BY e.start_datetime";
+                            
+                            $stmt = $conn->prepare($examsQuery);
+                            $stmt->bind_param("iss", $student_id, $studentClass, $studentClass);
+                            $stmt->execute();
+                            $examsResult = $stmt->get_result();
+                            
+                            if ($examsResult->num_rows > 0):
+                            ?>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Exam Title</th>
+                                            <th>Subject</th>
+                                            <th>Questions</th>
+                                            <th>Duration</th>
+                                            <th>Available Until</th>
+                                            <th>Status</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php while ($exam = $examsResult->fetch_assoc()): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($exam['title']); ?></td>
+                                                <td><?php echo htmlspecialchars($exam['subject_name']); ?></td>
+                                                <td><?php echo htmlspecialchars($exam['total_questions']); ?> questions</td>
+                                                <td><?php echo htmlspecialchars($exam['time_limit']); ?> minutes</td>
+                                                <td><?php echo date('M d, Y g:i A', strtotime($exam['end_datetime'])); ?></td>
+                                                <td>
+                                                    <?php if ($exam['attempt_count'] > 0): ?>
+                                                        <span class="badge badge-success">Attempted</span>
+                                                    <?php else: ?>
+                                                        <span class="badge badge-warning">Not Attempted</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <?php if ($exam['attempt_count'] == 0): ?>
+                                                        <a href="../cbt/take_exam.php?exam_id=<?php echo $exam['id']; ?>" 
+                                                           class="btn btn-sm btn-primary">
+                                                            <i class="fas fa-edit"></i> Take Exam
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <a href="../cbt/view_result.php?exam_id=<?php echo $exam['id']; ?>" 
+                                                           class="btn btn-sm btn-info">
+                                                            <i class="fas fa-eye"></i> View Result
+                                                        </a>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endwhile; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <?php else: ?>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> No active exams available for your class at this time.
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        
                         <div class="dashboard-card mb-4">
                             <h4><i class="fas fa-chart-line"></i> Exam Performance Summary</h4>
                             <div class="row">
@@ -1169,7 +2081,7 @@ function formatDate($date) {
                     </div>
                     
                     <!-- Payments Tab -->
-                    <div class="tab-pane fade" id="payments">
+                    <div class="tab-pane" id="payments">
                         <div class="dashboard-card mb-4">
                             <h4><i class="fas fa-money-bill-wave"></i> Payment Summary</h4>
                             <div class="row">
@@ -1230,22 +2142,14 @@ function formatDate($date) {
                                         </thead>
                                         <tbody>
                                             <?php foreach ($payments as $payment): ?>
-                                                <tr>
-                                                    <td><?php echo ucfirst(str_replace('_', ' ', htmlspecialchars($payment['payment_type']))); ?></td>
-                                                    <td>₦<?php echo number_format($payment['amount'], 2); ?></td>
-                                                    <td><?php echo ucfirst(htmlspecialchars($payment['payment_method'])); ?></td>
-                                                    <td><?php echo htmlspecialchars($payment['reference_number']); ?></td>
-                                                    <td>
-                                                        <?php if ($payment['status'] == 'completed'): ?>
-                                                            <span class="badge badge-success">Completed</span>
-                                                        <?php elseif ($payment['status'] == 'failed'): ?>
-                                                            <span class="badge badge-danger">Failed</span>
-                                                        <?php else: ?>
-                                                            <span class="badge badge-warning">Pending</span>
-                                                        <?php endif; ?>
-                                                    </td>
-                                                    <td><?php echo formatDate($payment['payment_date']); ?></td>
-                                                </tr>
+                                            <tr>
+                                                <td><?php echo formatPaymentType($payment['payment_type']); ?></td>
+                                                <td>₦<?php echo number_format($payment['amount'], 2); ?></td>
+                                                <td><?php echo ucfirst(htmlspecialchars($payment['payment_method'])); ?></td>
+                                                <td><?php echo htmlspecialchars($payment['reference_number']); ?></td>
+                                                <td><?php echo formatPaymentStatus($payment['status']); ?></td>
+                                                <td><?php echo formatDate($payment['payment_date']); ?></td>
+                                            </tr>
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
@@ -1255,7 +2159,7 @@ function formatDate($date) {
                     </div>
                     
                     <!-- Calendar Tab -->
-                    <div class="tab-pane fade" id="calendar">
+                    <div class="tab-pane" id="calendar">
                         <div class="dashboard-card">
                             <h4><i class="fas fa-calendar"></i> School Calendar</h4>
                             <div class="calendar-container">
@@ -1264,282 +2168,327 @@ function formatDate($date) {
                         </div>
                     </div>
                     
-                    <!-- Announcements Tab -->
-                    <div class="tab-pane fade" id="announcements">
-                        <div class="dashboard-card">
-                            <h4><i class="fas fa-bullhorn"></i> School Announcements</h4>
-                            
-                            <div class="announcement-item mb-4 p-3 border-left border-primary">
-                                <h5>Welcome to the New Academic Session</h5>
-                                <p>The new academic session has begun. We extend a warm welcome to all our students and wish them a productive and successful term ahead.</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted small"><i class="far fa-calendar-alt mr-1"></i> <?php echo date('M d, Y'); ?></span>
-                                    <span class="badge badge-primary">New</span>
+                    <!-- Teacher Feedback Tab -->
+                    <div class="tab-pane" id="teacher-feedback">
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <div class="dashboard-card card-warning">
+                                    <h4><i class="fas fa-clipboard-list"></i> Teacher Activities</h4>
+                                    <?php if (count($teacherActivities) > 0): ?>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width: 15%">Date</th>
+                                                    <th style="width: 15%">Type</th>
+                                                    <th>Description</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <?php foreach ($teacherActivities as $activity): ?>
+                                                <tr>
+                                                    <td><?php echo date('M d, Y', strtotime($activity['activity_date'])); ?></td>
+                                                    <td>
+                                                        <?php 
+                                                        $typeClass = '';
+                                                        switch ($activity['activity_type']) {
+                                                            case 'attendance': $typeClass = 'badge-info'; break;
+                                                            case 'behavioral': $typeClass = 'badge-warning'; break;
+                                                            case 'academic': $typeClass = 'badge-success'; break;
+                                                            case 'health': $typeClass = 'badge-danger'; break;
+                                                            default: $typeClass = 'badge-secondary';
+                                                        }
+                                                        ?>
+                                                        <span class="badge <?php echo $typeClass; ?>">
+                                                            <?php echo ucfirst($activity['activity_type']); ?>
+                                                        </span>
+                                                    </td>
+                                                    <td><?php echo $activity['description']; ?></td>
+                                                </tr>
+                                                <?php endforeach; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <?php else: ?>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> No activities have been recorded for you by your class teacher.
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
-                            
-                            <div class="announcement-item mb-4 p-3 border-left border-success">
-                                <h5>Fee Payment Deadline</h5>
-                                <p>All students are reminded that the deadline for school fee payment is the end of this month. Late payments will attract additional charges.</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted small"><i class="far fa-calendar-alt mr-1"></i> <?php echo date('M d, Y', strtotime('-2 days')); ?></span>
-                                    <span class="badge badge-success">Important</span>
-                                </div>
-                            </div>
-                            
-                            <div class="announcement-item mb-4 p-3 border-left border-info">
-                                <h5>Upcoming Parent-Teacher Meeting</h5>
-                                <p>There will be a parent-teacher meeting on the last Friday of this month. All parents are encouraged to attend.</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted small"><i class="far fa-calendar-alt mr-1"></i> <?php echo date('M d, Y', strtotime('-5 days')); ?></span>
-                                    <span class="badge badge-info">Meeting</span>
-                                </div>
-                            </div>
-                            
-                            <div class="announcement-item mb-4 p-3 border-left border-warning">
-                                <h5>Mid-Term Examination Schedule</h5>
-                                <p>The mid-term examination will commence in the second week of next month. The detailed timetable will be shared soon.</p>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="text-muted small"><i class="far fa-calendar-alt mr-1"></i> <?php echo date('M d, Y', strtotime('-10 days')); ?></span>
-                                    <span class="badge badge-warning">Examination</span>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-4">
+                                <div class="dashboard-card card-secondary">
+                                    <h4><i class="fas fa-comments"></i> Teacher Comments</h4>
+                                    <?php if (count($teacherComments) > 0): ?>
+                                    <div class="direct-chat-messages" style="height: auto;">
+                                        <?php foreach ($teacherComments as $comment): ?>
+                                        <div class="direct-chat-msg">
+                                            <div class="direct-chat-infos clearfix">
+                                                <span class="direct-chat-name float-left">Class Teacher</span>
+                                                <span class="direct-chat-timestamp float-right">
+                                                    <?php echo date('M d, Y H:i', strtotime($comment['created_at'])); ?>
+                                                </span>
+                                            </div>
+                                            <div class="direct-chat-img">
+                                                <i class="fas fa-user-circle fa-2x"></i>
+                                            </div>
+                                            <div class="direct-chat-text">
+                                                <strong><?php echo ucfirst($comment['comment_type']); ?>:</strong>
+                                                <?php echo nl2br($comment['comment']); ?>
+                                                <?php if (!empty($comment['term'])): ?>
+                                                <small class="text-muted d-block mt-1">
+                                                    Term: <?php echo $comment['term']; ?>, 
+                                                    Session: <?php echo $comment['session']; ?>
+                                                </small>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <?php else: ?>
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle"></i> No comments have been added by your class teacher.
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Edit Profile Modal -->
-    <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog" aria-labelledby="editProfileModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="editProfileModalLabel">Edit Profile</h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="editProfileForm" action="update_profile.php" method="POST">
-                        <input type="hidden" name="student_id" value="<?php echo $student_id; ?>">
-                        
-                        <h5 class="mb-3">Student Information</h5>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="first_name">First Name</label>
-                                    <input type="text" class="form-control" id="first_name" name="first_name" value="<?php echo htmlspecialchars($student['first_name'] ?? ''); ?>" required>
+                    
+                    <!-- CBT Exams Tab -->
+                    <div class="tab-pane" id="cbt-exams">
+                        <div class="dashboard-card mb-4">
+                            <h4><i class="fas fa-laptop"></i> Available CBT Exams</h4>
+                            
+                            <?php
+                            // Get current date and time
+                            $currentDateTime = date('Y-m-d H:i:s');
+                            
+                            // Get available exams for this student's class
+                            $availableExamsQuery = "SELECT e.*, s.name AS subject_name,
+                                                   (SELECT COUNT(*) FROM cbt_student_exams 
+                                                    WHERE exam_id = e.id AND student_id = ?) AS has_attempted
+                                                   FROM cbt_exams e
+                                                   JOIN subjects s ON e.subject_id = s.id
+                                                   JOIN class_subjects cs ON s.id = cs.subject_id
+                                                   JOIN students st ON st.class = cs.class_id
+                                                   WHERE e.is_active = 1
+                                                   AND e.start_datetime <= ?
+                                                   AND e.end_datetime >= ?
+                                                   AND st.id = ?
+                                                   ORDER BY e.end_datetime ASC";
+                            
+                            $stmt = $conn->prepare($availableExamsQuery);
+                            $stmt->bind_param("issi", $student_id, $currentDateTime, $currentDateTime, $student_id);
+                            $stmt->execute();
+                            $availableExamsResult = $stmt->get_result();
+                            $availableExams = [];
+                            while ($row = $availableExamsResult->fetch_assoc()) {
+                                $availableExams[] = $row;
+                            }
+                            
+                            // Get past exams for this student
+                            $pastExamsQuery = "SELECT e.*, s.name AS subject_name, 
+                                              se.status, se.score, se.started_at, se.submitted_at,
+                                              (CASE WHEN e.show_results = 1 THEN se.score ELSE NULL END) AS visible_score
+                                              FROM cbt_student_exams se
+                                              JOIN cbt_exams e ON se.exam_id = e.id
+                                              JOIN subjects s ON e.subject_id = s.id
+                                              WHERE se.student_id = ?
+                                              ORDER BY se.submitted_at DESC";
+                            
+                            $stmt = $conn->prepare($pastExamsQuery);
+                            $stmt->bind_param("i", $student_id);
+                            $stmt->execute();
+                            $pastExamsResult = $stmt->get_result();
+                            $pastExams = [];
+                            while ($row = $pastExamsResult->fetch_assoc()) {
+                                $pastExams[] = $row;
+                            }
+                            ?>
+                            
+                            <?php if (count($availableExams) > 0): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th>Title</th>
+                                                <th>Duration</th>
+                                                <th>Questions</th>
+                                                <th>Available Until</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($availableExams as $exam): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($exam['subject_name']); ?></td>
+                                                <td><?php echo htmlspecialchars($exam['title']); ?></td>
+                                                <td><?php echo $exam['time_limit']; ?> minutes</td>
+                                                <td><?php echo $exam['total_questions']; ?> questions</td>
+                                                <td>
+                                                    <span class="text-danger">
+                                                        <?php echo date('M d, Y g:i A', strtotime($exam['end_datetime'])); ?>
+                                                    </span>
+                                                    <?php 
+                                                    // Calculate time remaining
+                                                    $endTime = new DateTime($exam['end_datetime']);
+                                                    $now = new DateTime();
+                                                    $timeRemaining = $now->diff($endTime);
+                                                    $hoursRemaining = $timeRemaining->h + ($timeRemaining->days * 24);
+                                                    
+                                                    if ($hoursRemaining < 24) {
+                                                        echo '<span class="badge badge-warning">Less than 24 hours left!</span>';
+                                                    }
+                                                    ?>
+                                                </td>
+                                                <td>
+                                                    <?php if ($exam['has_attempted'] > 0): ?>
+                                                        <span class="badge badge-info">Attempted</span>
+                                                    <?php else: ?>
+                                                        <span class="badge badge-success">Available</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <a href="take_cbt_exam.php?exam_id=<?php echo $exam['id']; ?>" class="btn btn-primary btn-sm">
+                                                        <?php echo ($exam['has_attempted'] > 0) ? 'Continue Exam' : 'Start Exam'; ?>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="last_name">Last Name</label>
-                                    <input type="text" class="form-control" id="last_name" name="last_name" value="<?php echo htmlspecialchars($student['last_name'] ?? ''); ?>" required>
+                            <?php else: ?>
+                                <div class="alert alert-info">
+                                    <p>There are no CBT exams currently available for you to take.</p>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="date_of_birth">Date of Birth</label>
-                                    <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" value="<?php echo isset($student['date_of_birth']) ? date('Y-m-d', strtotime($student['date_of_birth'])) : ''; ?>" required>
+                            <?php endif; ?>
+                            
+                            <h4 class="mt-5"><i class="fas fa-history"></i> My Past Exams</h4>
+                            
+                            <?php if (count($pastExams) > 0): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th>Title</th>
+                                                <th>Date Taken</th>
+                                                <th>Status</th>
+                                                <th>Score</th>
+                                                <th>Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($pastExams as $exam): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($exam['subject_name']); ?></td>
+                                                <td><?php echo htmlspecialchars($exam['title']); ?></td>
+                                                <td>
+                                                    <?php echo $exam['submitted_at'] 
+                                                          ? date('M d, Y g:i A', strtotime($exam['submitted_at'])) 
+                                                          : date('M d, Y g:i A', strtotime($exam['started_at'])) . ' (Not submitted)'; ?>
+                                                </td>
+                                                <td>
+                                                    <?php
+                                                    $statusClass = '';
+                                                    switch ($exam['status']) {
+                                                        case 'Completed':
+                                                            $statusClass = 'success';
+                                                            break;
+                                                        case 'In Progress':
+                                                            $statusClass = 'warning';
+                                                            break;
+                                                        default:
+                                                            $statusClass = 'secondary';
+                                                    }
+                                                    ?>
+                                                    <span class="badge badge-<?php echo $statusClass; ?>">
+                                                        <?php echo $exam['status']; ?>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <?php if ($exam['visible_score'] !== null): ?>
+                                                        <span class="badge badge-<?php echo ($exam['score'] >= $exam['passing_score']) ? 'success' : 'danger'; ?>">
+                                                            <?php echo $exam['score']; ?>%
+                                                        </span>
+                                                        <?php if ($exam['score'] >= $exam['passing_score']): ?>
+                                                            <i class="fas fa-check-circle text-success"></i>
+                                                        <?php else: ?>
+                                                            <i class="fas fa-times-circle text-danger"></i>
+                                                        <?php endif; ?>
+                                                    <?php else: ?>
+                                                        <?php if ($exam['status'] === 'Completed'): ?>
+                                                            <span class="badge badge-secondary">Results pending</span>
+                                                        <?php else: ?>
+                                                            <span class="badge badge-secondary">Not completed</span>
+                                                        <?php endif; ?>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <?php if ($exam['visible_score'] !== null || $exam['status'] === 'In Progress'): ?>
+                                                        <a href="view_cbt_result.php?exam_id=<?php echo $exam['id']; ?>" class="btn btn-info btn-sm">
+                                                            View Details
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <button class="btn btn-secondary btn-sm" disabled>
+                                                            Not Available
+                                                        </button>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="gender">Gender</label>
-                                    <select class="form-control" id="gender" name="gender" required>
-                                        <option value="">Select Gender</option>
-                                        <option value="male" <?php echo (isset($student['gender']) && strtolower($student['gender']) == 'male') ? 'selected' : ''; ?>>Male</option>
-                                        <option value="female" <?php echo (isset($student['gender']) && strtolower($student['gender']) == 'female') ? 'selected' : ''; ?>>Female</option>
-                                    </select>
+                            <?php else: ?>
+                                <div class="alert alert-secondary">
+                                    <p>You haven't taken any CBT exams yet.</p>
                                 </div>
-                            </div>
+                            <?php endif; ?>
                         </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="nationality">Nationality</label>
-                                    <input type="text" class="form-control" id="nationality" name="nationality" value="<?php echo htmlspecialchars($student['nationality'] ?? ''); ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="state">State</label>
-                                    <input type="text" class="form-control" id="state" name="state" value="<?php echo htmlspecialchars($student['state'] ?? ''); ?>">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="email">Email Address</label>
-                                    <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($student['email'] ?? ''); ?>">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="contact_address">Contact Address</label>
-                            <textarea class="form-control" id="contact_address" name="contact_address" rows="3"><?php echo htmlspecialchars($student['contact_address'] ?? ''); ?></textarea>
-                        </div>
-                        
-                        <hr>
-                        <h5 class="mb-3">Father's Information</h5>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="father_s_name">Father's Name</label>
-                                    <input type="text" class="form-control" id="father_s_name" name="father_s_name" value="<?php echo htmlspecialchars($student['father_s_name'] ?? ''); ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="father_s_occupation">Father's Occupation</label>
-                                    <input type="text" class="form-control" id="father_s_occupation" name="father_s_occupation" value="<?php echo htmlspecialchars($student['father_s_occupation'] ?? ''); ?>">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="father_s_office_address">Father's Office Address</label>
-                            <textarea class="form-control" id="father_s_office_address" name="father_s_office_address" rows="2"><?php echo htmlspecialchars($student['father_s_office_address'] ?? ''); ?></textarea>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="father_s_contact_phone_number_s_">Father's Contact Number(s)</label>
-                            <input type="text" class="form-control" id="father_s_contact_phone_number_s_" name="father_s_contact_phone_number_s_" value="<?php echo htmlspecialchars($student['father_s_contact_phone_number_s_'] ?? ''); ?>">
-                        </div>
-                        
-                        <hr>
-                        <h5 class="mb-3">Mother's Information</h5>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="mother_s_name">Mother's Name</label>
-                                    <input type="text" class="form-control" id="mother_s_name" name="mother_s_name" value="<?php echo htmlspecialchars($student['mother_s_name'] ?? ''); ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="mother_s_occupation">Mother's Occupation</label>
-                                    <input type="text" class="form-control" id="mother_s_occupation" name="mother_s_occupation" value="<?php echo htmlspecialchars($student['mother_s_occupation'] ?? ''); ?>">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="mother_s_office_address">Mother's Office Address</label>
-                            <textarea class="form-control" id="mother_s_office_address" name="mother_s_office_address" rows="2"><?php echo htmlspecialchars($student['mother_s_office_address'] ?? ''); ?></textarea>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="mother_s_contact_phone_number_s_">Mother's Contact Number(s)</label>
-                            <input type="text" class="form-control" id="mother_s_contact_phone_number_s_" name="mother_s_contact_phone_number_s_" value="<?php echo htmlspecialchars($student['mother_s_contact_phone_number_s_'] ?? ''); ?>">
-                        </div>
-                        
-                        <hr>
-                        <h5 class="mb-3">Guardian Information (Optional)</h5>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="guardian_name">Guardian Name</label>
-                                    <input type="text" class="form-control" id="guardian_name" name="guardian_name" value="<?php echo htmlspecialchars($student['guardian_name'] ?? ''); ?>">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="guardian_occupation">Guardian Occupation</label>
-                                    <input type="text" class="form-control" id="guardian_occupation" name="guardian_occupation" value="<?php echo htmlspecialchars($student['guardian_occupation'] ?? ''); ?>">
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="guardian_office_address">Guardian Office Address</label>
-                            <textarea class="form-control" id="guardian_office_address" name="guardian_office_address" rows="2"><?php echo htmlspecialchars($student['guardian_office_address'] ?? ''); ?></textarea>
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="guardian_contact_phone_number">Guardian Contact Number</label>
-                            <input type="text" class="form-control" id="guardian_contact_phone_number" name="guardian_contact_phone_number" value="<?php echo htmlspecialchars($student['guardian_contact_phone_number'] ?? ''); ?>">
-                        </div>
-                        
-                        <div class="form-group mb-3">
-                            <label>Child Lives With</label>
-                            <div class="d-flex flex-wrap">
-                                <?php
-                                $livingWith = $student['child_lives_with'] ?? '';
-                                $livingWithOptions = ['Both Parents', 'Mother', 'Father', 'Guardian'];
-                                $livingWithArray = explode(',', $livingWith);
-                                
-                                foreach ($livingWithOptions as $option):
-                                    $checked = in_array($option, $livingWithArray) ? 'checked' : '';
-                                ?>
-                                <div class="form-check me-4">
-                                    <input class="form-check-input" type="checkbox" name="child_lives_with[]" id="lives_<?php echo str_replace(' ', '_', strtolower($option)); ?>" value="<?php echo $option; ?>" <?php echo $checked; ?>>
-                                    <label class="form-check-label" for="lives_<?php echo str_replace(' ', '_', strtolower($option)); ?>">
-                                        <?php echo $option; ?>
-                                    </label>
-                                </div>
+                    </div>
+                    
+                    <!-- Announcements Tab -->
+                    <div class="tab-pane" id="announcements">
+                        <div class="dashboard-card">
+                            <h4><i class="fas fa-bullhorn"></i> School Announcements</h4>
+                            
+                            <?php if (count($studentAnnouncements) > 0): ?>
+                                <?php foreach($studentAnnouncements as $announcement): ?>
+                                    <div class="announcement-item mb-4 p-3 border-left border-<?php 
+                                        $borderClass = 'primary'; 
+                                        switch($announcement['type']) {
+                                            case 'general': $borderClass = 'primary'; break;
+                                            case 'academic': $borderClass = 'info'; break;
+                                            case 'exam': $borderClass = 'warning'; break;
+                                            case 'event': $borderClass = 'success'; break;
+                                            case 'payment': $borderClass = 'danger'; break;
+                                            case 'important': $borderClass = 'dark'; break;
+                                        }
+                                        echo $borderClass;
+                                    ?>">
+                                        <h5><?php echo htmlspecialchars($announcement['title']); ?></h5>
+                                        <p><?php echo nl2br(htmlspecialchars($announcement['content'])); ?></p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-muted small"><i class="far fa-calendar-alt mr-1"></i> <?php echo date('M d, Y', strtotime($announcement['created_at'])); ?></span>
+                                            <span class="badge badge-<?php echo $borderClass; ?>"><?php echo ucfirst($announcement['type']); ?></span>
+                                        </div>
+                                    </div>
                                 <?php endforeach; ?>
-                            </div>
-                        </div>
-                        
-                        <hr>
-                        <h5 class="mb-3">Medical Information (Optional)</h5>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="blood_group">Blood Group</label>
-                                    <select class="form-control" id="blood_group" name="blood_group">
-                                        <option value="">Select Blood Group</option>
-                                        <?php
-                                        $bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
-                                        foreach ($bloodGroups as $group):
-                                            $selected = ($student['blood_group'] ?? '') === $group ? 'selected' : '';
-                                        ?>
-                                        <option value="<?php echo $group; ?>" <?php echo $selected; ?>><?php echo $group; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
+                            <?php else: ?>
+                                <div class="alert alert-info">
+                                    <p class="mb-0">No announcements are currently available.</p>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="genotype">Genotype</label>
-                                    <select class="form-control" id="genotype" name="genotype">
-                                        <option value="">Select Genotype</option>
-                                        <?php
-                                        $genotypes = ['AA', 'AS', 'SS', 'AC', 'SC'];
-                                        foreach ($genotypes as $genotype):
-                                            $selected = ($student['genotype'] ?? '') === $genotype ? 'selected' : '';
-                                        ?>
-                                        <option value="<?php echo $genotype; ?>" <?php echo $selected; ?>><?php echo $genotype; ?></option>
-                                        <?php endforeach; ?>
-                                    </select>
-                                </div>
-                            </div>
+                            <?php endif; ?>
                         </div>
-                        
-                        <div class="form-group mb-3">
-                            <label for="allergies">Allergies</label>
-                            <textarea class="form-control" id="allergies" name="allergies" rows="2" placeholder="List any allergies here"><?php echo htmlspecialchars($student['allergies'] ?? ''); ?></textarea>
-                        </div>
-                        
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary" name="update_profile">Save Changes</button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1598,346 +2547,11 @@ function formatDate($date) {
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.0/main.min.css" rel="stylesheet">
-    
+
     <script>
         $(document).ready(function() {
-            // File input preview for passport photo
-            $('#passport_photo').change(function() {
-                const file = this.files[0];
-                if (file) {
-                    let reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#imagePreview').show();
-                        $('#imagePreview img').attr('src', e.target.result);
-                    }
-                    reader.readAsDataURL(file);
-                    
-                    // Update the file input label with the file name
-                    let fileName = file.name;
-                    $(this).next('.custom-file-label').html(fileName);
-                }
-            });
-            
-            // Rest of your JavaScript code
-            // Sidebar Navigation Toggle
-            $('#navToggle').click(function() {
-                $('#app').toggleClass('show-sidebar');
-            });
-            
-            // Tab Navigation
-            var hash = window.location.hash;
-            if (hash) {
-                $('.nav-link[href="' + hash + '"]').tab('show');
-            }
-            
-            $('.nav-link').on('click', function() {
-                window.location.hash = $(this).attr('href');
-            });
-            
-            // Initialize Academic Progress Chart
-            var academicCtx = document.getElementById('academicChart');
-            if (academicCtx) {
-                var academicChart = new Chart(academicCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Term 1', 'Term 2', 'Term 3'],
-                        datasets: [{
-                            label: 'Your Score',
-                            data: [85, 75, 90],
-                            backgroundColor: 'rgba(41, 98, 255, 0.2)',
-                            borderColor: '#2962ff',
-                            borderWidth: 2,
-                            pointBackgroundColor: '#2962ff',
-                            pointBorderColor: '#fff',
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
-                            tension: 0.4
-                        }, {
-                            label: 'Class Average',
-                            data: [75, 70, 80],
-                            backgroundColor: 'rgba(153, 102, 255, 0.2)',
-                            borderColor: '#9966ff',
-                            borderWidth: 2,
-                            pointBackgroundColor: '#9966ff',
-                            pointBorderColor: '#fff',
-                            pointRadius: 5,
-                            pointHoverRadius: 7,
-                            tension: 0.4
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            yAxes: [{
-                                ticks: {
-                                    beginAtZero: true,
-                                    max: 100
-                                },
-                                gridLines: {
-                                    color: 'rgba(0, 0, 0, 0.05)',
-                                    zeroLineColor: 'rgba(0, 0, 0, 0.1)'
-                                }
-                            }],
-                            xAxes: [{
-                                gridLines: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
-                                }
-                            }]
-                        },
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                });
-            }
-            
-            // Initialize Exam Chart
-            var examCtx = document.getElementById('examChart');
-            if (examCtx) {
-                var examData = <?php 
-                    $labels = [];
-                    $scores = [];
-                    
-                    if (!empty($exam_results)) {
-                        foreach(array_slice($exam_results, 0, 5) as $exam) {
-                            $labels[] = ucfirst($exam['exam_type']);
-                            $scores[] = ($exam['score'] / $exam['total_score']) * 100;
-                        }
-                    } else {
-                        $labels = ['No Exam Data'];
-                        $scores = [0];
-                    }
-                    
-                    echo json_encode([
-                        'labels' => $labels,
-                        'scores' => $scores
-                    ]);
-                ?>;
-                
-                var examChart = new Chart(examCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: examData.labels,
-                        datasets: [{
-                            label: 'Performance (%)',
-                            data: examData.scores,
-                            backgroundColor: [
-                                'rgba(41, 98, 255, 0.7)',
-                                'rgba(76, 175, 80, 0.7)',
-                                'rgba(255, 179, 0, 0.7)',
-                                'rgba(233, 30, 99, 0.7)',
-                                'rgba(156, 39, 176, 0.7)'
-                            ],
-                            borderColor: [
-                                'rgba(41, 98, 255, 1)',
-                                'rgba(76, 175, 80, 1)',
-                                'rgba(255, 179, 0, 1)',
-                                'rgba(233, 30, 99, 1)',
-                                'rgba(156, 39, 176, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        scales: {
-                            yAxes: [{
-                                ticks: {
-                                    beginAtZero: true,
-                                    max: 100
-                                },
-                                gridLines: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
-                                }
-                            }],
-                            xAxes: [{
-                                gridLines: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
-                                }
-                            }]
-                        },
-                        legend: {
-                            display: false
-                        }
-                    }
-                });
-            }
-            
-            // Initialize Exam Doughnut Chart
-            var doughnutCtx = document.getElementById('examDoughnutChart');
-            if (doughnutCtx) {
-                var passRate = <?php 
-                    $passRate = 0;
-                    if(count($exam_results) > 0) {
-                        $passed = 0;
-                        foreach($exam_results as $exam) {
-                            if($exam['status'] === 'passed') $passed++;
-                        }
-                        $passRate = round(($passed / count($exam_results)) * 100);
-                    }
-                    echo $passRate;
-                ?>;
-                
-                var doughnutChart = new Chart(doughnutCtx, {
-                    type: 'doughnut',
-                    data: {
-                        datasets: [{
-                            data: [passRate, 100 - passRate],
-                            backgroundColor: [
-                                '#4caf50',
-                                '#f5f5f5'
-                            ],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: true,
-                        cutoutPercentage: 80,
-                        legend: {
-                            display: false
-                        },
-                        tooltips: {
-                            enabled: false
-                        },
-                        animation: {
-                            animateRotate: true,
-                            animateScale: true
-                        }
-                    }
-                });
-            }
-            
-            // Initialize Payment Chart
-            var paymentCtx = document.getElementById('paymentChart');
-            if (paymentCtx) {
-                var paymentData = <?php 
-                    $paymentLabels = [];
-                    $paymentAmounts = [];
-                    
-                    if (!empty($payments)) {
-                        $uniqueTypes = [];
-                        foreach($payments as $payment) {
-                            $type = ucfirst(str_replace('_', ' ', $payment['payment_type']));
-                            if (!in_array($type, $uniqueTypes)) {
-                                $uniqueTypes[] = $type;
-                                $paymentLabels[] = $type;
-                                $paymentAmounts[] = 0;
-                            }
-                            
-                            $index = array_search($type, $uniqueTypes);
-                            $paymentAmounts[$index] += $payment['amount'];
-                        }
-                    } else {
-                        $paymentLabels = ['No Payment Data'];
-                        $paymentAmounts = [0];
-                    }
-                    
-                    echo json_encode([
-                        'labels' => $paymentLabels,
-                        'amounts' => $paymentAmounts
-                    ]);
-                ?>;
-                
-                var paymentChart = new Chart(paymentCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: paymentData.labels,
-                        datasets: [{
-                            data: paymentData.amounts,
-                            backgroundColor: [
-                                'rgba(76, 175, 80, 0.7)',
-                                'rgba(41, 98, 255, 0.7)',
-                                'rgba(255, 179, 0, 0.7)',
-                                'rgba(233, 30, 99, 0.7)',
-                                'rgba(156, 39, 176, 0.7)'
-                            ],
-                            borderColor: [
-                                'rgba(76, 175, 80, 1)',
-                                'rgba(41, 98, 255, 1)',
-                                'rgba(255, 179, 0, 1)',
-                                'rgba(233, 30, 99, 1)',
-                                'rgba(156, 39, 176, 1)'
-                            ],
-                            borderWidth: 1
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        legend: {
-                            position: 'right'
-                        }
-                    }
-                });
-            }
-            
-            // Initialize Calendar
-            var calendarEl = document.getElementById('schoolCalendar');
-            if (calendarEl) {
-                var calendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,listWeek'
-                    },
-                    events: [
-                        {
-                            title: 'First Day of Term',
-                            start: '2023-09-04',
-                            color: '#1a237e'
-                        },
-                        {
-                            title: 'Mid-Term Break',
-                            start: '2023-10-23',
-                            end: '2023-10-30',
-                            color: '#0d47a1'
-                        },
-                        {
-                            title: 'Parent-Teacher Meeting',
-                            start: '2023-09-29',
-                            color: '#2962ff'
-                        },
-                        {
-                            title: 'End of Term Exams',
-                            start: '2023-12-04',
-                            end: '2023-12-15',
-                            color: '#e53935'
-                        },
-                        {
-                            title: 'Christmas Holiday',
-                            start: '2023-12-18',
-                            end: '2024-01-08',
-                            color: '#43a047'
-                        }
-                    ],
-                    eventTimeFormat: {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        meridiem: 'short'
-                    }
-                });
-                
-                calendar.render();
-            }
-            
-            // Responsive adjustments for mobile
-            function checkScreenSize() {
-                if (window.innerWidth < 992) {
-                    $('#app').removeClass('show-sidebar');
-                }
-            }
-            
-            // Run on page load
-            checkScreenSize();
-            
-            // Run on window resize
-            $(window).resize(function() {
-                checkScreenSize();
-            });
+            // Initialize charts and other UI components here
+            // This script will run after our custom tab system
         });
     </script>
 </body>

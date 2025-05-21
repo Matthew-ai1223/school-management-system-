@@ -98,11 +98,10 @@ $types = "";
 
 // Add filters
 if (!empty($application_type)) {
-    // Check both application_type and registration_type fields
-    $query .= " AND (s.application_type = ? OR s.registration_type = ?)";
+    // Only filter by application_type since registration_type doesn't exist
+    $query .= " AND s.application_type = ?";
     $params[] = $application_type;
-    $params[] = $application_type;
-    $types .= "ss";
+    $types .= "s";
 }
 
 if (!empty($status)) {
@@ -393,7 +392,7 @@ if ($result && $result->num_rows > 0) {
                                                 <td>
                                                     <?php 
                                                     // Get the registration type with fallbacks and better handling
-                                                    $studentType = $student['registration_type'] ?? $student['application_type'] ?? '';
+                                                    $studentType = $student['application_type'] ?? '';
                                                     
                                                     // Check registration number to determine type
                                                     $regNumber = $student['registration_number'] ?? '';
@@ -406,9 +405,8 @@ if ($result && $result->num_rows > 0) {
                                                     }
                                                     
                                                     // If still empty, normalize the registration type
-                                                    if (empty($studentType) && !empty($student['registration_type'] ?? $student['application_type'] ?? '')) {
-                                                        // Convert to lowercase and handle common variations
-                                                        $studentType = strtolower($student['registration_type'] ?? $student['application_type'] ?? '');
+                                                    if (empty($studentType) && !empty($student['application_type'] ?? '')) {
+                                                        $studentType = strtolower($student['application_type'] ?? '');
                                                         
                                                         // Map aliases to standard values
                                                         if ($studentType == 'kid' || $studentType == 'ace kiddies' || $studentType == 'kiddies school') {
@@ -435,10 +433,9 @@ if ($result && $result->num_rows > 0) {
                                                     // Debug info if needed
                                                     if (isset($_GET['debug'])) {
                                                         echo '<div class="small text-muted">';
-                                                        echo 'Raw: ' . ($student['registration_type'] ?? 'NULL');
-                                                        echo ' / ' . ($student['application_type'] ?? 'NULL');
+                                                        echo 'Raw: ' . ($student['application_type'] ?? 'NULL');
                                                         echo ' / Reg#: ' . $regNumber;
-                                                        echo ' → ' . $studentType;
+                                                        echo ' / Final: ' . $studentType;
                                                         echo '</div>';
                                                     }
                                                     ?>

@@ -257,8 +257,8 @@ try {
             // Application Overview Section
             $pdf->AddSectionHeader('Application Overview');
             $pdf->AddFieldRow('Application ID:', '#' . $application['id']);
-            $pdf->AddFieldRow('Application Type:', ucfirst($application['application_type']));
-            $pdf->AddFieldRow('Status:', ucfirst($application['status']));
+            $pdf->AddFieldRow('Application Type:', ucfirst((string)$application['application_type']));
+            $pdf->AddFieldRow('Status:', ucfirst((string)$application['status']));
             $pdf->AddFieldRow('Submission Date:', date('F d, Y H:i', strtotime($application['submission_date'])));
             if ($reviewer_name) {
                 $pdf->AddFieldRow('Reviewed By:', $reviewer_name);
@@ -274,8 +274,8 @@ try {
                 $pdf->AddSectionHeader('Payment Information');
                 $pdf->AddFieldRow('Payment Reference:', $payment_data['reference']);
                 $pdf->AddFieldRow('Amount Paid:', '₦' . number_format($payment_data['amount'], 2));
-                $pdf->AddFieldRow('Payment Status:', ucfirst($payment_data['status']));
-                $pdf->AddFieldRow('Payment Method:', ucfirst($payment_data['payment_method']));
+                $pdf->AddFieldRow('Payment Status:', ucfirst((string)$payment_data['status']));
+                $pdf->AddFieldRow('Payment Method:', ucfirst((string)$payment_data['payment_method']));
                 $pdf->AddFieldRow('Payment Date:', $payment_data['payment_date'] ? 
                     date('F d, Y H:i', strtotime($payment_data['payment_date'])) : 'Not completed');
                 $pdf->AddFieldRow('Email:', $payment_data['email']);
@@ -408,8 +408,8 @@ try {
         // Application Overview Section
         $pdf->AddSectionHeader('Application Overview');
         $pdf->AddFieldRow('Application ID:', '#' . $application['id']);
-        $pdf->AddFieldRow('Application Type:', ucfirst($application['application_type']));
-        $pdf->AddFieldRow('Status:', ucfirst($application['status']));
+        $pdf->AddFieldRow('Application Type:', ucfirst((string)$application['application_type']));
+        $pdf->AddFieldRow('Status:', ucfirst((string)$application['status']));
         $pdf->AddFieldRow('Submission Date:', date('F d, Y H:i', strtotime($application['submission_date'])));
         if ($reviewer_name) {
             $pdf->AddFieldRow('Reviewed By:', $reviewer_name);
@@ -425,8 +425,8 @@ try {
             $pdf->AddSectionHeader('Payment Information');
             $pdf->AddFieldRow('Payment Reference:', $payment_data['reference']);
             $pdf->AddFieldRow('Amount Paid:', '₦' . number_format($payment_data['amount'], 2));
-            $pdf->AddFieldRow('Payment Status:', ucfirst($payment_data['status']));
-            $pdf->AddFieldRow('Payment Method:', ucfirst($payment_data['payment_method']));
+            $pdf->AddFieldRow('Payment Status:', ucfirst((string)$payment_data['status']));
+            $pdf->AddFieldRow('Payment Method:', ucfirst((string)$payment_data['payment_method']));
             $pdf->AddFieldRow('Payment Date:', $payment_data['payment_date'] ? 
                 date('F d, Y H:i', strtotime($payment_data['payment_date'])) : 'Not completed');
             $pdf->AddFieldRow('Email:', $payment_data['email']);

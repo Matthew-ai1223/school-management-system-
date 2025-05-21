@@ -242,67 +242,212 @@ function formatFileSize($file_path) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition-speed: 0.3s;
+            --sidebar-width: 260px;
+        }
+        
+        body {
+            background-color: #f5f8fa;
+            color: var(--dark-color);
+            padding-left: 0;
+            overflow-x: hidden;
+        }
+        
+        @media (min-width: 768px) {
+            body {
+                padding-left: var(--sidebar-width);
+            }
+            
+            .container-fluid {
+                padding-left: 0;
+                padding-right: 0;
+                width: 100%;
+            }
+            
+            .main-content {
+                width: calc(100% - var(--sidebar-width));
+                margin-left: auto;
+                padding-left: 30px;
+                padding-right: 30px;
+            }
+        }
+        
+        @media (max-width: 767.98px) {
+            body {
+                padding-left: 0;
+            }
+            
+            .main-content {
+                width: 100%;
+                margin-left: 0;
+                padding: 15px;
+            }
+            
+            .container-fluid {
+                padding: 0;
+            }
+        }
+        
         .field-label {
             font-weight: 600;
             color: #495057;
+            margin-bottom: 0.25rem;
         }
+        
         .field-value {
-            margin-top: 0.25rem;
+            margin-bottom: 0.5rem;
         }
+        
+        .card {
+            box-shadow: var(--card-shadow);
+            border: none;
+            border-radius: 0.5rem;
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            padding: 1rem 1.5rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
         .status-badge {
             font-size: 0.9rem;
             padding: 0.5rem 1rem;
+            margin-left: 0.75rem;
+            border-radius: 30px;
+            font-weight: 500;
         }
+        
         .passport-preview {
             text-align: center;
             padding: 1rem;
-            background: #f8f9fa;
+            background: var(--light-color);
             border-radius: 0.5rem;
+            transition: transform var(--transition-speed);
         }
+        
+        .passport-preview:hover {
+            transform: scale(1.03);
+        }
+        
         .passport-preview img {
             max-width: 200px;
             max-height: 200px;
             border: 5px solid #fff;
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            border-radius: 0.25rem;
+            transition: box-shadow var(--transition-speed);
         }
+        
+        .passport-preview img:hover {
+            box-shadow: 0 0 20px rgba(0,0,0,0.18);
+        }
+        
         .field-group {
-            background: #f8f9fa;
+            background: var(--light-color);
             border-radius: 0.5rem;
             padding: 1.5rem;
             margin-bottom: 2rem;
+            transition: background-color var(--transition-speed);
         }
+        
+        .field-group:hover {
+            background: #f0f4f8;
+        }
+        
         .field-group-title {
-            color: #0d6efd;
+            color: var(--primary-color);
             font-weight: 600;
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .btn {
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all var(--transition-speed);
+        }
+        
+        .btn-primary, .btn-success, .btn-danger, .btn-secondary {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-primary:hover, .btn-success:hover, .btn-danger:hover, .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .badge {
+            padding: 0.5em 0.75em;
+            border-radius: 30px;
+            font-weight: 500;
+        }
+        
+        .user-info {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Improved comment area */
+        textarea.form-control {
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            min-height: 100px;
+            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+        
+        textarea.form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
+    <div class="container-fluid p-0">
+        <div class="row g-0">
             <!-- Sidebar -->
             <?php include 'include/sidebar.php'; ?>
-
+            
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 p-4">
+            <div class="col-md-9 col-lg-10 p-4 ms-auto main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>
-                        <?php echo ucfirst($application['application_type']); ?> Application Details
+                        <?php echo ucfirst((string)$application['application_type']); ?> Application Details
                         <span class="badge bg-<?php 
                             echo $application['status'] === 'pending' ? 'warning' : 
                                 ($application['status'] === 'approved' ? 'success' : 'danger'); 
                             ?> status-badge">
-                            <?php echo ucfirst($application['status']); ?>
+                            <?php echo ucfirst((string)$application['status']); ?>
                         </span>
                     </h2>
                     <div>
                         <a href="applications.php" class="btn btn-secondary">
                             <i class="bi bi-arrow-left"></i> Back to Applications
                         </a>
-                        <?php if ($application['status'] === 'pending'): ?>
+                        <?php if (trim(strtolower((string)$application['status'])) === 'pending'): ?>
                         <button class="btn btn-success" onclick="updateStatus(<?php echo $id; ?>, 'approved')">
                             <i class="bi bi-check-circle"></i> Approve
                         </button>
@@ -446,7 +591,7 @@ function formatFileSize($file_path) {
                                         echo $payment_data['status'] === 'completed' ? 'success' : 
                                             ($payment_data['status'] === 'pending' ? 'warning' : 'danger'); 
                                     ?>">
-                                        <?php echo ucfirst($payment_data['status']); ?>
+                                        <?php echo ucfirst((string)$payment_data['status']); ?>
                                     </span>
                                 </div>
                             </div>
@@ -463,7 +608,7 @@ function formatFileSize($file_path) {
                             <div class="col-md-4">
                                 <div class="field-label">Payment Method</div>
                                 <div class="field-value">
-                                    <?php echo ucfirst($payment_data['payment_method']); ?>
+                                    <?php echo ucfirst((string)$payment_data['payment_method']); ?>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -547,7 +692,7 @@ function formatFileSize($file_path) {
                     </div>
                 </div>
 
-                <?php if ($application['status'] === 'pending'): ?>
+                <?php if (trim(strtolower((string)$application['status'])) === 'pending'): ?>
                 <div class="card mt-4">
                     <div class="card-header">
                         <h5 class="card-title mb-0">Add Review Comments</h5>
@@ -576,9 +721,70 @@ function formatFileSize($file_path) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth scrolling to all cards
+            document.querySelectorAll('.card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't trigger for clicks on buttons, links, or form elements
+                    if (e.target.closest('a, button, input, textarea, select')) {
+                        return;
+                    }
+                    // Apply a subtle animation
+                    this.style.transform = 'scale(0.98)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                });
+            });
+            
+            // Add tooltip initialization if Bootstrap 5 is used
+            if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+                const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+            }
+            
+            // Ensure sidebar toggle works correctly with the new layout
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            
+            if (sidebarToggle && sidebar) {
+                // Initially check screen size and adjust main content
+                adjustMainContentForSidebar();
+                
+                // Listen for window resize events
+                window.addEventListener('resize', adjustMainContentForSidebar);
+                
+                function adjustMainContentForSidebar() {
+                    const mainContent = document.querySelector('.main-content');
+                    if (window.innerWidth >= 768) {
+                        if (mainContent) {
+                            mainContent.style.marginLeft = 'auto';
+                            mainContent.style.width = 'calc(100% - var(--sidebar-width))';
+                        }
+                    } else {
+                        if (mainContent) {
+                            mainContent.style.marginLeft = '0';
+                            mainContent.style.width = '100%';
+                        }
+                    }
+                }
+            }
+        });
+        
         function updateStatus(id, status) {
             const comments = document.getElementById('comments')?.value || '';
+            
             if (confirm('Are you sure you want to ' + status + ' this application?')) {
+                // Show loading state
+                const statusBtn = event.target.closest('button');
+                const originalContent = statusBtn.innerHTML;
+                statusBtn.disabled = true;
+                statusBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+                
+                // Call API to update status
                 fetch('update_application_status.php', {
                     method: 'POST',
                     headers: {
@@ -586,20 +792,84 @@ function formatFileSize($file_path) {
                     },
                     body: 'id=' + id + '&status=' + status + '&comments=' + encodeURIComponent(comments)
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        alert('Application status updated successfully!');
-                        window.location.reload();
+                        // Show success notification
+                        showNotification('Application ' + status + ' successfully!', 'success');
+                        
+                        // Reload after a short delay to show the notification
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
                     } else {
-                        alert(data.message || 'An error occurred while updating the application status.');
+                        // Reset button
+                        statusBtn.disabled = false;
+                        statusBtn.innerHTML = originalContent;
+                        
+                        // Show error
+                        showNotification(data.message || 'An error occurred while updating the status.', 'danger');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while updating the application status.');
+                    statusBtn.disabled = false;
+                    statusBtn.innerHTML = originalContent;
+                    showNotification('An error occurred while processing your request.', 'danger');
                 });
             }
+        }
+        
+        // Function to show notification
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} notification-toast`;
+            notification.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            // Style for the notification
+            Object.assign(notification.style, {
+                position: 'fixed',
+                top: '20px',
+                right: '20px',
+                zIndex: '9999',
+                minWidth: '300px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                borderRadius: '4px',
+                opacity: '0',
+                transform: 'translateY(-20px)',
+                transition: 'opacity 0.3s, transform 0.3s'
+            });
+            
+            // Add to body
+            document.body.appendChild(notification);
+            
+            // Trigger animation
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateY(-20px)';
+                
+                // Remove from DOM after animation
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 5000);
         }
     </script>
 </body>

@@ -3,8 +3,8 @@ require_once '../auth.php';
 require_once '../config.php';
 require_once '../database.php';
 
-$auth = new Auth();
-$auth->requireRole('admin');
+// $auth = new Auth();
+// $auth->requireRole('admin');
 
 $db = Database::getInstance();
 $mysqli = $db->getConnection();
@@ -335,10 +335,10 @@ $total_results = $result->num_rows;
                                                 </td>
                                                 <td><?php echo $row['id']; ?></td>
                                                 <td><?php echo htmlspecialchars($display_name); ?></td>
-                                                <td><?php echo ucfirst($row['application_type']); ?></td>
+                                                <td><?php echo ucfirst((string)$row['application_type']); ?></td>
                                                 <td>
                                                     <span class="badge bg-<?php echo $row['status'] === 'pending' ? 'warning' : ($row['status'] === 'approved' ? 'success' : 'danger'); ?>">
-                                                        <?php echo ucfirst($row['status']); ?>
+                                                        <?php echo ucfirst((string)$row['status']); ?>
                                                     </span>
                                                 </td>
                                                 <td><?php echo date('Y-m-d H:i', strtotime($row['submission_date'])); ?></td>

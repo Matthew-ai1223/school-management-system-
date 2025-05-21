@@ -391,6 +391,30 @@ if (isset($_GET['pdf'])) {
                 $pdf->generateExamResult($result);
             }
             break;
+        case 'full_profile':
+            // Generate complete student profile with all data
+            $student['categorized_fields'] = $categorizedFields;
+            $student['payments'] = [];
+            $student['exam_results'] = [];
+            
+            // Add payment data
+            if ($payments && $payments->num_rows > 0) {
+                $payments->data_seek(0);
+                while ($payment = $payments->fetch_assoc()) {
+                    $student['payments'][] = $payment;
+                }
+            }
+            
+            // Add exam results data
+            if ($exam_results && $exam_results->num_rows > 0) {
+                $exam_results->data_seek(0);
+                while ($result = $exam_results->fetch_assoc()) {
+                    $student['exam_results'][] = $result;
+                }
+            }
+            
+            $pdf->generateStudentProfile($student);
+            break;
     }
     
     $pdf->Output();
@@ -455,6 +479,17 @@ foreach ($class_columns as $column) {
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Student Details</h2>
                     <div>
+                        <div class="dropdown d-inline-block me-2">
+                            <button class="btn btn-success dropdown-toggle" type="button" id="pdfDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-file-pdf"></i> Download PDF
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="pdfDropdown">
+                                <li><a class="dropdown-item" href="student_details.php?id=<?php echo $student_id; ?>&pdf=full_profile">Complete Student Profile</a></li>
+                                <li><a class="dropdown-item" href="student_details.php?id=<?php echo $student_id; ?>&pdf=application">Application Form</a></li>
+                                <li><a class="dropdown-item" href="student_details.php?id=<?php echo $student_id; ?>&pdf=payments">Payment History</a></li>
+                                <li><a class="dropdown-item" href="student_details.php?id=<?php echo $student_id; ?>&pdf=results">Exam Results</a></li>
+                            </ul>
+                        </div>
                         <a href="edit_student.php?id=<?php echo $student['id']; ?>" class="btn btn-primary">
                             <i class="bi bi-pencil"></i> Edit Student
                         </a>
@@ -808,8 +843,11 @@ foreach ($class_columns as $column) {
 
                 <!-- Payment History -->
                 <div class="card detail-card">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="mb-0">Payment History</h4>
+                        <a href="update_student_payment.php?student_id=<?php echo $student_id; ?>&redirect=student" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus-circle"></i> Record New Payment
+                        </a>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -817,35 +855,57 @@ foreach ($class_columns as $column) {
                                 <thead>
                                     <tr>
                                         <th>Date</th>
+                                        <th>Type</th>
                                         <th>Amount</th>
                                         <th>Payment Method</th>
                                         <th>Reference</th>
                                         <th>Status</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php if ($payments->num_rows > 0): ?>
+                                        <?php $payments->data_seek(0); // Reset result pointer ?>
                                         <?php while ($payment = $payments->fetch_assoc()): ?>
                                             <tr>
                                                 <td><?php echo date('Y-m-d', strtotime($payment['payment_date'])); ?></td>
+                                                <td><?php echo formatPaymentType($payment['payment_type'] ?? ''); ?></td>
                                                 <td>₦<?php echo number_format($payment['amount'], 2); ?></td>
                                                 <td><?php echo ucfirst($payment['payment_method']); ?></td>
-                                                <td><?php echo htmlspecialchars($payment['reference']); ?></td>
+                                                <td><?php echo htmlspecialchars($payment['reference_number'] ?? $payment['reference'] ?? 'N/A'); ?></td>
                                                 <td>
-                                                    <span class="badge bg-<?php echo $payment['status'] === 'success' ? 'success' : 'danger'; ?>">
-                                                        <?php echo ucfirst($payment['status']); ?>
-                                                    </span>
+                                                    <?php echo formatPaymentStatus($payment['status']); ?>
+                                                </td>
+                                                <td>
+                                                    <a href="payment_details.php?id=<?php echo $payment['id']; ?>" class="btn btn-info btn-sm">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <?php if ($payment['status'] === 'pending'): ?>
+                                                    <a href="update_payment_status.php?id=<?php echo $payment['id']; ?>&student_id=<?php echo $student_id; ?>" class="btn btn-success btn-sm">
+                                                        <i class="fas fa-check"></i>
+                                                    </a>
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
                                         <?php endwhile; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="5" class="text-center">No payment history found</td>
+                                            <td colspan="7" class="text-center">No payment history found</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="update_student_payment.php?student_id=<?php echo $student_id; ?>&redirect=student" class="btn btn-primary">
+                            <i class="fas fa-plus-circle"></i> Record New Payment
+                        </a>
+                        <?php if ($payments->num_rows > 0): ?>
+                        <a href="payments.php?student_id=<?php echo $student_id; ?>" class="btn btn-secondary">
+                            <i class="fas fa-list"></i> View All Payments
+                        </a>
+                        <?php endif; ?>
                     </div>
                 </div>
 
