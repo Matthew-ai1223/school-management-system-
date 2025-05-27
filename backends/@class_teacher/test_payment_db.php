@@ -196,7 +196,7 @@ $output = ob_get_clean();
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Payment Database Test - ACE MODEL COLLEGE</title>
+    <title>Payment Database Test - ACE COLLEGE</title>
     <style>
         body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
         h1, h2 { color: #333; }

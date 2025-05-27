@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['teacher_login'])) {
 }
 
 // Include header with minimal styling
-$pageTitle = "Login - ACE MODEL COLLEGE";
+$pageTitle = "Login - ACE COLLEGE";
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -231,7 +231,7 @@ $pageTitle = "Login - ACE MODEL COLLEGE";
     <div class="login-container">
         <div class="text-center mb-4">
             <!-- School logo could be placed here -->
-            <h1 class="h3 text-dark">ACE MODEL COLLEGE</h1>
+            <h1 class="h3 text-dark">ACE COLLEGE</h1>
             <p class="text-muted">Teacher Portal</p>
         </div>
         
@@ -276,7 +276,7 @@ $pageTitle = "Login - ACE MODEL COLLEGE";
                 <div class="tab-pane fade show active" id="teacher" role="tabpanel" aria-labelledby="teacher-tab">
                     <form method="post" action="login.php">
                         <div class="form-group">
-                            <label for="teacher_employee_id"><i class="fas fa-id-card mr-2"></i>Employee ID</label>
+                            <label for="teacher_employee_id"><i class="fas fa-id-card mr-2"></i>Employee ID/Password</label>
                             <div class="input-group">
                                 <div class="input-group-prepend">
                                     <span class="input-group-text"><i class="fas fa-user-lock"></i></span>
@@ -334,7 +334,7 @@ $pageTitle = "Login - ACE MODEL COLLEGE";
             
             <div class="card-footer bg-light text-center py-3">
                 <p class="mb-0 text-muted">
-                    <small>&copy; <?php echo date('Y'); ?> ACE MODEL COLLEGE. All rights reserved.</small>
+                    <small>&copy; <?php echo date('Y'); ?> ACE COLLEGE. All rights reserved.</small>
                 </p>
             </div>
         </div>

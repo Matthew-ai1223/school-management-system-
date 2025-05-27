@@ -90,7 +90,7 @@ $pageTitle = "Create New Exam";
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title><?php echo $pageTitle; ?> - ACE MODEL COLLEGE</title>
+    <title><?php echo $pageTitle; ?> - ACE COLLEGE</title>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -178,7 +178,7 @@ $pageTitle = "Create New Exam";
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <a class="navbar-brand" href="dashboard.php">
-            <i class="fas fa-laptop-code mr-2"></i> ACE MODEL COLLEGE - CBT System
+            <i class="fas fa-laptop-code mr-2"></i> ACE COLLEGE - CBT System
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>

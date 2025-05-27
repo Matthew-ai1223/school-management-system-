@@ -198,6 +198,33 @@ if (count($recent_students) > 0) {
             font-weight: 700;
         }
         
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+        
+        .sidebar-menu a {
+            display: block;
+            padding: 10px 15px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+        
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-menu i {
+            margin-right: 8px;
+            width: 20px;
+            text-align: center;
+        }
+        
         .main-content {
             padding: 20px;
         }

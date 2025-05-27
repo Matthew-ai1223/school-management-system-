@@ -128,6 +128,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                     <li><a href="exams.php" class="<?php echo $currentPage === 'exams.php' ? 'active' : ''; ?>">All Exams</a></li>
                     <li><a href="exam_details.php" class="<?php echo $currentPage === 'exam_details.php' ? 'active' : ''; ?>">Exam Details</a></li>
                     <li><a href="edit_exam.php" class="<?php echo $currentPage === 'edit_exam.php' ? 'active' : ''; ?>">Edit Exam</a></li>
+                    <li><a href="../cbt/view_exam_results.php" class="<?php echo $currentPage === 'view_exam_results.php' ? 'active' : ''; ?>">View Exam Results</a></li>
                 </ul>
             </li>
             

@@ -225,7 +225,7 @@ include '../admin/include/header.php';
                                                         </a>
                                                     </td>
                                                     <td><?php echo $activity['registration_number']; ?></td>
-                                                    <td>
+                                                    <td style="color:rgb(238, 37, 37);">
                                                         <?php
                                                         $badgeClass = '';
                                                         switch ($activity['activity_type']) {

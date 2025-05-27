@@ -3,6 +3,9 @@ require_once '../../config.php';
 require_once '../../database.php';
 require_once '../../utils.php';  // Add this line to include the utils file
 
+// Debug mode disabled - uncomment if needed
+// define('DEBUG_MODE', true);
+
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -22,6 +25,11 @@ $registration_number = $_SESSION['registration_number'];
 // Connect to database
 $db = Database::getInstance();
 $conn = $db->getConnection();
+
+// Check if connection is successful
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
 
 // Ensure both admission_number and registration_number columns exist
 ensureStudentNumberColumns($conn);
@@ -103,21 +111,37 @@ $possible_paths = [];
 // Path 1: Student files directory with stored filename
 if (!empty($student_photo)) {
     $possible_paths[] = '../uploads/student_files/' . $student_photo;
+    $possible_paths[] = '../../uploads/student_files/' . $student_photo;
+    $possible_paths[] = '../../../uploads/student_files/' . $student_photo;
 }
 
 // Path 2: Using registration number
 $safe_registration = str_replace(['/', ' '], '_', $registration_number);
 $possible_paths[] = '../uploads/student_files/' . $safe_registration . '.jpg';
 $possible_paths[] = '../uploads/student_files/' . $safe_registration . '.png';
+$possible_paths[] = '../../uploads/student_files/' . $safe_registration . '.jpg';
+$possible_paths[] = '../../uploads/student_files/' . $safe_registration . '.png';
 
 // Path 3: Check profile path 
+$possible_paths[] = '../uploads/student_passports/' . $safe_registration . '.jpg';
+$possible_paths[] = '../uploads/student_passports/' . $safe_registration . '.png';
+$possible_paths[] = '../../uploads/student_passports/' . $safe_registration . '.jpg';
+$possible_paths[] = '../../uploads/student_passports/' . $safe_registration . '.png';
 $possible_paths[] = '../../../uploads/student_passports/' . $safe_registration . '.jpg';
 $possible_paths[] = '../../../uploads/student_passports/' . $safe_registration . '.png';
 
 // Path 4: Absolute paths if needed
 $base_dir = realpath(dirname(__FILE__) . '/../../..');
 $possible_paths[] = $base_dir . '/uploads/student_files/' . $safe_registration . '.jpg';
+$possible_paths[] = $base_dir . '/uploads/student_files/' . $safe_registration . '.png';
 $possible_paths[] = $base_dir . '/uploads/student_passports/' . $safe_registration . '.jpg';
+$possible_paths[] = $base_dir . '/uploads/student_passports/' . $safe_registration . '.png';
+
+// Path 5: General school images directory
+$possible_paths[] = '../../../images/student_photos/' . $safe_registration . '.jpg';
+$possible_paths[] = '../../../images/student_photos/' . $safe_registration . '.png';
+$possible_paths[] = '../../../images/students/' . $safe_registration . '.jpg';
+$possible_paths[] = '../../../images/students/' . $safe_registration . '.png';
 
 // Check each path
 foreach ($possible_paths as $path) {
@@ -164,6 +188,23 @@ foreach ($class_columns as $column) {
     if (isset($student[$column]) && !empty($student[$column])) {
         $student_class = $student[$column];
         break;
+    }
+}
+
+// Get class teacher's name for the student's class
+$class_teacher_name = '';
+if (!empty($student_class)) {
+    $teacherQuery = "SELECT t.first_name, t.last_name
+                     FROM class_teachers ct
+                     JOIN teachers t ON ct.teacher_id = t.id
+                     WHERE ct.class_name = ? AND ct.is_active = 1
+                     LIMIT 1";
+    $stmt = $conn->prepare($teacherQuery);
+    $stmt->bind_param("s", $student_class);
+    $stmt->execute();
+    $teacherResult = $stmt->get_result();
+    if ($teacher = $teacherResult->fetch_assoc()) {
+        $class_teacher_name = $teacher['first_name'] . ' ' . $teacher['last_name'];
     }
 }
 
@@ -251,6 +292,80 @@ while ($row = $announcementsResult->fetch_assoc()) {
     $studentAnnouncements[] = $row;
 }
 
+// Get CBT exam information
+$upcoming_exams_query = "
+    SELECT 
+        e.*,
+        s.name as subject_name,
+        (SELECT COUNT(*) FROM cbt_questions WHERE exam_id = e.id) as question_count
+    FROM cbt_exams e
+    JOIN subjects s ON e.subject = s.name
+    LEFT JOIN cbt_student_exams se ON se.exam_id = e.id AND se.student_id = ?
+    WHERE e.is_active = 1 
+    AND se.id IS NULL
+    AND e.class = ?
+    ORDER BY e.created_at ASC
+";
+
+$completed_exams_query = "
+    SELECT 
+        e.*,
+        s.name as subject_name,
+        se.status,
+        se.score,
+        se.completed_at,
+        (SELECT COUNT(*) FROM cbt_questions WHERE exam_id = e.id) as question_count,
+        (
+            SELECT COUNT(*) 
+            FROM cbt_student_answers sa 
+            JOIN cbt_exam_attempts ea ON sa.attempt_id = ea.id 
+            WHERE ea.exam_id = e.id 
+            AND ea.student_id = ? 
+            AND sa.is_correct = 1
+        ) as correct_answers
+    FROM cbt_exams e
+    JOIN subjects s ON e.subject = s.name
+    JOIN cbt_student_exams se ON se.exam_id = e.id AND se.student_id = ?
+    WHERE se.status = 'Completed'
+    AND e.class = ?
+    ORDER BY se.completed_at DESC
+";
+
+$stmt = $conn->prepare($upcoming_exams_query);
+$stmt->bind_param("is", $student_id, $student_class);
+$stmt->execute();
+$upcoming_exams = $stmt->get_result();
+
+$stmt = $conn->prepare($completed_exams_query);
+$stmt->bind_param("iis", $student_id, $student_id, $student_class);
+$stmt->execute();
+$completed_exams = $stmt->get_result();
+
+// Get past exams for this student
+$pastExamsQuery = "
+    SELECT 
+        e.*,
+        se.status,
+        se.score,
+        se.started_at,
+        se.completed_at,
+        se.id as student_exam_id,
+        e.id as exam_id
+    FROM cbt_exams e
+    JOIN cbt_student_exams se ON e.id = se.exam_id
+    WHERE se.student_id = ?
+    ORDER BY se.completed_at DESC, se.started_at DESC";
+
+$stmt = $conn->prepare($pastExamsQuery);
+$stmt->bind_param("i", $student_id);
+$stmt->execute();
+$pastExamsResult = $stmt->get_result();
+$pastExams = [];
+
+while ($row = $pastExamsResult->fetch_assoc()) {
+    $pastExams[] = $row;
+}
+
 // Process form submission
 
 ?>
@@ -275,140 +390,55 @@ while ($row = $announcementsResult->fetch_assoc()) {
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     
-    <!-- Custom Tab Navigation Script - Must be in head -->
+    <!-- Mobile Navigation Script -->
     <script>
-        // Simple custom tab system - defined globally
-        function showTab(tabName) {
-            console.log('Showing tab: ' + tabName);
-            
-            // Debug - list all available tab IDs
-            var allTabElements = document.querySelectorAll('.tab-pane');
-            console.log('Available tabs:');
-            for (var i = 0; i < allTabElements.length; i++) {
-                console.log(' - ' + allTabElements[i].id);
-            }
-            
-            // Hide all tabs
-            var allTabs = document.querySelectorAll('.tab-pane');
-            for (var i = 0; i < allTabs.length; i++) {
-                allTabs[i].style.display = 'none';
-            }
-            
-            // Show the selected tab
-            var selectedTab = document.getElementById(tabName);
-            if (selectedTab) {
-                selectedTab.style.display = 'block';
-                console.log('Successfully showed tab: ' + tabName);
-            } else {
-                console.error('Tab not found: ' + tabName);
-                
-                // Try direct case-insensitive matching first
-                var tabFound = false;
-                allTabElements.forEach(function(tab) {
-                    if (tab.id.toLowerCase() === tabName.toLowerCase()) {
-                        tab.style.display = 'block';
-                        console.log('Found case-insensitive match: ' + tab.id);
-                        tabFound = true;
-                    }
-                });
-                
-                if (!tabFound) {
-                    // Try to find tab with similar ID
-                    allTabElements.forEach(function(tab) {
-                        if (tab.id.toLowerCase().includes(tabName.toLowerCase())) {
-                            tab.style.display = 'block';
-                            console.log('Found similar tab: ' + tab.id);
-                            tabFound = true;
-                        }
-                    });
-                }
-                
-                if (!tabFound) {
-                    // Default to dashboard if no similar tab found
-                    var dashboard = document.getElementById('dashboard');
-                    if (dashboard) {
-                        dashboard.style.display = 'block';
-                    }
-                }
-            }
-            
-            // Update navigation active state
-            var navLinks = document.querySelectorAll('.sidebar .nav-link');
-            for (var i = 0; i < navLinks.length; i++) {
-                navLinks[i].classList.remove('active');
-            }
-            
-            var activeLink = document.getElementById(tabName + '-link');
-            if (activeLink) {
-                activeLink.classList.add('active');
-            }
-            
-            // Close mobile sidebar if needed
-            if (window.innerWidth < 992) {
-                var sidebar = document.querySelector('.sidebar');
-                if (sidebar) {
-                    sidebar.classList.remove('mobile-active');
-                }
-            }
-            
-            // If profile tab is selected, show default subtab
-            if (tabName === 'profile') {
-                setTimeout(function() {
-                    showProfileTab('personal-info');
-                }, 50);
-            }
-            
-            return false;
-        }
-        
-        // Function to handle profile subtabs
-        function showProfileTab(subtabId) {
-            console.log('Showing profile subtab: ' + subtabId);
-            
-            // Hide all subtabs
-            var allSubtabs = document.querySelectorAll('#profileTabsContent .tab-pane');
-            for (var i = 0; i < allSubtabs.length; i++) {
-                allSubtabs[i].style.display = 'none';
-            }
-            
-            // Show selected subtab
-            var selectedSubtab = document.getElementById(subtabId);
-            if (selectedSubtab) {
-                selectedSubtab.style.display = 'block';
-            } else {
-                console.error('Subtab not found: ' + subtabId);
-                return false;
-            }
-            
-            // Update active link
-            var subtabLinks = document.querySelectorAll('#profileTabs .nav-link');
-            for (var i = 0; i < subtabLinks.length; i++) {
-                subtabLinks[i].classList.remove('active');
-            }
-            
-            var activeSubtabLink = document.querySelector('#profileTabs .nav-link[href="#' + subtabId + '"]');
-            if (activeSubtabLink) {
-                activeSubtabLink.classList.add('active');
-            }
-            
-            return false;
-        }
-        
         // Mobile sidebar toggle
         function toggleSidebar() {
-            console.log('Toggling sidebar');
             var sidebar = document.querySelector('.sidebar');
             if (sidebar) {
                 sidebar.classList.toggle('mobile-active');
-            } else {
-                console.error('Sidebar element not found');
             }
             return false;
         }
         
         // Initialize when page is fully loaded
-        window.addEventListener('load', function() {
-            console.log('Page fully loaded - initializing tabs');
+        $(document).ready(function() {
+            // Show dashboard tab by default
+            $('#mainTabContent .tab-pane:first').addClass('show active');
+            $('.sidebar .nav-link:first').addClass('active');
+            
+            // Handle sidebar navigation clicks
+            $('.sidebar .nav-link').on('click', function(e) {
+                e.preventDefault();
+                var targetTab = $(this).attr('href');
+                
+                // Update active states
+                $('.sidebar .nav-link').removeClass('active');
+                $(this).addClass('active');
+                
+                // Show the target tab
+                $('#mainTabContent .tab-pane').removeClass('show active');
+                $(targetTab).addClass('show active');
+                
+                // Close mobile sidebar if needed
+                if (window.innerWidth < 992) {
+                    $('.sidebar').removeClass('mobile-active');
+                }
+            });
+            
+            // Handle profile tab navigation
+            $('#profileTabs .nav-link').on('click', function(e) {
+                e.preventDefault();
+                var targetTab = $(this).attr('href');
+                
+                // Update active states
+                $('#profileTabs .nav-link').removeClass('active');
+                $(this).addClass('active');
+                
+                // Show the target tab
+                $('#profileTabsContent .tab-pane').removeClass('show active');
+                $(targetTab).addClass('show active');
+            });
             
             // Add mobile styles
             var style = document.createElement('style');
@@ -429,22 +459,8 @@ while ($row = $announcementsResult->fetch_assoc()) {
                         margin-left: 0;
                     }
                 }
-                
-                /* Tab display properties */
-                .tab-pane {
-                    display: none;
-                }
-                
-                #dashboard.tab-pane.active {
-                    display: block;
-                }
             `;
             document.head.appendChild(style);
-            
-            // Show dashboard by default
-            setTimeout(function() {
-                showTab('dashboard');
-            }, 100);
         });
     </script>
     
@@ -469,20 +485,6 @@ while ($row = $announcementsResult->fetch_assoc()) {
             --sidebar-width: 250px;      /* Sidebar Width */
         }
 
-        /* Force tab content to display properly */
-        .tab-content > .tab-pane {
-            display: none;
-        }
-        
-        .tab-content > .active {
-            display: block !important;
-        }
-        
-        /* Additional styles to ensure tab content is visible */
-        .show {
-            display: block !important;
-        }
-        
         html, body {
             height: 100%;
             background-color: #f8f9fa;
@@ -1190,11 +1192,129 @@ while ($row = $announcementsResult->fetch_assoc()) {
                 margin-bottom: 10px;
             }
         }
+
+        /* Improved Tab Transitions */
+        .tab-pane {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .tab-pane.fade {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        .tab-pane.fade.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Active Nav Indicator */
+        .sidebar .nav-link {
+            position: relative;
+        }
+        
+        .sidebar .nav-link.active:after {
+            content: "";
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            border-style: solid;
+            border-width: 8px 8px 8px 0;
+            border-color: transparent #fff transparent transparent;
+        }
+        
+        /* Mobile Navigation Enhancement */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                z-index: 1050;
+                box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            }
+            
+            .sidebar.mobile-active {
+                width: var(--sidebar-width) !important;
+                left: 0;
+                padding: 0;
+            }
+            
+            .nav-toggle {
+                display: flex !important;
+                z-index: 1060;
+            }
+        }
+
+        /* Add these styles to your existing CSS */
+        .bg-gradient-primary {
+            background: linear-gradient(45deg, #4e73df, #224abe);
+        }
+
+        .table > :not(caption) > * > * {
+            padding: 1rem;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(78, 115, 223, 0.05);
+            transition: all 0.2s ease;
+        }
+
+        .badge {
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-sm {
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .card {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            border-bottom: none;
+        }
+
+        .table thead th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            color: #5a5c69;
+        }
+
+        .alert {
+            border-radius: 10px;
+        }
+
+        .alert-info {
+            background-color: #e8f4fd;
+            border-left: 4px solid #4e73df;
+        }
+
+        .text-primary {
+            color: #4e73df !important;
+        }
+
+        .text-info {
+            color: #36b9cc !important;
+        }
+
+        .text-secondary {
+            color: #858796 !important;
+        }
     </style>
 </head>
 <body>
-    <!-- Toggle Button for Responsive Menu -->
-    <button class="nav-toggle" id="navToggle" onclick="toggleSidebar(); return false;">
+    <!-- Update the navigation toggle button -->
+    <button class="nav-toggle d-lg-none" id="navToggle" onclick="toggleSidebar(); return false;">
         <i class="fas fa-bars"></i>
     </button>
 
@@ -1208,42 +1328,45 @@ while ($row = $announcementsResult->fetch_assoc()) {
                 </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link active" id="dashboard-link" href="#" onclick="javascript:showTab('dashboard'); return false;">
+                        <a class="nav-link active" href="#dashboard" data-toggle="tab" role="tab" aria-controls="dashboard" aria-selected="true">
                             <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="profile-link" href="#" onclick="javascript:showTab('profile'); return false;">
+                        <a class="nav-link" href="#profile" data-toggle="tab" role="tab" aria-controls="profile" aria-selected="false">
                             <i class="fas fa-user"></i> Profile
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="exams-link" href="#" onclick="javascript:showTab('exams'); return false;">
+                        <a class="nav-link" href="#exams" data-toggle="tab" role="tab" aria-controls="exams" aria-selected="false">
                             <i class="fas fa-file-alt"></i> Exams & Results
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="cbt-exams-link" href="#" onclick="javascript:showTab('cbt-exams'); return false;">
+                        <a class="nav-link" href="#cbt-exams" data-toggle="tab" role="tab" aria-controls="cbt-exams" aria-selected="false">
                             <i class="fas fa-laptop"></i> CBT Exams
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="payments-link" href="#" onclick="javascript:showTab('payments'); return false;">
+                        <a class="nav-link" href="#payments" data-toggle="tab" role="tab" aria-controls="payments" aria-selected="false">
                             <i class="fas fa-money-bill-wave"></i> Payments
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="calendar-link" href="#" onclick="javascript:showTab('calendar'); return false;">
+                        <a class="nav-link" href="#calendar" data-toggle="tab" role="tab" aria-controls="calendar" aria-selected="false">
                             <i class="fas fa-calendar-alt"></i> Calendar
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="announcements-link" href="#" onclick="javascript:showTab('announcements'); return false;">
+                        <a class="nav-link" href="#announcements" data-toggle="tab" role="tab" aria-controls="announcements" aria-selected="false">
                             <i class="fas fa-bullhorn"></i> Announcements
+                            <?php if (count($studentAnnouncements) > 0): ?>
+                            <span class="badge badge-pill badge-light float-right"><?php echo count($studentAnnouncements); ?></span>
+                            <?php endif; ?>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" id="teacher-feedback-link" href="#" onclick="javascript:showTab('teacher-feedback'); return false;">
+                        <a class="nav-link" href="#teacher-feedback" data-toggle="tab" role="tab" aria-controls="teacher-feedback" aria-selected="false">
                             <i class="fas fa-clipboard-check"></i> Teacher Feedback
                         </a>
                     </li>
@@ -1280,6 +1403,9 @@ while ($row = $announcementsResult->fetch_assoc()) {
                             <p><strong>Registration Number:</strong> <?php echo htmlspecialchars($registration_number); ?></p>
                             <p><strong>Category:</strong> <?php echo ucfirst($application_type); ?> Student</p>
                             <p><strong>Class/Level:</strong> <?php echo !empty($student_class) ? htmlspecialchars($student_class) : 'Not assigned'; ?></p>
+                            <?php if (!empty($class_teacher_name)): ?>
+                                <p><strong>Class Teacher:</strong> <?php echo htmlspecialchars($class_teacher_name); ?></p>
+                            <?php endif; ?>
                         </div>
                         <div class="col-md-4 text-md-right">
                             <div class="card bg-light" style="color: #4361ee;">
@@ -1303,7 +1429,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                 <?php endif; ?>
                 
                 <?php if(isset($_SESSION['debug_raw_student']) && ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == '::1')): ?>
-                <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
+                <!-- <div class="alert alert-warning alert-dismissible fade show mb-3" role="alert">
                     <h5><i class="fas fa-bug"></i> Raw Student Data</h5>
                     <div>
                         <pre><?php print_r($_SESSION['debug_raw_student']); ?></pre>
@@ -1311,11 +1437,11 @@ while ($row = $announcementsResult->fetch_assoc()) {
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                </div>
+                </div> -->
                 <?php endif; ?>
                 
                 <?php if(isset($_SESSION['student_debug']) && ($_SERVER['REMOTE_ADDR'] == '127.0.0.1' || $_SERVER['REMOTE_ADDR'] == '::1')): ?>
-                <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
+                <!-- <div class="alert alert-info alert-dismissible fade show mb-3" role="alert">
                     <h5><i class="fas fa-info-circle"></i> Student Data Debug</h5>
                     <div>
                         <pre><?php print_r($_SESSION['student_debug']); ?></pre>
@@ -1323,21 +1449,30 @@ while ($row = $announcementsResult->fetch_assoc()) {
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
-                </div>
+                </div> -->
                 <?php endif; ?>
                 
                 <!-- Tab Content -->
                 <div class="tab-content" id="mainTabContent" style="min-height: 500px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                     <!-- Dashboard Tab -->
-                    <div class="tab-pane show active" id="dashboard">
+                    <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
                         <div class="row">
                             <div class="col-md-4 mb-4">
                                 <div class="dashboard-card card-primary">
                                     <div class="text-center">
                                         <i class="fas fa-file-alt card-icon"></i>
                                         <h4>Exams</h4>
-                                        <p class="h3"><?php echo count($exam_results); ?></p>
-                                        <p>Total exams taken</p>
+                                        <?php
+                                        // Get total exams count from cbt_student_exams table
+                                        $total_exams_query = "SELECT COUNT(*) as total_exams FROM cbt_student_exams WHERE student_id = ?";
+                                        $stmt = $conn->prepare($total_exams_query);
+                                        $stmt->bind_param("i", $student_id);
+                                        $stmt->execute();
+                                        $total_exams_result = $stmt->get_result();
+                                        $total_exams = $total_exams_result->fetch_assoc()['total_exams'];
+                                        ?>
+                                        <p class="h3"><?php echo $total_exams; ?></p>
+                                        <p>Total exams completed</p>
                                     </div>
                                 </div>
                             </div>
@@ -1445,19 +1580,19 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                     <h4><i class="fas fa-tasks"></i> Quick Actions</h4>
                                     <div class="row">
                                         <div class="col-md-3 col-sm-6 mb-3">
-                                            <a href="#profile" data-toggle="tab" class="btn btn-light btn-block py-3">
+                                            <a href="#" data-toggle="tab" data-target="#profile" class="btn btn-light btn-block py-3">
                                                 <i class="fas fa-user-edit mb-2 d-block" style="font-size: 24px;"></i>
                                                 View Profile
                                             </a>
                                         </div>
                                         <div class="col-md-3 col-sm-6 mb-3">
-                                            <a href="#exams" data-toggle="tab" class="btn btn-light btn-block py-3">
+                                            <a href="#" data-toggle="tab" data-target="#exams" class="btn btn-light btn-block py-3">
                                                 <i class="fas fa-file-alt mb-2 d-block" style="font-size: 24px;"></i>
                                                 Check Results
                                             </a>
                                         </div>
                                         <div class="col-md-3 col-sm-6 mb-3">
-                                            <a href="#payments" data-toggle="tab" class="btn btn-light btn-block py-3">
+                                            <a href="#" data-toggle="tab" data-target="#payments" class="btn btn-light btn-block py-3">
                                                 <i class="fas fa-credit-card mb-2 d-block" style="font-size: 24px;"></i>
                                                 View Payments
                                             </a>
@@ -1564,7 +1699,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                     </div>
                     
                     <!-- Profile Tab -->
-                    <div class="tab-pane" id="profile">
+                    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
                         <?php if(isset($_SESSION['error'])): ?>
                             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                                 <?php echo $_SESSION['error']; unset($_SESSION['error']); ?>
@@ -1689,17 +1824,17 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                 <div class="profile-tabs-container">
                                     <ul class="nav nav-tabs profile-tabs" id="profileTabs" role="tablist">
                                         <li class="nav-item">
-                                            <a class="nav-link active" id="personal-tab" onclick="showProfileTab('personal-info'); return false;" href="#personal-info" role="tab">
+                                            <a class="nav-link active" id="personal-tab" data-toggle="tab" href="#personal-info" role="tab" aria-controls="personal-info" aria-selected="true">
                                                 <i class="fas fa-user mr-2"></i> Personal
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" id="family-tab" onclick="showProfileTab('family-info'); return false;" href="#family-info" role="tab">
+                                            <a class="nav-link" id="family-tab" data-toggle="tab" href="#family-info" role="tab" aria-controls="family-info" aria-selected="false">
                                                 <i class="fas fa-users mr-2"></i> Family
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" id="medical-tab" onclick="showProfileTab('medical-info'); return false;" href="#medical-info" role="tab">
+                                            <a class="nav-link" id="medical-tab" data-toggle="tab" href="#medical-info" role="tab" aria-controls="medical-info" aria-selected="false">
                                                 <i class="fas fa-heartbeat mr-2"></i> Medical
                                             </a>
                                         </li>
@@ -1707,7 +1842,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                     
                                     <div class="tab-content profile-tab-content" id="profileTabsContent">
                                         <!-- Personal Information Tab -->
-                                        <div class="tab-pane fade show active" id="personal-info" role="tabpanel">
+                                        <div class="tab-pane fade show active" id="personal-info" role="tabpanel" aria-labelledby="personal-tab">
                                             <div class="dashboard-card shadow-sm">
                                                 <h4 class="section-title"><i class="fas fa-user-circle text-primary mr-2"></i> Student Information</h4>
                                                 <div class="profile-details">
@@ -1766,7 +1901,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                         </div>
                                         
                                         <!-- Family Information Tab -->
-                                        <div class="tab-pane fade" id="family-info" role="tabpanel">
+                                        <div class="tab-pane fade" id="family-info" role="tabpanel" aria-labelledby="family-tab">
                                             <div class="dashboard-card shadow-sm mb-4">
                                                 <h4 class="section-title"><i class="fas fa-male text-primary mr-2"></i> Father's Information</h4>
                                                 <div class="profile-details">
@@ -1873,7 +2008,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                         </div>
                                         
                                         <!-- Medical Information Tab -->
-                                        <div class="tab-pane fade" id="medical-info" role="tabpanel">
+                                        <div class="tab-pane fade" id="medical-info" role="tabpanel" aria-labelledby="medical-tab">
                                             <div class="dashboard-card shadow-sm">
                                                 <h4 class="section-title"><i class="fas fa-heartbeat text-primary mr-2"></i> Medical Information</h4>
                                                 <div class="profile-details">
@@ -1913,400 +2048,172 @@ while ($row = $announcementsResult->fetch_assoc()) {
                     </div>
                     
                     <!-- Exams Tab -->
-                    <div class="tab-pane" id="exams">
-                        <!-- Available CBT Exams Section -->
+                    <div class="tab-pane fade" id="exams" role="tabpanel" aria-labelledby="exams-tab">
                         <div class="dashboard-card mb-4">
-                            <h4><i class="fas fa-pen-fancy"></i> Available CBT Exams</h4>
+                            <h4><i class="fas fa-file-alt"></i> Exams & Results</h4>
+                            
+                            <!-- Add Exam Results Section -->
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="card shadow-sm border-0">
+                                        <div class="card-header bg-gradient-primary text-white py-3">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-chart-bar fa-2x mr-3"></i>
+                                                <h5 class="mb-0 font-weight-bold">Exam Results</h5>
+                                            </div>
+                                        </div>
+                                        <div class="card-body p-4">
+                                            <?php
+                                            // Get student's exam results
+                                            $results_query = "SELECT e.*, ea.score, ea.status, ea.end_time, ea.show_result 
+                                                           FROM cbt_exams e 
+                                                           JOIN cbt_exam_attempts ea ON e.id = ea.exam_id 
+                                                           WHERE ea.student_id = ? AND ea.status = 'completed'
+                                                           ORDER BY ea.end_time DESC";
+                                            
+                                            $stmt = $conn->prepare($results_query);
+                                            if ($stmt) {
+                                                $stmt->bind_param("i", $student_id);
+                                                $stmt->execute();
+                                                $results = $stmt->get_result();
+                                                
+                                                if ($results->num_rows > 0) {
+                                                    echo '<div class="table-responsive">';
+                                                    echo '<table class="table table-hover align-middle">';
+                                                    echo '<thead class="bg-light">
+                                                            <tr>
+                                                                <th class="border-0">Subject</th>
+                                                                <th class="border-0">Title</th>
+                                                                <th class="border-0">Date Taken</th>
+                                                                <th class="border-0">Score</th>
+                                                                <th class="border-0">Status</th>
+                                                                <th class="border-0 text-center">Action</th>
+                                                            </tr>
+                                                          </thead>';
+                                                    echo '<tbody>';
+                                                    
+                                                    while ($result = $results->fetch_assoc()) {
+                                                        $status_class = ($result['score'] >= $result['passing_score']) ? 'success' : 'danger';
+                                                        $status_text = ($result['score'] >= $result['passing_score']) ? 'Passed' : 'Failed';
+                                                        
+                                                        echo '<tr class="border-bottom">';
+                                                        echo '<td class="py-3"><i class="fas fa-book text-primary mr-2"></i>' . htmlspecialchars($result['subject']) . '</td>';
+                                                        echo '<td class="py-3"><i class="fas fa-file-alt text-info mr-2"></i>' . htmlspecialchars($result['title']) . '</td>';
+                                                        echo '<td class="py-3"><i class="far fa-calendar-alt text-secondary mr-2"></i>' . date('M d, Y H:i', strtotime($result['end_time'])) . '</td>';
+                                                        echo '<td class="py-3"><span class="badge badge-pill badge-' . $status_class . ' px-3 py-2">' . $result['score'] . '%</span></td>';
+                                                        echo '<td class="py-3"><span class="badge badge-pill badge-' . $status_class . ' px-3 py-2">' . $status_text . '</span></td>';
+                                                        echo '<td class="py-3 text-center">';
+                                                        if ($result['show_result']) {
+                                                            echo '<a href="../../../backends/cbt/view_result.php?exam_id=' . $result['id'] . '&student_id=' . $student_id . '" 
+                                                                      class="btn btn-info btn-sm px-3 py-2" target="_blank">
+                                                                      <i class="fas fa-eye mr-1"></i> View Details
+                                                                  </a>';
+                                                        } else {
+                                                            echo '<button class="btn btn-secondary btn-sm px-3 py-2" disabled>
+                                                                    <i class="fas fa-clock mr-1"></i> Results Pending
+                                                                  </button>';
+                                                        }
+                                                        echo '</td>';
+                                                        echo '</tr>';
+                                                    }
+                                                    
+                                                    echo '</tbody></table>';
+                                                    echo '</div>';
+                                                } else {
+                                                    echo '<div class="alert alert-info d-flex align-items-center p-4 border-0 shadow-sm">';
+                                                    echo '<i class="fas fa-info-circle fa-2x mr-3"></i>';
+                                                    echo '<div>';
+                                                    echo '<h6 class="mb-1">No Exam Results</h6>';
+                                                    echo '<p class="mb-0 text-muted">You haven\'t taken any exams yet.</p>';
+                                                    echo '</div>';
+                                                    echo '</div>';
+                                                }
+                                            }
+                                            ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             
                             <?php
                             // Get student's class
-                            $student_id = $_SESSION['student_id'];
-                            $classQuery = "SELECT class FROM students WHERE id = ?";
-                            $stmt = $conn->prepare($classQuery);
-                            $stmt->bind_param("i", $student_id);
-                            $stmt->execute();
-                            $classResult = $stmt->get_result();
-                            $studentClass = "";
+                            $studentClass = isset($student['class']) ? $student['class'] : '';
                             
-                            if ($row = $classResult->fetch_assoc()) {
-                                $studentClass = $row['class'];
-                            }
-                            
-                            // Get available exams for this student's class
-                            $examsQuery = "SELECT e.*, s.name AS subject_name,
-                                          (SELECT COUNT(*) FROM cbt_student_exams WHERE exam_id = e.id AND student_id = ?) AS attempt_count 
-                                          FROM cbt_exams e
-                                          JOIN subjects s ON e.subject_id = s.id
-                                          WHERE (e.class_id = ? OR e.class_id = ?)
-                                          AND e.is_active = 1
-                                          AND NOW() BETWEEN e.start_datetime AND e.end_datetime
-                                          ORDER BY e.start_datetime";
-                            
-                            $stmt = $conn->prepare($examsQuery);
-                            $stmt->bind_param("iss", $student_id, $studentClass, $studentClass);
-                            $stmt->execute();
-                            $examsResult = $stmt->get_result();
-                            
-                            if ($examsResult->num_rows > 0):
-                            ?>
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th>Exam Title</th>
-                                            <th>Subject</th>
-                                            <th>Questions</th>
-                                            <th>Duration</th>
-                                            <th>Available Until</th>
-                                            <th>Status</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php while ($exam = $examsResult->fetch_assoc()): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($exam['title']); ?></td>
-                                                <td><?php echo htmlspecialchars($exam['subject_name']); ?></td>
-                                                <td><?php echo htmlspecialchars($exam['total_questions']); ?> questions</td>
-                                                <td><?php echo htmlspecialchars($exam['time_limit']); ?> minutes</td>
-                                                <td><?php echo date('M d, Y g:i A', strtotime($exam['end_datetime'])); ?></td>
-                                                <td>
-                                                    <?php if ($exam['attempt_count'] > 0): ?>
-                                                        <span class="badge badge-success">Attempted</span>
-                                                    <?php else: ?>
-                                                        <span class="badge badge-warning">Not Attempted</span>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td>
-                                                    <?php if ($exam['attempt_count'] == 0): ?>
-                                                        <a href="../cbt/take_exam.php?exam_id=<?php echo $exam['id']; ?>" 
-                                                           class="btn btn-sm btn-primary">
-                                                            <i class="fas fa-edit"></i> Take Exam
-                                                        </a>
-                                                    <?php else: ?>
-                                                        <a href="../cbt/view_result.php?exam_id=<?php echo $exam['id']; ?>" 
-                                                           class="btn btn-sm btn-info">
-                                                            <i class="fas fa-eye"></i> View Result
-                                                        </a>
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <?php else: ?>
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i> No active exams available for your class at this time.
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        
-                        <div class="dashboard-card mb-4">
-                            <h4><i class="fas fa-chart-line"></i> Exam Performance Summary</h4>
-                            <div class="row">
-                                <div class="col-lg-8">
-                                    <canvas id="examChart" height="250"></canvas>
-                                </div>
-                                <div class="col-lg-4">
-                                    <div class="text-center mt-4">
-                                        <div style="width: 120px; height: 120px; margin: 0 auto; position: relative;">
-                                            <canvas id="examDoughnutChart"></canvas>
-                                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 24px; font-weight: bold;">
-                                                <?php 
-                                                    $passRate = 0;
-                                                    if(count($exam_results) > 0) {
-                                                        $passed = 0;
-                                                        foreach($exam_results as $exam) {
-                                                            if($exam['status'] === 'passed') $passed++;
-                                                        }
-                                                        $passRate = round(($passed / count($exam_results)) * 100);
-                                                    }
-                                                    echo $passRate . '%';
-                                                ?>
-                                            </div>
-                                        </div>
-                                        <p class="mt-3">Overall Pass Rate</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="table-container">
-                            <h4><i class="fas fa-file-alt"></i> Exam Results</h4>
-                            <?php if (empty($exam_results)): ?>
-                                <div class="alert alert-info">No exam records found.</div>
-                            <?php else: ?>
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Exam Type</th>
-                                                <th>Score</th>
-                                                <th>Total Score</th>
-                                                <th>Percentage</th>
-                                                <th>Status</th>
-                                                <th>Date</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($exam_results as $exam): ?>
-                                                <tr>
-                                                    <td><?php echo ucfirst(htmlspecialchars($exam['exam_type'])); ?></td>
-                                                    <td><?php echo htmlspecialchars($exam['score']); ?></td>
-                                                    <td><?php echo htmlspecialchars($exam['total_score']); ?></td>
-                                                    <td>
-                                                        <?php 
-                                                        $percentage = ($exam['score'] / $exam['total_score']) * 100; 
-                                                        echo number_format($percentage, 2) . '%';
-                                                        ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php if ($exam['status'] == 'passed'): ?>
-                                                            <span class="badge badge-success">Passed</span>
-                                                        <?php elseif ($exam['status'] == 'failed'): ?>
-                                                            <span class="badge badge-danger">Failed</span>
-                                                        <?php else: ?>
-                                                            <span class="badge badge-warning">Pending</span>
-                                                        <?php endif; ?>
-                                                    </td>
-                                                    <td><?php echo formatDate($exam['exam_date']); ?></td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    
-                    <!-- Payments Tab -->
-                    <div class="tab-pane" id="payments">
-                        <div class="dashboard-card mb-4">
-                            <h4><i class="fas fa-money-bill-wave"></i> Payment Summary</h4>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <canvas id="paymentChart" height="250"></canvas>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="row mt-4">
-                                        <div class="col-md-6 mb-4">
-                                            <div class="card bg-light">
-                                                <div class="card-body text-center">
-                                                    <h5 class="card-title text-muted mb-0">Total Payments</h5>
-                                                    <div class="display-4 font-weight-bold my-3" style="color: var(--primary-color);">
-                                                        <?php echo count($payments); ?>
-                                                    </div>
-                                                    <p class="card-text text-muted">Transactions</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-4">
-                                            <div class="card bg-light">
-                                                <div class="card-body text-center">
-                                                    <h5 class="card-title text-muted mb-0">Total Amount</h5>
-                                                    <div class="display-4 font-weight-bold my-3" style="color: var(--success);">₦
-                                                        <?php
-                                                            $total = 0;
-                                                            foreach($payments as $payment) {
-                                                                $total += $payment['amount'];
-                                                            }
-                                                            echo number_format($total, 0);
-                                                        ?>
-                                                    </div>
-                                                    <p class="card-text text-muted">Paid</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="table-container">
-                            <h4><i class="fas fa-list"></i> Payment History</h4>
-                            <?php if (empty($payments)): ?>
-                                <div class="alert alert-info">No payment records found.</div>
-                            <?php else: ?>
-                                <div class="table-responsive">
-                                    <table class="table table-striped">
-                                        <thead>
-                                            <tr>
-                                                <th>Payment Type</th>
-                                                <th>Amount</th>
-                                                <th>Payment Method</th>
-                                                <th>Reference Number</th>
-                                                <th>Status</th>
-                                                <th>Date</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($payments as $payment): ?>
-                                            <tr>
-                                                <td><?php echo formatPaymentType($payment['payment_type']); ?></td>
-                                                <td>₦<?php echo number_format($payment['amount'], 2); ?></td>
-                                                <td><?php echo ucfirst(htmlspecialchars($payment['payment_method'])); ?></td>
-                                                <td><?php echo htmlspecialchars($payment['reference_number']); ?></td>
-                                                <td><?php echo formatPaymentStatus($payment['status']); ?></td>
-                                                <td><?php echo formatDate($payment['payment_date']); ?></td>
-                                            </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                    
-                    <!-- Calendar Tab -->
-                    <div class="tab-pane" id="calendar">
-                        <div class="dashboard-card">
-                            <h4><i class="fas fa-calendar"></i> School Calendar</h4>
-                            <div class="calendar-container">
-                                <div id="schoolCalendar"></div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Teacher Feedback Tab -->
-                    <div class="tab-pane" id="teacher-feedback">
-                        <div class="row">
-                            <div class="col-md-12 mb-4">
-                                <div class="dashboard-card card-warning">
-                                    <h4><i class="fas fa-clipboard-list"></i> Teacher Activities</h4>
-                                    <?php if (count($teacherActivities) > 0): ?>
-                                    <div class="table-responsive">
-                                        <table class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th style="width: 15%">Date</th>
-                                                    <th style="width: 15%">Type</th>
-                                                    <th>Description</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <?php foreach ($teacherActivities as $activity): ?>
-                                                <tr>
-                                                    <td><?php echo date('M d, Y', strtotime($activity['activity_date'])); ?></td>
-                                                    <td>
-                                                        <?php 
-                                                        $typeClass = '';
-                                                        switch ($activity['activity_type']) {
-                                                            case 'attendance': $typeClass = 'badge-info'; break;
-                                                            case 'behavioral': $typeClass = 'badge-warning'; break;
-                                                            case 'academic': $typeClass = 'badge-success'; break;
-                                                            case 'health': $typeClass = 'badge-danger'; break;
-                                                            default: $typeClass = 'badge-secondary';
-                                                        }
-                                                        ?>
-                                                        <span class="badge <?php echo $typeClass; ?>">
-                                                            <?php echo ucfirst($activity['activity_type']); ?>
-                                                        </span>
-                                                    </td>
-                                                    <td><?php echo $activity['description']; ?></td>
-                                                </tr>
-                                                <?php endforeach; ?>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <?php else: ?>
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle"></i> No activities have been recorded for you by your class teacher.
-                                    </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-12 mb-4">
-                                <div class="dashboard-card card-secondary">
-                                    <h4><i class="fas fa-comments"></i> Teacher Comments</h4>
-                                    <?php if (count($teacherComments) > 0): ?>
-                                    <div class="direct-chat-messages" style="height: auto;">
-                                        <?php foreach ($teacherComments as $comment): ?>
-                                        <div class="direct-chat-msg">
-                                            <div class="direct-chat-infos clearfix">
-                                                <span class="direct-chat-name float-left">Class Teacher</span>
-                                                <span class="direct-chat-timestamp float-right">
-                                                    <?php echo date('M d, Y H:i', strtotime($comment['created_at'])); ?>
-                                                </span>
-                                            </div>
-                                            <div class="direct-chat-img">
-                                                <i class="fas fa-user-circle fa-2x"></i>
-                                            </div>
-                                            <div class="direct-chat-text">
-                                                <strong><?php echo ucfirst($comment['comment_type']); ?>:</strong>
-                                                <?php echo nl2br($comment['comment']); ?>
-                                                <?php if (!empty($comment['term'])): ?>
-                                                <small class="text-muted d-block mt-1">
-                                                    Term: <?php echo $comment['term']; ?>, 
-                                                    Session: <?php echo $comment['session']; ?>
-                                                </small>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                    <?php else: ?>
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle"></i> No comments have been added by your class teacher.
-                                    </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- CBT Exams Tab -->
-                    <div class="tab-pane" id="cbt-exams">
-                        <div class="dashboard-card mb-4">
-                            <h4><i class="fas fa-laptop"></i> Available CBT Exams</h4>
-                            
-                            <?php
-                            // Get current date and time
-                            $currentDateTime = date('Y-m-d H:i:s');
-                            
-                            // Get available exams for this student's class
-                            $availableExamsQuery = "SELECT e.*, s.name AS subject_name,
-                                                   (SELECT COUNT(*) FROM cbt_student_exams 
-                                                    WHERE exam_id = e.id AND student_id = ?) AS has_attempted
-                                                   FROM cbt_exams e
-                                                   JOIN subjects s ON e.subject_id = s.id
-                                                   JOIN class_subjects cs ON s.id = cs.subject_id
-                                                   JOIN students st ON st.class = cs.class_id
-                                                   WHERE e.is_active = 1
-                                                   AND e.start_datetime <= ?
-                                                   AND e.end_datetime >= ?
-                                                   AND st.id = ?
-                                                   ORDER BY e.end_datetime ASC";
-                            
-                            $stmt = $conn->prepare($availableExamsQuery);
-                            $stmt->bind_param("issi", $student_id, $currentDateTime, $currentDateTime, $student_id);
-                            $stmt->execute();
-                            $availableExamsResult = $stmt->get_result();
+                            // Initialize arrays for exams
                             $availableExams = [];
-                            while ($row = $availableExamsResult->fetch_assoc()) {
-                                $availableExams[] = $row;
-                            }
-                            
-                            // Get past exams for this student
-                            $pastExamsQuery = "SELECT e.*, s.name AS subject_name, 
-                                              se.status, se.score, se.started_at, se.submitted_at,
-                                              (CASE WHEN e.show_results = 1 THEN se.score ELSE NULL END) AS visible_score
-                                              FROM cbt_student_exams se
-                                              JOIN cbt_exams e ON se.exam_id = e.id
-                                              JOIN subjects s ON e.subject_id = s.id
-                                              WHERE se.student_id = ?
-                                              ORDER BY se.submitted_at DESC";
-                            
-                            $stmt = $conn->prepare($pastExamsQuery);
-                            $stmt->bind_param("i", $student_id);
-                            $stmt->execute();
-                            $pastExamsResult = $stmt->get_result();
                             $pastExams = [];
-                            while ($row = $pastExamsResult->fetch_assoc()) {
-                                $pastExams[] = $row;
+                            
+                            try {
+                                // DIRECT QUERY APPROACH - Skip table existence checks
+                                $availableExamsQuery = "SELECT id, title, class, subject, 
+                                   duration as time_limit, total_questions, 
+                                   passing_score, show_results, is_active
+                             FROM cbt_exams 
+                             WHERE is_active = 1
+                             AND TRIM(class) LIKE ?
+                             ORDER BY created_at DESC";
+                                
+                                // Use pattern matching to find exams for this class
+                                $searchPattern = '%' . trim($studentClass) . '%';
+                                $stmt = $conn->prepare($availableExamsQuery);
+                                
+                                if ($stmt) {
+                                    $stmt->bind_param("s", $searchPattern);
+                                    $stmt->execute();
+                                    $availableExamsResult = $stmt->get_result();
+                                    
+                                    while ($row = $availableExamsResult->fetch_assoc()) {
+                                        $availableExams[] = $row;
+                                    }
+                                    
+                                    // If specific query failed, try a second approach with exact class names
+                                    if (count($availableExams) == 0) {
+                                        $exactQuery = "SELECT id, title, class, subject, 
+                                 duration as time_limit, total_questions, 
+                                 passing_score, show_results, is_active
+                           FROM cbt_exams 
+                           WHERE is_active = 1
+                           ORDER BY created_at DESC";
+                                        
+                                        $result = $conn->query($exactQuery);
+                                        if ($result) {
+                                            while ($row = $result->fetch_assoc()) {
+                                                // String comparison including trimming
+                                                if (strcasecmp(trim($row['class']), trim($studentClass)) == 0) {
+                                                    $availableExams[] = $row;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Try to get past exams if student_exams table exists
+                                    try {
+                                        $pastExamsQuery = "SELECT se.*, e.title, e.subject, 
+                                    e.duration as time_limit, e.passing_score, 
+                                    e.show_results
+                              FROM cbt_student_exams se
+                              JOIN cbt_exams e ON se.exam_id = e.id
+                              WHERE se.student_id = ?
+                              ORDER BY se.completed_at DESC";
+                                        
+                                        $stmt = $conn->prepare($pastExamsQuery);
+                                        if ($stmt) {
+                                            $stmt->bind_param("i", $student_id);
+                                            $stmt->execute();
+                                            $pastExamsResult = $stmt->get_result();
+                                            
+                                            while ($row = $pastExamsResult->fetch_assoc()) {
+                                                $pastExams[] = $row;
+                                            }
+                                        }
+                                    } catch (Exception $e) {
+                                        // Silently handle missing student_exams table
+                                    }
+                                }
+                            } catch (Exception $e) {
+                                // Just initialize empty arrays if any errors
+                                $availableExams = [];
+                                $pastExams = [];
                             }
                             ?>
                             
@@ -2319,7 +2226,6 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                                 <th>Title</th>
                                                 <th>Duration</th>
                                                 <th>Questions</th>
-                                                <th>Available Until</th>
                                                 <th>Status</th>
                                                 <th>Action</th>
                                             </tr>
@@ -2327,37 +2233,28 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                         <tbody>
                                             <?php foreach ($availableExams as $exam): ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($exam['subject_name']); ?></td>
+                                                <td><?php echo htmlspecialchars($exam['subject']); ?></td>
                                                 <td><?php echo htmlspecialchars($exam['title']); ?></td>
-                                                <td><?php echo $exam['time_limit']; ?> minutes</td>
-                                                <td><?php echo $exam['total_questions']; ?> questions</td>
+                                                <td><?php echo htmlspecialchars($exam['time_limit']); ?> minutes</td>
+                                                <td><?php echo htmlspecialchars($exam['total_questions'] ?? 'Not specified'); ?></td>
                                                 <td>
-                                                    <span class="text-danger">
-                                                        <?php echo date('M d, Y g:i A', strtotime($exam['end_datetime'])); ?>
-                                                    </span>
-                                                    <?php 
-                                                    // Calculate time remaining
-                                                    $endTime = new DateTime($exam['end_datetime']);
-                                                    $now = new DateTime();
-                                                    $timeRemaining = $now->diff($endTime);
-                                                    $hoursRemaining = $timeRemaining->h + ($timeRemaining->days * 24);
-                                                    
-                                                    if ($hoursRemaining < 24) {
-                                                        echo '<span class="badge badge-warning">Less than 24 hours left!</span>';
-                                                    }
-                                                    ?>
+                                                    <span class="badge badge-success">Available</span>
                                                 </td>
                                                 <td>
-                                                    <?php if ($exam['has_attempted'] > 0): ?>
-                                                        <span class="badge badge-info">Attempted</span>
-                                                    <?php else: ?>
-                                                        <span class="badge badge-success">Available</span>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td>
-                                                    <a href="take_cbt_exam.php?exam_id=<?php echo $exam['id']; ?>" class="btn btn-primary btn-sm">
-                                                        <?php echo ($exam['has_attempted'] > 0) ? 'Continue Exam' : 'Start Exam'; ?>
-                                                    </a>
+                                                    <form method="POST" action="../../../backends/cbt/take_exam.php" class="d-inline">
+                                                        <input type="hidden" name="exam_id" value="<?php echo $exam['id']; ?>">
+                                                        <input type="hidden" name="student_id" value="<?php echo $student_id; ?>">
+                                                        <input type="hidden" name="start_exam" value="1">
+                                                        <button type="submit" 
+                                                           class="btn btn-primary btn-sm start-exam-btn"
+                                                           data-exam-id="<?php echo $exam['id']; ?>"
+                                                           data-exam-title="<?php echo htmlspecialchars($exam['title']); ?>"
+                                                           data-exam-subject="<?php echo htmlspecialchars($exam['subject']); ?>"
+                                                           data-exam-duration="<?php echo htmlspecialchars($exam['time_limit']); ?>"
+                                                           data-exam-questions="<?php echo htmlspecialchars($exam['total_questions'] ?? 'N/A'); ?>">
+                                                            Start Exam
+                                                        </button>
+                                                    </form>
                                                 </td>
                                             </tr>
                                             <?php endforeach; ?>
@@ -2366,13 +2263,21 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                 </div>
                             <?php else: ?>
                                 <div class="alert alert-info">
-                                    <p>There are no CBT exams currently available for you to take.</p>
+                                    <!-- <p><i class="fas fa-info-circle mr-2"></i> There are no CBT exams currently available for your class.</p> -->
+                                    <p>Current class: <strong><?php echo htmlspecialchars($studentClass ?? 'Not set'); ?></strong></p>
+                                    
+                                    <!-- Alternative access option -->
+                                    <hr>
+                                    <p><i class="fas fa-sign-in-alt mr-2"></i> You can also access exams directly using your credentials:</p>
+                                    <a href="../../../backends/cbt/take_exam.php" class="btn btn-primary btn-sm mt-2">
+                                        Access Exam Portal <i class="fas fa-external-link-alt ml-1"></i>
+                                    </a>
                                 </div>
                             <?php endif; ?>
                             
-                            <h4 class="mt-5"><i class="fas fa-history"></i> My Past Exams</h4>
+                            <!-- <h4 class="mt-5"><i class="fas fa-history"></i> My Past Exams</h4> -->
                             
-                            <?php if (count($pastExams) > 0): ?>
+                            <!-- <?php if (count($pastExams) > 0): ?>
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-striped">
                                         <thead>
@@ -2388,59 +2293,53 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                         <tbody>
                                             <?php foreach ($pastExams as $exam): ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($exam['subject_name']); ?></td>
+                                                <td><?php echo htmlspecialchars($exam['subject']); ?></td>
                                                 <td><?php echo htmlspecialchars($exam['title']); ?></td>
                                                 <td>
-                                                    <?php echo $exam['submitted_at'] 
-                                                          ? date('M d, Y g:i A', strtotime($exam['submitted_at'])) 
-                                                          : date('M d, Y g:i A', strtotime($exam['started_at'])) . ' (Not submitted)'; ?>
+                                                    <?php echo isset($exam['completed_at']) 
+                                                          ? date('M d, Y g:i A', strtotime($exam['completed_at'])) 
+                                                          : (isset($exam['started_at']) 
+                                                             ? date('M d, Y g:i A', strtotime($exam['started_at'])) . ' (Not submitted)' 
+                                                             : 'N/A'); ?>
                                                 </td>
                                                 <td>
                                                     <?php
                                                     $statusClass = '';
-                                                    switch ($exam['status']) {
+                                                    $status = $exam['status'] ?? '';
+                                                    switch ($status) {
                                                         case 'Completed':
+                                                        case 'passed':
                                                             $statusClass = 'success';
                                                             break;
                                                         case 'In Progress':
                                                             $statusClass = 'warning';
+                                                            break;
+                                                        case 'failed':
+                                                            $statusClass = 'danger';
                                                             break;
                                                         default:
                                                             $statusClass = 'secondary';
                                                     }
                                                     ?>
                                                     <span class="badge badge-<?php echo $statusClass; ?>">
-                                                        <?php echo $exam['status']; ?>
+                                                        <?php echo ucfirst($status); ?>
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <?php if ($exam['visible_score'] !== null): ?>
+                                                    <?php if (isset($exam['score']) && ($exam['show_results'] == 1)): ?>
                                                         <span class="badge badge-<?php echo ($exam['score'] >= $exam['passing_score']) ? 'success' : 'danger'; ?>">
                                                             <?php echo $exam['score']; ?>%
                                                         </span>
-                                                        <?php if ($exam['score'] >= $exam['passing_score']): ?>
-                                                            <i class="fas fa-check-circle text-success"></i>
-                                                        <?php else: ?>
-                                                            <i class="fas fa-times-circle text-danger"></i>
-                                                        <?php endif; ?>
                                                     <?php else: ?>
-                                                        <?php if ($exam['status'] === 'Completed'): ?>
-                                                            <span class="badge badge-secondary">Results pending</span>
-                                                        <?php else: ?>
-                                                            <span class="badge badge-secondary">Not completed</span>
-                                                        <?php endif; ?>
+                                                        <span class="badge badge-secondary">Not available</span>
                                                     <?php endif; ?>
                                                 </td>
                                                 <td>
-                                                    <?php if ($exam['visible_score'] !== null || $exam['status'] === 'In Progress'): ?>
-                                                        <a href="view_cbt_result.php?exam_id=<?php echo $exam['id']; ?>" class="btn btn-info btn-sm">
-                                                            View Details
-                                                        </a>
-                                                    <?php else: ?>
-                                                        <button class="btn btn-secondary btn-sm" disabled>
-                                                            Not Available
-                                                        </button>
-                                                    <?php endif; ?>
+                                                    <a href="../../cbt/view_result.php?exam_id=<?php echo $exam['exam_id']; ?>&student_id=<?php echo $_SESSION['student_id']; ?>" 
+                                                       class="btn btn-info btn-sm <?php echo (!$exam['show_results'] && $exam['status'] !== 'In Progress') ? 'disabled' : ''; ?>"
+                                                       <?php echo (!$exam['show_results'] && $exam['status'] !== 'In Progress') ? 'title="Results not available yet"' : ''; ?>>
+                                                        <i class="fas fa-eye"></i> View Result
+                                                    </a>
                                                 </td>
                                             </tr>
                                             <?php endforeach; ?>
@@ -2451,12 +2350,12 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                 <div class="alert alert-secondary">
                                     <p>You haven't taken any CBT exams yet.</p>
                                 </div>
-                            <?php endif; ?>
+                            <?php endif; ?> -->
                         </div>
                     </div>
                     
                     <!-- Announcements Tab -->
-                    <div class="tab-pane" id="announcements">
+                    <div class="tab-pane fade" id="announcements" role="tabpanel" aria-labelledby="announcements-tab">
                         <div class="dashboard-card">
                             <h4><i class="fas fa-bullhorn"></i> School Announcements</h4>
                             
@@ -2483,8 +2382,503 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                     </div>
                                 <?php endforeach; ?>
                             <?php else: ?>
+                                <?php if (!$photo_found): ?>
+                                <div class="alert alert-warning mb-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 mr-3">
+                                            <i class="fas fa-exclamation-circle fa-2x"></i>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h5 class="alert-heading">Important: Update Your Profile Photo</h5>
+                                            <p class="mb-0">Welcome to <?php echo SCHOOL_NAME; ?>! We noticed that you haven't uploaded your passport photograph yet. Please update your profile photo to complete your student profile.</p>
+                                            <hr>
+                                            <p class="mb-0">
+                                                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#changePassportModal">
+                                                    <i class="fas fa-camera mr-1"></i> Upload Photo Now
+                                                </button>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endif; ?>
                                 <div class="alert alert-info">
-                                    <p class="mb-0">No announcements are currently available.</p>
+                                    <p class="mb-0">No other announcements are currently available.</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- CBT Exams Tab -->
+                    <div class="tab-pane fade" id="cbt-exams" role="tabpanel" aria-labelledby="cbt-exams-tab">
+                        <div class="dashboard-card mb-4">
+                            <h4><i class="fas fa-laptop"></i> Available CBT Exams</h4>
+                            
+                            <?php
+                            // Get student's class
+                            $studentClass = isset($student['class']) ? $student['class'] : '';
+                            
+                            // Initialize arrays for exams
+                            $availableExams = [];
+                            $pastExams = [];
+                            
+                            try {
+                                // DIRECT QUERY APPROACH - Skip table existence checks
+                                $availableExamsQuery = "SELECT id, title, class, subject, 
+                                   duration as time_limit, total_questions, 
+                                   passing_score, show_results, is_active
+                             FROM cbt_exams 
+                             WHERE is_active = 1
+                             AND TRIM(class) LIKE ?
+                             ORDER BY created_at DESC";
+                                
+                                // Use pattern matching to find exams for this class
+                                $searchPattern = '%' . trim($studentClass) . '%';
+                                $stmt = $conn->prepare($availableExamsQuery);
+                                
+                                if ($stmt) {
+                                    $stmt->bind_param("s", $searchPattern);
+                                    $stmt->execute();
+                                    $availableExamsResult = $stmt->get_result();
+                                    
+                                    while ($row = $availableExamsResult->fetch_assoc()) {
+                                        $availableExams[] = $row;
+                                    }
+                                    
+                                    // If specific query failed, try a second approach with exact class names
+                                    if (count($availableExams) == 0) {
+                                        $exactQuery = "SELECT id, title, class, subject, 
+                                 duration as time_limit, total_questions, 
+                                 passing_score, show_results, is_active
+                           FROM cbt_exams 
+                           WHERE is_active = 1
+                           ORDER BY created_at DESC";
+                                        
+                                        $result = $conn->query($exactQuery);
+                                        if ($result) {
+                                            while ($row = $result->fetch_assoc()) {
+                                                // String comparison including trimming
+                                                if (strcasecmp(trim($row['class']), trim($studentClass)) == 0) {
+                                                    $availableExams[] = $row;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Try to get past exams if student_exams table exists
+                                    try {
+                                        $pastExamsQuery = "SELECT se.*, e.title, e.subject, 
+                                    e.duration as time_limit, e.passing_score, 
+                                    e.show_results
+                              FROM cbt_student_exams se
+                              JOIN cbt_exams e ON se.exam_id = e.id
+                              WHERE se.student_id = ?
+                              ORDER BY se.completed_at DESC";
+                                        
+                                        $stmt = $conn->prepare($pastExamsQuery);
+                                        if ($stmt) {
+                                            $stmt->bind_param("i", $student_id);
+                                            $stmt->execute();
+                                            $pastExamsResult = $stmt->get_result();
+                                            
+                                            while ($row = $pastExamsResult->fetch_assoc()) {
+                                                $pastExams[] = $row;
+                                            }
+                                        }
+                                    } catch (Exception $e) {
+                                        // Silently handle missing student_exams table
+                                    }
+                                }
+                            } catch (Exception $e) {
+                                // Just initialize empty arrays if any errors
+                                $availableExams = [];
+                                $pastExams = [];
+                            }
+                            ?>
+                            
+                            <?php if (count($availableExams) > 0): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th>Title</th>
+                                                <th>Duration</th>
+                                                <th>Questions</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($availableExams as $exam): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($exam['subject']); ?></td>
+                                                <td><?php echo htmlspecialchars($exam['title']); ?></td>
+                                                <td><?php echo htmlspecialchars($exam['time_limit']); ?> minutes</td>
+                                                <td><?php echo htmlspecialchars($exam['total_questions'] ?? 'Not specified'); ?></td>
+                                                <td>
+                                                    <span class="badge badge-success">Available</span>
+                                                </td>
+                                                <td>
+                                                    <form method="POST" action="../../../backends/cbt/take_exam.php" class="d-inline">
+                                                        <input type="hidden" name="exam_id" value="<?php echo $exam['id']; ?>">
+                                                        <input type="hidden" name="student_id" value="<?php echo $student_id; ?>">
+                                                        <input type="hidden" name="start_exam" value="1">
+                                                        <button type="submit" 
+                                                           class="btn btn-primary btn-sm start-exam-btn"
+                                                           data-exam-id="<?php echo $exam['id']; ?>"
+                                                           data-exam-title="<?php echo htmlspecialchars($exam['title']); ?>"
+                                                           data-exam-subject="<?php echo htmlspecialchars($exam['subject']); ?>"
+                                                           data-exam-duration="<?php echo htmlspecialchars($exam['time_limit']); ?>"
+                                                           data-exam-questions="<?php echo htmlspecialchars($exam['total_questions'] ?? 'N/A'); ?>">
+                                                            Start Exam
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php else: ?>
+                                <div class="alert alert-info">
+                                    <p><i class="fas fa-info-circle mr-2"></i> There are no CBT exams currently available for your class.</p>
+                                    <p>Current class: <strong><?php echo htmlspecialchars($studentClass ?? 'Not set'); ?></strong></p>
+                                    
+                                    <!-- If no exams found, provide helpful info for debugging -->
+                                    <hr>
+                                    <p><small><i class="fas fa-question-circle"></i> If you believe this is an error, please ask your teacher to verify:</small></p>
+                                    <ol class="small">
+                                        <li>That exams have been created for your class "<?php echo htmlspecialchars($studentClass); ?>"</li>
+                                        <li>That those exams are marked as "Active"</li>
+                                    </ol>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <h4 class="mt-5"><i class="fas fa-history"></i> My Past Exams</h4>
+                            
+                            <?php if (count($pastExams) > 0): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th>Title</th>
+                                                <th>Date Taken</th>
+                                                <th>Status</th>
+                                                <th>Score</th>
+                                                <th>Details</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($pastExams as $exam): ?>
+                                            <tr>
+                                                <td><?php echo htmlspecialchars($exam['subject']); ?></td>
+                                                <td><?php echo htmlspecialchars($exam['title']); ?></td>
+                                                <td>
+                                                    <?php echo isset($exam['completed_at']) 
+                                                          ? date('M d, Y g:i A', strtotime($exam['completed_at'])) 
+                                                          : (isset($exam['started_at']) 
+                                                             ? date('M d, Y g:i A', strtotime($exam['started_at'])) . ' (Not submitted)' 
+                                                             : 'N/A'); ?>
+                                                </td>
+                                                <td>
+                                                    <?php
+                                                    $statusClass = '';
+                                                    $status = $exam['status'] ?? '';
+                                                    switch ($status) {
+                                                        case 'Completed':
+                                                        case 'passed':
+                                                            $statusClass = 'success';
+                                                            break;
+                                                        case 'In Progress':
+                                                            $statusClass = 'warning';
+                                                            break;
+                                                        case 'failed':
+                                                            $statusClass = 'danger';
+                                                            break;
+                                                        default:
+                                                            $statusClass = 'secondary';
+                                                    }
+                                                    ?>
+                                                    <span class="badge badge-<?php echo $statusClass; ?>">
+                                                        <?php echo ucfirst($status); ?>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <?php if (isset($exam['score']) && ($exam['show_results'] == 1)): ?>
+                                                        <span class="badge badge-<?php echo ($exam['score'] >= $exam['passing_score']) ? 'success' : 'danger'; ?>">
+                                                            <?php echo $exam['score']; ?>%
+                                                        </span>
+                                                    <?php else: ?>
+                                                        <span class="badge badge-secondary">Not available</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <a href="../../cbt/view_result.php?exam_id=<?php echo $exam['exam_id']; ?>&student_id=<?php echo $_SESSION['student_id']; ?>" 
+                                                       class="btn btn-info btn-sm <?php echo (!$exam['show_results'] && $exam['status'] !== 'In Progress') ? 'disabled' : ''; ?>"
+                                                       <?php echo (!$exam['show_results'] && $exam['status'] !== 'In Progress') ? 'title="Results not available yet"' : ''; ?>>
+                                                        <i class="fas fa-eye"></i> View Result
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php else: ?>
+                                <div class="alert alert-secondary">
+                                    <p><i class="fas fa-info-circle mr-2"></i> You haven't taken any CBT exams yet.</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Payments Tab -->
+                    <div class="tab-pane fade" id="payments" role="tabpanel" aria-labelledby="payments-tab">
+                        <div class="dashboard-card">
+                            <h4><i class="fas fa-money-bill-wave"></i> Payment History</h4>
+                            
+                            <?php
+                            // Get payment history for this student
+                            $payments_query = "SELECT * FROM payments 
+                                             WHERE student_id = ? 
+                                             ORDER BY payment_date DESC, created_at DESC";
+                            
+                            $stmt = $conn->prepare($payments_query);
+                            $stmt->bind_param("i", $student_id);
+                            $stmt->execute();
+                            $payments_result = $stmt->get_result();
+                            
+                            if ($payments_result->num_rows > 0): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Payment Type</th>
+                                                <th>Amount</th>
+                                                <th>Method</th>
+                                                <th>Reference</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php 
+                                            $total_paid = 0;
+                                            while ($payment = $payments_result->fetch_assoc()): 
+                                                if ($payment['status'] === 'completed') {
+                                                    $total_paid += $payment['amount'];
+                                                }
+                                            ?>
+                                                <tr>
+                                                    <td><?php echo date('M d, Y', strtotime($payment['payment_date'])); ?></td>
+                                                    <td>
+                                                        <?php 
+                                                        $payment_type = str_replace('_', ' ', $payment['payment_type']);
+                                                        echo ucwords($payment_type); 
+                                                        ?>
+                                                    </td>
+                                                    <td>₦<?php echo number_format($payment['amount'], 2); ?></td>
+                                                    <td>
+                                                        <?php 
+                                                        $method = str_replace('_', ' ', $payment['payment_method']);
+                                                        echo ucwords($method); 
+                                                        ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php echo $payment['reference_number'] ? $payment['reference_number'] : '<span class="text-muted">-</span>'; ?>
+                                                    </td>
+                                                    <td>
+                                                        <?php
+                                                        $status_class = '';
+                                                        switch ($payment['status']) {
+                                                            case 'completed':
+                                                                $status_class = 'success';
+                                                                break;
+                                                            case 'pending':
+                                                                $status_class = 'warning';
+                                                                break;
+                                                            case 'failed':
+                                                                $status_class = 'danger';
+                                                                break;
+                                                            default:
+                                                                $status_class = 'secondary';
+                                                        }
+                                                        ?>
+                                                        <span class="badge badge-<?php echo $status_class; ?>">
+                                                            <?php echo ucfirst($payment['status']); ?>
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="bg-light">
+                                                <td colspan="2"><strong>Total Paid:</strong></td>
+                                                <td colspan="4"><strong>₦<?php echo number_format($total_paid, 2); ?></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                
+                                <!-- Payment Summary Cards -->
+                                <div class="row mt-4">
+                                    <div class="col-md-4">
+                                        <div class="card bg-success text-white">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Total Paid</h5>
+                                                <h3 class="mb-0">₦<?php echo number_format($total_paid, 2); ?></h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <?php
+                                    // Get pending payments
+                                    $pending_query = "SELECT SUM(amount) as pending_amount FROM payments 
+                                                    WHERE student_id = ? AND status = 'pending'";
+                                    $stmt = $conn->prepare($pending_query);
+                                    $stmt->bind_param("i", $student_id);
+                                    $stmt->execute();
+                                    $pending_result = $stmt->get_result()->fetch_assoc();
+                                    $pending_amount = $pending_result['pending_amount'] ?? 0;
+                                    ?>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="card bg-warning text-dark">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Pending Payments</h5>
+                                                <h3 class="mb-0">₦<?php echo number_format($pending_amount, 2); ?></h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-4">
+                                        <div class="card bg-info text-white">
+                                            <div class="card-body">
+                                                <h5 class="card-title">Last Payment</h5>
+                                                <?php
+                                                $payments_result->data_seek(0);
+                                                $last_payment = $payments_result->fetch_assoc();
+                                                if ($last_payment):
+                                                ?>
+                                                    <p class="mb-0">
+                                                        ₦<?php echo number_format($last_payment['amount'], 2); ?><br>
+                                                        <small><?php echo date('M d, Y', strtotime($last_payment['payment_date'])); ?></small>
+                                                    </p>
+                                                <?php else: ?>
+                                                    <p class="mb-0">No payments yet</p>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            <?php else: ?>
+                                <div class="alert alert-info">
+                                    <p><i class="fas fa-info-circle mr-2"></i> No payment records found.</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Calendar Tab -->
+                    <div class="tab-pane fade" id="calendar" role="tabpanel" aria-labelledby="calendar-tab">
+                        <div class="dashboard-card">
+                            <h4><i class="fas fa-calendar-alt"></i> Academic Calendar</h4>
+                            <div class="calendar-container">
+                                <div id="schoolCalendar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Teacher Feedback Tab -->
+                    <div class="tab-pane fade" id="teacher-feedback" role="tabpanel" aria-labelledby="teacher-feedback-tab">
+                        <div class="dashboard-card">
+                            <h4><i class="fas fa-clipboard-check"></i> Teacher Feedback</h4>
+                            <?php if (count($teacherActivities) > 0 || count($teacherComments) > 0): ?>
+                                <div class="row">
+                                    <div class="col-md-12 mb-4">
+                                        <h5><i class="fas fa-clipboard-list"></i> Activities</h5>
+                                        <?php if (count($teacherActivities) > 0): ?>
+                                        <div class="table-responsive">
+                                            <table class="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width: 15%">Date</th>
+                                                        <th style="width: 15%">Type</th>
+                                                        <th>Description</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <?php foreach ($teacherActivities as $activity): ?>
+                                                    <tr>
+                                                        <td><?php echo date('M d, Y', strtotime($activity['activity_date'])); ?></td>
+                                                        <td>
+                                                            <?php 
+                                                            $typeClass = '';
+                                                            switch ($activity['activity_type']) {
+                                                                case 'attendance': $typeClass = 'badge-info'; break;
+                                                                case 'behavioral': $typeClass = 'badge-warning'; break;
+                                                                case 'academic': $typeClass = 'badge-success'; break;
+                                                                case 'health': $typeClass = 'badge-danger'; break;
+                                                                default: $typeClass = 'badge-secondary';
+                                                            }
+                                                            ?>
+                                                            <span class="badge <?php echo $typeClass; ?>">
+                                                                <?php echo ucfirst($activity['activity_type']); ?>
+                                                            </span>
+                                                        </td>
+                                                        <td><?php echo $activity['description']; ?></td>
+                                                    </tr>
+                                                    <?php endforeach; ?>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <?php else: ?>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i> No activities have been recorded for you by your class teacher.
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                    
+                                    <div class="col-md-12 mb-4">
+                                        <h5><i class="fas fa-comments"></i> Comments</h5>
+                                        <?php if (count($teacherComments) > 0): ?>
+                                        <div class="direct-chat-messages" style="height: auto;">
+                                            <?php foreach ($teacherComments as $comment): ?>
+                                            <div class="direct-chat-msg">
+                                                <div class="direct-chat-infos clearfix">
+                                                    <span class="direct-chat-name float-left">Class Teacher</span>
+                                                    <span class="direct-chat-timestamp float-right">
+                                                        <?php echo date('M d, Y H:i', strtotime($comment['created_at'])); ?>
+                                                    </span>
+                                                </div>
+                                                <div class="direct-chat-img">
+                                                    <i class="fas fa-user-circle fa-2x"></i>
+                                                </div>
+                                                <div class="direct-chat-text">
+                                                    <strong><?php echo ucfirst($comment['comment_type']); ?>:</strong>
+                                                    <?php echo nl2br($comment['comment']); ?>
+                                                    <?php if (!empty($comment['term'])): ?>
+                                                    <small class="text-muted d-block mt-1">
+                                                        Term: <?php echo $comment['term']; ?>, 
+                                                        Session: <?php echo $comment['session']; ?>
+                                                    </small>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <?php else: ?>
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i> No comments have been added by your class teacher.
+                                        </div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <div class="alert alert-info">
+                                    <p><i class="fas fa-info-circle mr-2"></i> No teacher feedback is available at this time.</p>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -2540,6 +2934,135 @@ while ($row = $announcementsResult->fetch_assoc()) {
         </div>
     </div>
     
+    <!-- Add CBT Exams Section -->
+    <!-- <div class="row" id="cbt-exams">
+        <div class="col-md-12 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">CBT Exams</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="examTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="upcoming-tab" data-toggle="tab" href="#upcoming" role="tab">
+                                Upcoming Exams
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="completed-tab" data-toggle="tab" href="#completed" role="tab">
+                                Completed Exams
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content mt-3" id="examTabContent">
+                        <div class="tab-pane fade show active" id="upcoming" role="tabpanel">
+                            <?php if ($upcoming_exams->num_rows > 0): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th>Title</th>
+                                                <th>Start Time</th>
+                                                <th>Duration</th>
+                                                <th>Questions</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php while ($exam = $upcoming_exams->fetch_assoc()): ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($exam['subject_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($exam['title']); ?></td>
+                                                    <td><?php echo date('M d, Y', strtotime($exam['created_at'])); ?></td>
+                                                    <td><?php echo $exam['duration']; ?> minutes</td>
+                                                    <td><?php echo htmlspecialchars($exam['question_count'] ?? 'Not specified'); ?> questions</td>
+                                                    <td>
+                                                        <?php if ($exam['is_active']): ?>
+                                                            <a href="take_exam.php?exam_id=<?php echo $exam['id']; ?>" 
+                                                               class="btn btn-primary btn-sm start-exam-btn"
+                                                               data-exam-id="<?php echo $exam['id']; ?>"
+                                                               data-exam-title="<?php echo htmlspecialchars($exam['title']); ?>"
+                                                               data-exam-subject="<?php echo htmlspecialchars($exam['subject_name']); ?>"
+                                                               data-exam-duration="<?php echo htmlspecialchars($exam['duration']); ?>"
+                                                               data-exam-questions="<?php echo htmlspecialchars($exam['question_count'] ?? 'N/A'); ?>">
+                                                                Start Exam
+                                                            </a>
+                                                        <?php else: ?>
+                                                            <button class="btn btn-secondary btn-sm" disabled>Not Available</button>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php else: ?>
+                                <div class="alert alert-info">No upcoming exams.</div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="tab-pane fade" id="completed" role="tabpanel">
+                            <?php if ($completed_exams->num_rows > 0): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Subject</th>
+                                                <th>Title</th>
+                                                <th>Score</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php while ($exam = $completed_exams->fetch_assoc()): ?>
+                                                <?php 
+                                                // Calculate score
+                                                $score = 0;
+                                                if (isset($exam['question_count']) && $exam['question_count'] > 0) {
+                                                    $score = round(($exam['correct_answers'] / $exam['question_count']) * 100, 1);
+                                                } elseif (isset($exam['score'])) {
+                                                    $score = $exam['score'];
+                                                }
+                                                
+                                                // Determine status class
+                                                $statusClass = $score >= ($exam['passing_score'] ?? 50) ? 'success' : 'danger';
+                                                ?>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($exam['subject_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($exam['title']); ?></td>
+                                                    <td>
+                                                        <span class="text-<?php echo $statusClass; ?>">
+                                                            <?php echo $score; ?>%
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-<?php echo $statusClass; ?>">
+                                                            <?php echo $score >= ($exam['passing_score'] ?? 50) ? 'Passed' : 'Failed'; ?>
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <a href="view_cbt_result.php?exam_id=<?php echo $exam['id']; ?>" class="btn btn-info btn-sm">
+                                                            <i class="fas fa-eye"></i> View Result
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php else: ?>
+                                <div class="alert alert-info">No completed exams.</div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> -->
+    
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
@@ -2551,8 +3074,383 @@ while ($row = $announcementsResult->fetch_assoc()) {
     <script>
         $(document).ready(function() {
             // Initialize charts and other UI components here
-            // This script will run after our custom tab system
+            try {
+                // Academic progress chart
+                var academicCtx = document.getElementById('academicChart');
+                if (academicCtx) {
+                    var academicChart = new Chart(academicCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Term 1', 'Term 2', 'Term 3'],
+                            datasets: [{
+                                label: 'Average Score',
+                                data: [75, 82, 88],
+                                backgroundColor: 'rgba(66, 133, 244, 0.2)',
+                                borderColor: 'rgba(66, 133, 244, 1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(66, 133, 244, 1)',
+                                pointRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                        max: 100
+                                    }
+                                }]
+                            }
+                        }
+                    });
+                }
+                
+                // Exam charts
+                var examChartCtx = document.getElementById('examChart');
+                if (examChartCtx) {
+                    var examChart = new Chart(examChartCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['First Term', 'Second Term', 'Third Term'],
+                            datasets: [{
+                                label: 'Exam Performance',
+                                data: [72, 85, 90],
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.7)',
+                                    'rgba(54, 162, 235, 0.7)',
+                                    'rgba(75, 192, 192, 0.7)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(75, 192, 192, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true,
+                                        max: 100
+                                    }
+                                }]
+                            }
+                        }
+                    });
+                }
+                
+                // Exam doughnut chart
+                var examDoughnutCtx = document.getElementById('examDoughnutChart');
+                if (examDoughnutCtx) {
+                    var examDoughnutChart = new Chart(examDoughnutCtx, {
+                        type: 'doughnut',
+                        data: {
+                            datasets: [{
+                                data: [<?php echo $passRate; ?>, <?php echo 100 - $passRate; ?>],
+                                backgroundColor: [
+                                    'rgba(75, 192, 192, 0.7)',
+                                    'rgba(201, 203, 207, 0.3)'
+                                ],
+                                borderColor: [
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(201, 203, 207, 0.5)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            cutoutPercentage: 70,
+                            legend: {
+                                display: false
+                            },
+                            tooltips: {
+                                enabled: false
+                            }
+                        }
+                    });
+                }
+                
+                // Payment chart
+                var paymentChartCtx = document.getElementById('paymentChart');
+                if (paymentChartCtx) {
+                    var paymentChart = new Chart(paymentChartCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Tuition', 'Books', 'Uniform', 'Others'],
+                            datasets: [{
+                                data: [60, 15, 10, 15],
+                                backgroundColor: [
+                                    'rgba(54, 162, 235, 0.7)',
+                                    'rgba(255, 206, 86, 0.7)',
+                                    'rgba(75, 192, 192, 0.7)',
+                                    'rgba(153, 102, 255, 0.7)'
+                                ],
+                                borderColor: [
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true
+                        }
+                    });
+                }
+                
+                // Initialize calendar if element exists
+                var calendarEl = document.getElementById('schoolCalendar');
+                if (calendarEl) {
+                    var calendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        headerToolbar: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'dayGridMonth,timeGridWeek,listWeek'
+                        },
+                        events: [
+                            {
+                                title: 'First Term Begins',
+                                start: '2023-09-11',
+                                allDay: true,
+                                backgroundColor: '#4285f4'
+                            },
+                            {
+                                title: 'First Term Exam',
+                                start: '2023-12-04',
+                                end: '2023-12-15',
+                                backgroundColor: '#ea4335'
+                            },
+                            {
+                                title: 'Christmas Break',
+                                start: '2023-12-18',
+                                end: '2024-01-08',
+                                backgroundColor: '#34a853'
+                            }
+                        ]
+                    });
+                    calendar.render();
+                }
+            } catch (error) {
+                console.error("Error initializing charts or calendar:", error);
+            }
         });
+    </script>
+
+    <!-- Add script to update JavaScript to handle deep linking and anchor navigation -->
+    <script>
+        $(document).ready(function() {
+            // Update all tab link event handlers
+            $('.btn[data-toggle="tab"]').on('click', function(e) {
+                e.preventDefault();
+                var target = $(this).data('target');
+                $('.sidebar .nav-link[href="'+target+'"]').tab('show');
+            });
+            
+            // Back/Forward button support for tabs
+            window.addEventListener('popstate', function(event) {
+                var hash = window.location.hash;
+                if (hash) {
+                    $('.sidebar .nav-link[href="'+hash+'"]').tab('show');
+                } else {
+                    $('.sidebar .nav-link:first').tab('show');
+                }
+            });
+            
+            // Set target when coming from announcement link
+            $('a[href="#announcements"]').on('click', function() {
+                $('.sidebar .nav-link[href="#announcements"]').tab('show');
+                return false;
+            });
+            
+            // Handle exam start buttons
+            $('.start-exam-btn').on('click', function(e) {
+                e.preventDefault();
+                var examId = $(this).data('exam-id');
+                var examTitle = $(this).data('exam-title');
+                var examSubject = $(this).data('exam-subject');
+                var examDuration = $(this).data('exam-duration');
+                var examQuestions = $(this).data('exam-questions');
+                var examUrl = $(this).attr('href');
+                
+                // Set modal content
+                $('#modal-subject').text(examSubject);
+                $('#modal-title').text(examTitle);
+                $('#modal-duration').text(examDuration + ' minutes');
+                $('#modal-questions').text(examQuestions + ' questions');
+                
+                // Set start button URL
+                $('#startExamBtn').attr('href', examUrl);
+                
+                // Show modal
+                $('#examInstructionsModal').modal('show');
+            });
+        });
+    </script>
+
+    <!-- Exam Instructions Modal -->
+    <div class="modal fade" id="examInstructionsModal" tabindex="-1" role="dialog" aria-labelledby="examInstructionsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="examInstructionsModalLabel">Exam Instructions</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle mr-2"></i> Please read all instructions carefully before starting the exam.
+                    </div>
+                    
+                    <h5 class="font-weight-bold mb-3">General Instructions:</h5>
+                    <ol>
+                        <li>This is a timed exam. Once you start, the timer cannot be paused.</li>
+                        <li>Do not refresh the page or navigate away during the exam.</li>
+                        <li>Ensure you have a stable internet connection before starting.</li>
+                        <li>Answer all questions. You can review your answers before final submission.</li>
+                        <li>Click "Submit Exam" when you are done to record your answers.</li>
+                    </ol>
+                    
+                    <h5 class="font-weight-bold mb-3 mt-4">Exam Details:</h5>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="30%">Subject:</th>
+                            <td id="modal-subject"></td>
+                        </tr>
+                        <tr>
+                            <th>Title:</th>
+                            <td id="modal-title"></td>
+                        </tr>
+                        <tr>
+                            <th>Duration:</th>
+                            <td id="modal-duration"></td>
+                        </tr>
+                        <tr>
+                            <th>Total Questions:</th>
+                            <td id="modal-questions"></td>
+                        </tr>
+                    </table>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle mr-2"></i> Once you click "Start Exam", you will be redirected to the exam page.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <a href="#" id="startExamBtn" class="btn btn-primary">Start Exam</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        // Handle file input change for passport photo
+        $('#passport_photo').on('change', function() {
+            const file = this.files[0];
+            const preview = $('#imagePreview img');
+            const previewContainer = $('#imagePreview');
+            
+            if (file) {
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Please select a valid image file (JPG, JPEG, or PNG)');
+                    this.value = '';
+                    previewContainer.hide();
+                    return;
+                }
+                
+                // Validate file size (2MB max)
+                const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+                if (file.size > maxSize) {
+                    alert('File size should not exceed 2MB');
+                    this.value = '';
+                    previewContainer.hide();
+                    return;
+                }
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.attr('src', e.target.result);
+                    previewContainer.show();
+                }
+                reader.readAsDataURL(file);
+                
+                // Update file input label
+                $(this).next('.custom-file-label').html(file.name);
+            } else {
+                previewContainer.hide();
+                $(this).next('.custom-file-label').html('Choose file...');
+            }
+        });
+        
+        // Handle form submission
+        $('#passportForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const fileInput = $('#passport_photo')[0];
+            if (!fileInput.files.length) {
+                alert('Please select a photo to upload');
+                return;
+            }
+            
+            const formData = new FormData(this);
+            
+            // Show loading state
+            const submitBtn = $(this).find('button[type="submit"]');
+            const originalText = submitBtn.html();
+            submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Uploading...').prop('disabled', true);
+            
+            $.ajax({
+                url: 'update_passport.php',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    try {
+                        const data = JSON.parse(response);
+                        
+                        if (data.status === 'success') {
+                            // Update all instances of the student photo on the page
+                            const newPhotoPath = '../../../' + data.photo_path;
+                            $('.student-photo, .profile-image').attr('src', newPhotoPath);
+                            
+                            // Show success message
+                            alert('Photo uploaded successfully!');
+                            
+                            // Close the modal
+                            $('#changePassportModal').modal('hide');
+                            
+                            // Reload the page to reflect all changes
+                            location.reload();
+                        } else {
+                            alert('Error uploading photo: ' + data.message);
+                        }
+                    } catch (e) {
+                        alert('Error processing response: ' + response);
+                    }
+                    
+                    // Reset button state
+                    submitBtn.html(originalText).prop('disabled', false);
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred while uploading the photo: ' + error);
+                    submitBtn.html(originalText).prop('disabled', false);
+                }
+            });
+        });
+    });
     </script>
 </body>
 </html>

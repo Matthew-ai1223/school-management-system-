@@ -245,7 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit'])) {
                     </a>
                 </div>
                 
-                <a href="../../../index.html" class="homepage-link">
+                <a href="../../../index.php" class="homepage-link">
                     <i class="fas fa-home"></i> Back to Homepage
                 </a>
             </div>

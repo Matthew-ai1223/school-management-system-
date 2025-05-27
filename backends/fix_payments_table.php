@@ -1,9 +1,9 @@
 <?php
-// Database connection details (these should match your database configuration)
+// Database connection details
 $host = 'localhost';
 $username = 'root';  // Default XAMPP username
 $password = '';      // Default XAMPP password
-$dbname = 'ace_school_system';  // The correct database name as defined in config.php
+$dbname = 'ace_school_system';  // Your database name
 
 echo "<h2>Payments Table Fix Tool</h2>";
 
@@ -75,7 +75,7 @@ try {
         $existingColumns = [];
         
         while ($row = $columnResult->fetch_assoc()) {
-            $existingColumns[$row['Field']] = true;
+            $existingColumns[$row['Field']] = $row;
         }
         
         // Check and add missing columns
@@ -85,22 +85,32 @@ try {
             if (!isset($existingColumns[$column])) {
                 $alterQuery = "ALTER TABLE payments ADD COLUMN $column $definition";
                 
-                // For the primary key
-                if ($column === 'id') {
-                    $alterQuery .= ", ADD PRIMARY KEY (id)";
-                }
-                
                 if ($conn->query($alterQuery) === TRUE) {
-                    echo "<p style='color: green;'>Success: The '$column' column has been added to the payments table.</p>";
+                    echo "<p style='color: green;'>Success: Added missing column '$column' to the payments table.</p>";
                     $columnsAdded = true;
                 } else {
                     echo "<p style='color: red;'>Error adding '$column' column: " . $conn->error . "</p>";
+                }
+            } else {
+                // Check if column type matches
+                $currentType = strtoupper($existingColumns[$column]['Type']);
+                $requiredType = strtoupper(preg_replace('/\s+NOT NULL|\s+NULL/', '', $definition));
+                
+                if ($currentType !== $requiredType) {
+                    $alterQuery = "ALTER TABLE payments MODIFY COLUMN $column $definition";
+                    
+                    if ($conn->query($alterQuery) === TRUE) {
+                        echo "<p style='color: green;'>Success: Updated column type for '$column' in the payments table.</p>";
+                        $columnsAdded = true;
+                    } else {
+                        echo "<p style='color: red;'>Error updating column type for '$column': " . $conn->error . "</p>";
+                    }
                 }
             }
         }
         
         if (!$columnsAdded) {
-            echo "<p>All required columns already exist in the payments table.</p>";
+            echo "<p style='color: green;'>All required columns exist with correct types in the payments table.</p>";
         }
     }
 

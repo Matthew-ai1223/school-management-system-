@@ -170,7 +170,7 @@ $pageTitle = "Teacher Login - CBT System";
 <body>
     <div class="login-container">
         <div class="text-center mb-4">
-            <h1 class="h3 text-dark">ACE MODEL COLLEGE</h1>
+            <h1 class="h3 text-dark">ACE COLLEGE</h1>
             <p class="text-muted">Computer-Based Test (CBT) System</p>
         </div>
         
@@ -200,7 +200,7 @@ $pageTitle = "Teacher Login - CBT System";
             <div class="card-body">
                 <form method="post" action="">
                     <div class="form-group">
-                        <label for="employee_id"><i class="fas fa-id-card mr-2"></i>Employee ID</label>
+                        <label for="employee_id"><i class="fas fa-id-card mr-2"></i>Employee ID/Password</label>
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text"><i class="fas fa-user-lock"></i></span>
@@ -216,7 +216,7 @@ $pageTitle = "Teacher Login - CBT System";
                     </div>
                     
                     <div class="text-center">
-                        <a href="../index.php" class="text-decoration-none">
+                        <a href="../../index.php" class="text-decoration-none">
                             <i class="fas fa-home mr-1"></i> Back to Home
                         </a>
                     </div>
@@ -225,7 +225,7 @@ $pageTitle = "Teacher Login - CBT System";
             
             <div class="card-footer bg-light text-center py-3">
                 <p class="mb-0 text-muted">
-                    <small>&copy; <?php echo date('Y'); ?> ACE MODEL COLLEGE. All rights reserved.</small>
+                    <small>&copy; <?php echo date('Y'); ?> ACE COLLEGE. All rights reserved.</small>
                 </p>
             </div>
         </div>

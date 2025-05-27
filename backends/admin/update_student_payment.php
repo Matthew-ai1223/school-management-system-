@@ -60,14 +60,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Create payment record
         $query = "INSERT INTO payments (
                 student_id, payment_type, amount, payment_method, 
-                reference_number, payment_date, status, created_by, created_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+                reference_number, payment_date, status, notes, created_by, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())";
             
         $stmt = $conn->prepare($query);
         $stmt->bind_param(
-            "isdsssis", 
-            $studentId, $paymentType, $amount, $paymentMethod,
-            $referenceNumber, $paymentDate, $status, $userId
+            "isdssssis", 
+            $studentId, 
+            $paymentType, 
+            $amount, 
+            $paymentMethod,
+            $referenceNumber, 
+            $paymentDate, 
+            $status, 
+            $notes,
+            $userId
         );
         
         if ($stmt->execute()) {

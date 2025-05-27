@@ -17,7 +17,9 @@ define('APP_TYPE_KIDDIES', 'kiddies');
 define('APP_TYPE_COLLEGE', 'college');
 
 // Session Configuration
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Error Reporting
 error_reporting(E_ALL);

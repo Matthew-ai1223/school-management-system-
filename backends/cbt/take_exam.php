@@ -1,234 +1,492 @@
 <?php
 require_once '../config.php';
 require_once '../database.php';
-session_start();
+require_once '../utils.php';
 
-// Check if user is logged in as a student
-if (!isset($_SESSION['student_id']) || !isset($_SESSION['student_logged_in']) || $_SESSION['student_logged_in'] !== true) {
-    // Redirect to student login page
-    header('Location: ../student/login.php?error=Please+login+to+access+this+page');
-    exit;
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Set error log path
+ini_set('error_log', 'C:/xampp/htdocs/ACE MODEL COLLEGE/logs/php_errors.log');
+if (!file_exists('C:/xampp/htdocs/ACE MODEL COLLEGE/logs')) {
+    mkdir('C:/xampp/htdocs/ACE MODEL COLLEGE/logs', 0777, true);
 }
 
-// Get student information
-$student_id = $_SESSION['student_id'];
-$student_name = $_SESSION['student_name'] ?? 'Student';
+// Start session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Initialize database connection
+// Initialize variables
+$error = '';
+$student = null;
+$exam = null;
+$available_exams = [];
+
+// Connect to database
 $db = Database::getInstance();
 $conn = $db->getConnection();
 
-// Get exam ID from GET parameter
-$exam_id = isset($_GET['exam_id']) ? (int)$_GET['exam_id'] : 0;
-
-if ($exam_id <= 0) {
-    // Redirect to dashboard if no valid exam ID
-    header('Location: ../student/registration/student_dashboard.php?error=Invalid+exam');
-    exit;
-}
-
-// Get student's class
-$classQuery = "SELECT class FROM students WHERE id = ?";
-$stmt = $conn->prepare($classQuery);
-$stmt->bind_param("i", $student_id);
-$stmt->execute();
-$classResult = $stmt->get_result();
-$studentClass = "";
-
-if ($row = $classResult->fetch_assoc()) {
-    $studentClass = $row['class'];
-}
-
-// Verify that the exam exists, is active, and the student is eligible to take it
-$examQuery = "SELECT e.*, s.name AS subject_name
-              FROM cbt_exams e
-              JOIN subjects s ON e.subject_id = s.id
-              WHERE e.id = ? 
-              AND e.is_active = 1
-              AND NOW() BETWEEN e.start_datetime AND e.end_datetime
-              AND (e.class_id = ? OR e.class_id = ?)";
-
-$stmt = $conn->prepare($examQuery);
-$stmt->bind_param("iss", $exam_id, $studentClass, $studentClass);
-$stmt->execute();
-$examResult = $stmt->get_result();
-
-if ($examResult->num_rows === 0) {
-    // Exam not found or not available to this student
-    header('Location: ../student/registration/student_dashboard.php?error=Exam+not+available');
-    exit;
-}
-
-$exam = $examResult->fetch_assoc();
-
-// Check if the student has already taken this exam
-$checkAttemptQuery = "SELECT id FROM cbt_student_exams WHERE student_id = ? AND exam_id = ?";
-$stmt = $conn->prepare($checkAttemptQuery);
-$stmt->bind_param("ii", $student_id, $exam_id);
-$stmt->execute();
-$attemptResult = $stmt->get_result();
-
-if ($attemptResult->num_rows > 0) {
-    // Student has already taken this exam
-    header('Location: ../student/registration/student_dashboard.php?error=You+have+already+taken+this+exam');
-    exit;
-}
-
-// Get questions for this exam
-$questionsQuery = "SELECT q.* FROM cbt_questions q WHERE q.exam_id = ? ORDER BY RAND() LIMIT ?";
-$stmt = $conn->prepare($questionsQuery);
-$stmt->bind_param("ii", $exam_id, $exam['total_questions']);
-$stmt->execute();
-$questionsResult = $stmt->get_result();
-
-$questions = [];
-while ($row = $questionsResult->fetch_assoc()) {
-    $questions[] = $row;
-}
-
-// Check if we have enough questions
-if (count($questions) < $exam['total_questions']) {
-    // Not enough questions
-    header('Location: ../student/registration/student_dashboard.php?error=Not+enough+questions+in+the+exam');
-    exit;
-}
-
-// Process form submission
-$errorMessage = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_exam'])) {
-    // Begin transaction
-    $conn->begin_transaction();
+// Function to get exam by ID
+function getExamById($conn, $exam_id) {
+    $stmt = $conn->prepare("SELECT * FROM cbt_exams WHERE id = ? AND is_active = 1");
+    if (!$stmt) {
+        return null;
+    }
     
-    try {
-        $score = 0;
-        $total_possible = 0;
-        $answer_data = [];
+    $stmt->bind_param("i", $exam_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result && $result->num_rows > 0) {
+        return $result->fetch_assoc();
+    }
+    
+    return null;
+}
+
+// Function to get student by registration number and class
+function getStudentByRegNumAndClass($conn, $reg_number, $class) {
+    // Try with both admission_number and registration_number
+    $stmt = $conn->prepare("SELECT * FROM students WHERE (registration_number = ? OR admission_number = ?) AND TRIM(class) = ? LIMIT 1");
+    if (!$stmt) {
+        return null;
+    }
+    
+    $stmt->bind_param("sss", $reg_number, $reg_number, $class);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($result && $result->num_rows > 0) {
+        return $result->fetch_assoc();
+    }
+    
+    return null;
+}
+
+// Function to get available exams for a class
+function getAvailableExamsByClass($conn, $class) {
+    $exams = [];
+    
+    // First try with pattern matching
+    $searchPattern = '%' . trim($class) . '%';
+    $stmt = $conn->prepare("SELECT * FROM cbt_exams WHERE is_active = 1 AND TRIM(class) LIKE ? ORDER BY created_at DESC");
+    
+    if ($stmt) {
+        $stmt->bind_param("s", $searchPattern);
+        $stmt->execute();
+        $result = $stmt->get_result();
         
-        // Process each answer
-        foreach ($_POST['answers'] as $question_id => $answer) {
-            $question_id = (int)$question_id;
+        while ($row = $result->fetch_assoc()) {
+            $exams[] = $row;
+        }
+        
+        // If no results, try with exact matching
+        if (count($exams) == 0) {
+            $all_exams_query = "SELECT * FROM cbt_exams WHERE is_active = 1 ORDER BY created_at DESC";
+            $result = $conn->query($all_exams_query);
             
-            // Find the question in our array
-            $questionIndex = array_search($question_id, array_column($questions, 'id'));
-            
-            if ($questionIndex !== false) {
-                $question = $questions[$questionIndex];
-                $total_possible += $question['marks'];
-                
-                // Handle different question types
-                if ($question['question_type'] === 'Multiple Choice') {
-                    // Get correct option for this question
-                    $optionsQuery = "SELECT option_text FROM cbt_options WHERE question_id = ? AND is_correct = 1";
-                    $stmt = $conn->prepare($optionsQuery);
-                    $stmt->bind_param("i", $question_id);
-                    $stmt->execute();
-                    $correctOptionsResult = $stmt->get_result();
-                    
-                    $correctOptions = [];
-                    while ($row = $correctOptionsResult->fetch_assoc()) {
-                        $correctOptions[] = $row['option_text'];
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    // Compare class names case-insensitively after trimming
+                    if (strcasecmp(trim($row['class']), trim($class)) == 0) {
+                        $exams[] = $row;
                     }
-                    
-                    // Check if answer is correct
-                    $student_answer = is_array($answer) ? $answer : [$answer];
-                    $is_correct = count(array_intersect($student_answer, $correctOptions)) > 0;
-                    
-                    if ($is_correct) {
-                        $score += $question['marks'];
-                    }
-                    
-                    // Store answer data
-                    $answer_data[] = [
-                        'question_id' => $question_id,
-                        'student_answer' => implode('||', $student_answer),
-                        'is_correct' => $is_correct ? 1 : 0,
-                        'marks_earned' => $is_correct ? $question['marks'] : 0,
-                        'possible_marks' => $question['marks']
-                    ];
-                }
-                else if ($question['question_type'] === 'True/False') {
-                    // Process True/False question
-                    $optionsQuery = "SELECT option_text FROM cbt_options WHERE question_id = ? AND is_correct = 1";
-                    $stmt = $conn->prepare($optionsQuery);
-                    $stmt->bind_param("i", $question_id);
-                    $stmt->execute();
-                    $correctOptionResult = $stmt->get_result();
-                    $correctOption = $correctOptionResult->fetch_assoc()['option_text'] ?? '';
-                    
-                    $is_correct = strcasecmp($answer, $correctOption) === 0;
-                    
-                    if ($is_correct) {
-                        $score += $question['marks'];
-                    }
-                    
-                    // Store answer data
-                    $answer_data[] = [
-                        'question_id' => $question_id,
-                        'student_answer' => $answer,
-                        'is_correct' => $is_correct ? 1 : 0,
-                        'marks_earned' => $is_correct ? $question['marks'] : 0,
-                        'possible_marks' => $question['marks']
-                    ];
                 }
             }
         }
+    }
+    
+    return $exams;
+}
+
+// Function to save student exam results
+function saveExamResults($conn, $student_id, $exam_id, $answers, $score) {
+    try {
+        // Start transaction
+        $conn->begin_transaction();
         
-        // Calculate percentage
-        $percentage = ($total_possible > 0) ? ($score / $total_possible) * 100 : 0;
+        // Get exam passing score
+        $stmt = $conn->prepare("SELECT passing_score FROM cbt_exams WHERE id = ?");
+        if (!$stmt) {
+            throw new Exception("Failed to prepare exam query");
+        }
         
-        // Determine if passing
-        $is_passing = $percentage >= $exam['passing_score'];
+        $stmt->bind_param("i", $exam_id);
+        if (!$stmt->execute()) {
+            throw new Exception("Failed to get exam details");
+        }
         
-        // Insert student exam record
-        $insertExamQuery = "INSERT INTO cbt_student_exams 
-                            (student_id, exam_id, score, total_score, percentage, status, completed_at) 
-                            VALUES (?, ?, ?, ?, ?, ?, NOW())";
+        $result = $stmt->get_result();
+        $exam = $result->fetch_assoc();
+        if (!$exam) {
+            throw new Exception("Exam not found");
+        }
         
-        $status = $is_passing ? 'passed' : 'failed';
+        // 1. Update cbt_student_exams
+        $status = ($score >= $exam['passing_score']) ? 'passed' : 'failed';
+        $stmt = $conn->prepare("
+            UPDATE cbt_student_exams 
+            SET score = ?, status = ?, completed_at = NOW() 
+            WHERE student_id = ? AND exam_id = ?
+        ");
         
-        $stmt = $conn->prepare($insertExamQuery);
-        $stmt->bind_param("iiidds", 
-            $student_id, 
-            $exam_id, 
-            $score, 
-            $total_possible, 
-            $percentage, 
-            $status
-        );
-        $stmt->execute();
+        if (!$stmt) {
+            throw new Exception("Failed to prepare student exams update statement");
+        }
         
-        $student_exam_id = $conn->insert_id;
+        $stmt->bind_param("dsii", $score, $status, $student_id, $exam_id);
+        if (!$stmt->execute()) {
+            throw new Exception("Failed to update student exams");
+        }
         
-        // Insert answer details
-        foreach ($answer_data as $answer) {
-            $insertAnswerQuery = "INSERT INTO cbt_student_answers
-                                 (student_exam_id, question_id, student_answer, is_correct, marks_earned, possible_marks) 
-                                 VALUES (?, ?, ?, ?, ?, ?)";
-            
-            $stmt = $conn->prepare($insertAnswerQuery);
-            $stmt->bind_param("iisidi", 
-                $student_exam_id,
-                $answer['question_id'],
-                $answer['student_answer'],
-                $answer['is_correct'],
-                $answer['marks_earned'],
-                $answer['possible_marks']
-            );
-            $stmt->execute();
+        // 2. Create/Update exam attempt
+        $stmt = $conn->prepare("
+            INSERT INTO cbt_exam_attempts (exam_id, student_id, start_time, end_time, submit_time, status)
+            VALUES (?, ?, NOW(), NOW(), NOW(), 'completed')
+            ON DUPLICATE KEY UPDATE end_time = NOW(), submit_time = NOW(), status = 'completed'
+        ");
+        
+        if (!$stmt) {
+            throw new Exception("Failed to prepare exam attempts statement");
+        }
+        
+        $stmt->bind_param("ii", $exam_id, $student_id);
+        if (!$stmt->execute()) {
+            throw new Exception("Failed to create/update exam attempt");
+        }
+        
+        $attempt_id = $stmt->insert_id ?: getExistingAttemptId($conn, $student_id, $exam_id);
+        
+        // 3. Save student answers
+        $stmt = $conn->prepare("
+            INSERT INTO cbt_student_answers (attempt_id, question_id, selected_option, is_correct)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE selected_option = VALUES(selected_option), is_correct = VALUES(is_correct)
+        ");
+        
+        if (!$stmt) {
+            throw new Exception("Failed to prepare student answers statement");
+        }
+        
+        foreach ($answers as $question_id => $answer) {
+            $is_correct = isAnswerCorrect($conn, $question_id, $answer);
+            $stmt->bind_param("iisi", $attempt_id, $question_id, $answer, $is_correct);
+            if (!$stmt->execute()) {
+                throw new Exception("Failed to save student answer");
+            }
         }
         
         // Commit transaction
         $conn->commit();
-        
-        // Redirect to results page
-        header('Location: view_result.php?exam_id=' . $exam_id);
-        exit;
+        return true;
         
     } catch (Exception $e) {
-        // Rollback transaction on error
+        // Rollback on error
         $conn->rollback();
-        $errorMessage = "Error submitting exam: " . $e->getMessage();
+        error_log("Error saving exam results: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Helper function to get existing attempt ID
+function getExistingAttemptId($conn, $student_id, $exam_id) {
+    $stmt = $conn->prepare("
+        SELECT id FROM cbt_exam_attempts 
+        WHERE student_id = ? AND exam_id = ? 
+        ORDER BY start_time DESC LIMIT 1
+    ");
+    
+    if ($stmt) {
+        $stmt->bind_param("ii", $student_id, $exam_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result && $row = $result->fetch_assoc()) {
+            return $row['id'];
+        }
+    }
+    return null;
+}
+
+// Helper function to check if answer is correct
+function isAnswerCorrect($conn, $question_id, $selected_option) {
+    // First get the question type
+    $stmt = $conn->prepare("
+        SELECT question_type, correct_answer 
+        FROM cbt_questions 
+        WHERE id = ?
+    ");
+    
+    if ($stmt) {
+        $stmt->bind_param("i", $question_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result && $row = $result->fetch_assoc()) {
+            if ($row['question_type'] === 'True/False') {
+                // For True/False questions, compare directly with correct_answer
+                return strtoupper(trim($selected_option)) === strtoupper(trim($row['correct_answer'])) ? 1 : 0;
+            } else {
+                // For Multiple Choice questions, check if the selected option is marked as correct
+                $stmt = $conn->prepare("
+                    SELECT is_correct 
+                    FROM cbt_options 
+                    WHERE question_id = ? AND option_text = ?
+                ");
+                $stmt->bind_param("is", $question_id, $selected_option);
+                $stmt->execute();
+                $optionResult = $stmt->get_result();
+                if ($optionResult && $optionRow = $optionResult->fetch_assoc()) {
+                    return $optionRow['is_correct'] ? 1 : 0;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+// Handle form submissions
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['student_login'])) {
+        // Student login form submission
+        $reg_number = trim($_POST['registration_number']);
+        $class = trim($_POST['class']);
+        
+        // Add debug logging
+        error_log("Student Login - Registration Number: $reg_number, Class: $class");
+        error_log("Session Data Before Login: " . json_encode($_SESSION));
+        
+        if (empty($reg_number) || empty($class)) {
+            $error = "Please provide both registration number and class";
+            error_log("Login Error: $error");
+        } else {
+            $student = getStudentByRegNumAndClass($conn, $reg_number, $class);
+            error_log("Student Data: " . json_encode($student));
+            
+            if ($student) {
+                // Set session variables
+                $_SESSION['student_id'] = $student['id'];
+                $_SESSION['student_name'] = $student['first_name'] . ' ' . $student['last_name'];
+                $_SESSION['registration_number'] = $student['registration_number'] ?? $student['admission_number'];
+                $_SESSION['student_class'] = $student['class'];
+                error_log("Session Data After Login: " . json_encode($_SESSION));
+                
+                // Get available exams
+                $available_exams = getAvailableExamsByClass($conn, $student['class']);
+            } else {
+                $error = "Invalid registration number or class. Please try again.";
+                error_log("Login Error: $error");
+            }
+        }
+    } elseif (isset($_POST['start_exam'])) {
+        $student_id = $_POST['student_id'] ?? $_SESSION['student_id'] ?? null;
+        $exam_id = $_POST['exam_id'] ?? null;
+        
+        // Debug log
+        error_log("Starting exam - Student ID: $student_id, Exam ID: $exam_id");
+        error_log("Session Data Before Starting Exam: " . json_encode($_SESSION));
+        
+        if (!$student_id || !$exam_id) {
+            $error = "Missing student ID or exam ID";
+            error_log("Start Exam Error: $error");
+            $_SESSION['error_message'] = $error;
+            header("Location: ../student/registration/student_dashboard.php");
+            exit;
+        }
+        
+        try {
+            // Start transaction
+            $conn->begin_transaction();
+            error_log("Transaction started");
+            
+            // First check if there's an existing in-progress session
+            $check_session = "SELECT id FROM cbt_student_exams 
+                            WHERE student_id = ? AND exam_id = ? AND status = 'In Progress'";
+            $stmt = $conn->prepare($check_session);
+            $stmt->bind_param("ii", $student_id, $exam_id);
+            $stmt->execute();
+            $existing_session = $stmt->get_result()->fetch_assoc();
+            
+            $session_id = null;
+            if ($existing_session) {
+                // Use existing session
+                $session_id = $existing_session['id'];
+                error_log("Using existing exam session with ID: $session_id");
+            } else {
+                // Create new exam session
+                $create_session = "INSERT INTO cbt_student_exams (student_id, exam_id, status, started_at) 
+                                 VALUES (?, ?, 'In Progress', NOW())";
+                $stmt = $conn->prepare($create_session);
+                $stmt->bind_param("ii", $student_id, $exam_id);
+                $stmt->execute();
+                $session_id = $conn->insert_id;
+                error_log("Created new exam session with ID: $session_id");
+            }
+            
+            // Get attempt info
+            $check_attempts = "SELECT COUNT(*) as attempts, MAX(attempt_number) as last_attempt 
+                             FROM cbt_exam_attempts 
+                             WHERE student_id = ? AND exam_id = ? AND status = 'completed'";
+            $stmt = $conn->prepare($check_attempts);
+            $stmt->bind_param("ii", $student_id, $exam_id);
+            $stmt->execute();
+            $attempt_info = $stmt->get_result()->fetch_assoc();
+            error_log("Attempt Info: " . json_encode($attempt_info));
+            
+            // Check if retakes are allowed for completed exams
+            if ($attempt_info['attempts'] > 0) {
+                $check_retake = "SELECT allow_retake FROM cbt_exams WHERE id = ?";
+                $stmt = $conn->prepare($check_retake);
+                $stmt->bind_param("i", $exam_id);
+                $stmt->execute();
+                $retake_result = $stmt->get_result()->fetch_assoc();
+                
+                if (!$retake_result['allow_retake']) {
+                    throw new Exception("You have already completed this exam and retakes are not allowed.");
+                }
+            }
+            
+            // Check for existing in-progress attempt
+            $check_attempt = "SELECT id FROM cbt_exam_attempts 
+                            WHERE student_id = ? AND exam_id = ? AND status = 'in_progress'";
+            $stmt = $conn->prepare($check_attempt);
+            $stmt->bind_param("ii", $student_id, $exam_id);
+            $stmt->execute();
+            $existing_attempt = $stmt->get_result()->fetch_assoc();
+            
+            $attempt_id = null;
+            $attempt_number = 1;
+            if ($existing_attempt) {
+                $attempt_id = $existing_attempt['id'];
+                error_log("Using existing attempt ID: $attempt_id");
+            } else {
+                // Get the next attempt number
+                $attempt_number = ($attempt_info['last_attempt'] ?? 0) + 1;
+                
+                // Create new attempt
+                $create_attempt = "INSERT INTO cbt_exam_attempts 
+                                 (student_id, exam_id, start_time, status, attempt_number) 
+                                 VALUES (?, ?, NOW(), 'in_progress', ?)";
+                $stmt = $conn->prepare($create_attempt);
+                $stmt->bind_param("iii", $student_id, $exam_id, $attempt_number);
+                $stmt->execute();
+                $attempt_id = $conn->insert_id;
+                error_log("Created new attempt number: $attempt_number, ID: $attempt_id");
+            }
+            
+            // Store exam session in PHP session
+            $_SESSION['current_exam'] = [
+                'session_id' => $session_id,
+                'exam_id' => $exam_id,
+                'student_id' => $student_id,
+                'attempt_id' => $attempt_id,
+                'attempt_number' => $attempt_number,
+                'start_time' => time()
+            ];
+            error_log("Stored exam session in PHP session: " . json_encode($_SESSION['current_exam']));
+            
+            // Commit transaction
+            $conn->commit();
+            error_log("Transaction committed successfully");
+            
+            // Set the full URL for the redirect
+            $exam_interface_url = "exam_interface.php?session_id=" . $session_id;
+            error_log("Redirecting to: $exam_interface_url");
+            
+            // Redirect to exam interface with session ID
+            header("Location: " . $exam_interface_url);
+            exit;
+            
+        } catch (Exception $e) {
+            // Rollback on error
+            $conn->rollback();
+            error_log("Error occurred: " . $e->getMessage());
+            $_SESSION['error_message'] = $e->getMessage();
+            header("Location: ../student/registration/student_dashboard.php");
+            exit;
+        }
+    } elseif (isset($_POST['submit_exam'])) {
+        $student_id = $_SESSION['student_id'] ?? null;
+        $exam_id = $_POST['exam_id'] ?? null;
+        $answers = $_POST['answers'] ?? [];
+        
+        if (!$student_id || !$exam_id) {
+            $error = "Missing student ID or exam ID";
+        } else {
+            // Calculate score
+            $total_questions = count($answers);
+            $correct_answers = 0;
+            
+            foreach ($answers as $question_id => $answer) {
+                if (isAnswerCorrect($conn, $question_id, $answer)) {
+                    $correct_answers++;
+                }
+            }
+            
+            $score = $total_questions > 0 ? ($correct_answers / $total_questions) * 100 : 0;
+            
+            // Save results
+            if (saveExamResults($conn, $student_id, $exam_id, $answers, $score)) {
+                // Redirect to results page
+                header("Location: view_result.php?exam_id=$exam_id&student_id=$student_id");
+                exit;
+            } else {
+                $error = "Failed to save exam results. Please try again or contact administrator.";
+            }
+        }
+    }
+}
+
+// Check if exam_id is provided in URL
+if (isset($_GET['exam_id']) && isset($_GET['student_id'])) {
+    $exam_id = $_GET['exam_id'];
+    $student_id = $_GET['student_id'];
+    
+    // Verify student is logged in or provided in URL
+    if (isset($_SESSION['student_id']) || $student_id) {
+        $student_id = $_SESSION['student_id'] ?? $student_id;
+        
+        // Get student details
+        $stmt = $conn->prepare("SELECT * FROM students WHERE id = ?");
+        if ($stmt) {
+            $stmt->bind_param("i", $student_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            
+            if ($result && $result->num_rows > 0) {
+                $student = $result->fetch_assoc();
+                $_SESSION['student_id'] = $student['id'];
+                $_SESSION['student_name'] = $student['first_name'] . ' ' . $student['last_name'];
+                $_SESSION['registration_number'] = $student['registration_number'] ?? $student['admission_number'];
+                $_SESSION['student_class'] = $student['class'];
+                
+                // Get exam details
+                $exam = getExamById($conn, $exam_id);
+                
+                if (!$exam) {
+                    $error = "Exam not found or not active";
+                }
+            } else {
+                $error = "Student not found";
+            }
+        }
+    } else {
+        // If no student is logged in and none provided in URL, show login form
+    }
+} elseif (isset($_SESSION['student_id'])) {
+    // Student is already logged in, get their details
+    $stmt = $conn->prepare("SELECT * FROM students WHERE id = ?");
+    if ($stmt) {
+        $stmt->bind_param("i", $_SESSION['student_id']);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result && $result->num_rows > 0) {
+            $student = $result->fetch_assoc();
+            
+            // Get available exams
+            $available_exams = getAvailableExamsByClass($conn, $student['class']);
+        }
     }
 }
 ?>
@@ -238,415 +496,345 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_exam'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Take Exam - <?php echo htmlspecialchars($exam['title']); ?></title>
+    <title>Take Exam - <?php echo SCHOOL_NAME; ?></title>
     
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
-        :root {
-            --primary-color: #3a56d4;
-            --secondary-color: #f8f9fa;
-            --success-color: #2ec4b6;
-            --info-color: #4895ef;
-            --warning-color: #ff9f1c;
-            --danger-color: #e71d36;
-        }
-        
         body {
-            background-color: #f5f7fa;
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            padding-top: 20px;
-            padding-bottom: 50px;
+            font-family: 'Source Sans Pro', sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
         }
         
-        .exam-container {
+        .main-container {
             max-width: 1000px;
             margin: 0 auto;
-            background-color: #fff;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 30px;
         }
         
-        .exam-header {
-            border-bottom: 1px solid #e9ecef;
-            padding-bottom: 20px;
+        .school-header {
+            text-align: center;
             margin-bottom: 30px;
         }
         
-        .exam-title {
-            font-weight: 600;
-            color: var(--primary-color);
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .exam-info {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        
-        .info-item {
-            padding: 12px 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 10px;
-            flex-basis: 19%;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-        }
-        
-        .info-item strong {
-            display: block;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-            color: #6c757d;
-        }
-        
-        .info-item span {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #343a40;
-        }
-        
-        .timer-container {
-            position: sticky;
-            top: 20px;
-            z-index: 1000;
-            text-align: center;
-            padding: 15px;
-            background: var(--primary-color);
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            margin-bottom: 30px;
-        }
-        
-        .timer {
-            font-size: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 1px;
-        }
-        
-        .question-card {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            margin-bottom: 25px;
-            padding: 25px;
-            border-left: 5px solid var(--primary-color);
-        }
-        
-        .question-header {
-            display: flex;
-            justify-content: space-between;
+        .school-logo {
+            max-height: 80px;
             margin-bottom: 15px;
-            align-items: center;
         }
         
-        .question-number {
-            background: var(--primary-color);
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background-color: #1a237e;
             color: white;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-weight: 600;
+            padding: 15px 20px;
         }
         
-        .question-marks {
-            background: #f0f4ff;
-            color: var(--primary-color);
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
+        .card-body {
+            padding: 25px;
         }
         
-        .question-text {
-            font-size: 1.1rem;
-            margin-bottom: 20px;
-            color: #2d3748;
-            line-height: 1.6;
-        }
-        
-        .question-image {
-            max-width: 100%;
+        .exam-list {
+            border: 1px solid #dee2e6;
             border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
         }
         
-        .options {
-            margin-top: 15px;
-        }
-        
-        .option-item {
-            display: block;
-            padding: 15px;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .option-item:hover {
-            background-color: #f0f4ff;
-            border-color: var(--primary-color);
-        }
-        
-        .option-item input {
-            margin-right: 10px;
-        }
-        
-        .btn-submit {
-            background: linear-gradient(45deg, var(--primary-color), #4361ee);
-            border: none;
-            padding: 12px 30px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(67, 97, 238, 0.2);
+        .exam-list .list-group-item {
+            border-left: none;
+            border-right: none;
+            padding: 15px 20px;
             transition: all 0.3s;
         }
         
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.3);
+        .exam-list .list-group-item:first-child {
+            border-top: none;
         }
         
-        .instructions-card {
-            background: #f0f4ff;
-            border-radius: 12px;
+        .exam-list .list-group-item:last-child {
+            border-bottom: none;
+        }
+        
+        .exam-list .list-group-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .badge-subject {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            font-weight: 500;
+            padding: 5px 12px;
+            border-radius: 4px;
+        }
+        
+        .btn-primary {
+            background-color: #1a237e;
+            border-color: #1a237e;
+        }
+        
+        .btn-primary:hover {
+            background-color: #0d47a1;
+            border-color: #0d47a1;
+        }
+        
+        .btn-outline-primary {
+            color: #1a237e;
+            border-color: #1a237e;
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: #1a237e;
+            border-color: #1a237e;
+        }
+        
+        .login-form {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .alert {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .exam-details {
+            background-color: #f8f9fa;
+            border-radius: 8px;
             padding: 20px;
-            margin-bottom: 30px;
-            border-left: 5px solid var(--info-color);
+            margin-bottom: 20px;
         }
         
-        .instructions-title {
-            color: var(--info-color);
-            font-weight: 600;
-            margin-bottom: 10px;
+        .exam-details .detail-row {
             display: flex;
-            align-items: center;
-            gap: 8px;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 10px;
         }
         
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .exam-container {
-                padding: 20px 15px;
-            }
-            
-            .info-item {
-                flex-basis: 48%;
-            }
-            
-            .question-card {
-                padding: 20px 15px;
-            }
+        .exam-details .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
         
-        @media (max-width: 576px) {
-            .info-item {
-                flex-basis: 100%;
-            }
+        .exam-details .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .exam-info {
+            background-color: #e3f2fd;
+            border-left: 4px solid #1565c0;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #1a237e;
+            font-weight: 600;
+        }
+        
+        .back-link i {
+            margin-right: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="exam-container">
-            <?php if (!empty($errorMessage)): ?>
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-triangle"></i> <?php echo $errorMessage; ?>
-                </div>
-            <?php endif; ?>
-            
-            <div class="exam-header">
-                <h2 class="exam-title">
-                    <i class="fas fa-file-alt"></i>
-                    <?php echo htmlspecialchars($exam['title']); ?>
-                </h2>
-                <p class="text-muted"><?php echo htmlspecialchars($exam['description']); ?></p>
-                
+    <div class="main-container">
+        <div class="school-header">
+            <img src="../../images/logo.png" alt="School Logo" class="school-logo">
+            <h2><?php echo SCHOOL_NAME; ?></h2>
+            <h4>Computer Based Test (CBT) Portal</h4>
+        </div>
+        
+        <?php if (!empty($error)): ?>
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
+        </div>
+        <?php endif; ?>
+        
+        <?php if (!$student): ?>
+        <!-- Student Login Form -->
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-user-check mr-2"></i> Student Login
+            </div>
+            <div class="card-body">
+                <form class="login-form" method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                    <div class="form-group">
+                        <label for="registration_number">Registration/Admission Number</label>
+                        <input type="text" class="form-control" id="registration_number" name="registration_number" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="class">Class</label>
+                        <input type="text" class="form-control" id="class" name="class" required>
+                        <small class="form-text text-muted">Enter your class exactly as registered (e.g. JSS3 Pearl)</small>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" name="student_login" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-sign-in-alt mr-2"></i> Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <a href="../student/registration/student_dashboard.php" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Student Dashboard
+            </a>
+        </div>
+        <?php elseif ($exam): ?>
+        <!-- Specific Exam Information -->
+        <a href="../student/registration/student_dashboard.php" class="back-link">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+        
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-alt mr-2"></i> Exam Information
+            </div>
+            <div class="card-body">
                 <div class="exam-info">
-                    <div class="info-item">
-                        <strong>Subject</strong>
-                        <span><?php echo htmlspecialchars($exam['subject_name']); ?></span>
+                    <div class="row">
+                        <div class="col-md-9">
+                            <h4><?php echo htmlspecialchars($exam['title']); ?></h4>
+                            <p class="mb-0">Welcome, <?php echo htmlspecialchars($_SESSION['student_name']); ?>!</p>
+                        </div>
+                        <div class="col-md-3 text-right">
+                            <span class="badge badge-subject">
+                                <?php echo htmlspecialchars($exam['subject']); ?>
+                            </span>
+                        </div>
                     </div>
-                    <div class="info-item">
-                        <strong>Questions</strong>
-                        <span><?php echo htmlspecialchars($exam['total_questions']); ?></span>
+                </div>
+                
+                <div class="exam-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Duration:</span>
+                        <span><?php echo htmlspecialchars($exam['duration']); ?> minutes</span>
                     </div>
-                    <div class="info-item">
-                        <strong>Duration</strong>
-                        <span><?php echo htmlspecialchars($exam['time_limit']); ?> min</span>
+                    <div class="detail-row">
+                        <span class="detail-label">Number of Questions:</span>
+                        <span><?php echo htmlspecialchars($exam['total_questions'] ?? 'Not specified'); ?></span>
                     </div>
-                    <div class="info-item">
-                        <strong>Pass Score</strong>
+                    <div class="detail-row">
+                        <span class="detail-label">Passing Score:</span>
                         <span><?php echo htmlspecialchars($exam['passing_score']); ?>%</span>
                     </div>
-                    <div class="info-item">
-                        <strong>Student</strong>
-                        <span><?php echo htmlspecialchars($student_name); ?></span>
+                    <div class="detail-row">
+                        <span class="detail-label">Class:</span>
+                        <span><?php echo htmlspecialchars($exam['class']); ?></span>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h5><i class="fas fa-exclamation-triangle mr-2"></i> Important Instructions:</h5>
+                    <ol>
+                        <li>This is a timed exam. Once started, the timer cannot be paused.</li>
+                        <li>Do not refresh the page or close the browser during the exam.</li>
+                        <li>Ensure you have a stable internet connection before starting.</li>
+                        <li>Answer all questions. You can review your answers before submitting.</li>
+                        <li>Click the "Submit" button when you've completed the exam.</li>
+                    </ol>
+                </div>
+                
+                <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                    <input type="hidden" name="exam_id" value="<?php echo $exam['id']; ?>">
+                    <div class="text-center mt-4">
+                        <button type="submit" name="start_exam" class="btn btn-primary btn-lg px-5">
+                            <i class="fas fa-play-circle mr-2"></i> Start Exam
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <?php else: ?>
+        <!-- Available Exams List -->
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="fas fa-list-alt mr-2"></i> Available Exams
+                    </div>
+                    <div>
+                        <a href="../student/registration/student_dashboard.php" class="btn btn-sm btn-outline-light">
+                            <i class="fas fa-arrow-left mr-1"></i> Back to Dashboard
+                        </a>
                     </div>
                 </div>
             </div>
-            
-            <?php if (!empty($exam['instructions'])): ?>
-                <div class="instructions-card">
-                    <h5 class="instructions-title">
-                        <i class="fas fa-info-circle"></i> Instructions
-                    </h5>
-                    <p><?php echo nl2br(htmlspecialchars($exam['instructions'])); ?></p>
+            <div class="card-body">
+                <div class="alert alert-info mb-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-9">
+                            <h5><i class="fas fa-user mr-2"></i> Student Information</h5>
+                            <p class="mb-1"><strong>Name:</strong> <?php echo htmlspecialchars($_SESSION['student_name']); ?></p>
+                            <p class="mb-1"><strong>Registration Number:</strong> <?php echo htmlspecialchars($_SESSION['registration_number']); ?></p>
+                            <p class="mb-0"><strong>Class:</strong> <?php echo htmlspecialchars($_SESSION['student_class'] ?? 'Not specified'); ?></p>
+                        </div>
+                        <div class="col-md-3 text-right">
+                            <a href="?logout=1" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            <?php endif; ?>
-            
-            <div class="timer-container">
-                <div>Time Remaining:</div>
-                <div class="timer" id="timer">
-                    <?php echo $exam['time_limit']; ?>:00
-                </div>
-            </div>
-            
-            <form id="exam-form" action="" method="post" onsubmit="return confirmSubmit()">
-                <?php foreach ($questions as $index => $question): ?>
-                    <div class="question-card">
-                        <div class="question-header">
-                            <div class="question-number"><?php echo $index + 1; ?></div>
-                            <div class="question-marks">
-                                <i class="fas fa-star"></i> <?php echo $question['marks']; ?> marks
+                
+                <?php if (count($available_exams) > 0): ?>
+                <div class="list-group exam-list">
+                    <?php foreach ($available_exams as $exam): ?>
+                    <div class="list-group-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h5 class="mb-1"><?php echo htmlspecialchars($exam['title']); ?></h5>
+                                <span class="badge badge-subject"><?php echo htmlspecialchars($exam['subject']); ?></span>
+                            </div>
+                            <div class="col-md-3">
+                                <div><strong>Duration:</strong> <?php echo htmlspecialchars($exam['duration']); ?> minutes</div>
+                                <div><strong>Questions:</strong> <?php echo htmlspecialchars($exam['total_questions'] ?? 'Not specified'); ?></div>
+                            </div>
+                            <div class="col-md-3 text-right">
+                                <a href="?exam_id=<?php echo $exam['id']; ?>&student_id=<?php echo $student['id']; ?>" class="btn btn-primary">
+                                    <i class="fas fa-play-circle mr-1"></i> Take Exam
+                                </a>
                             </div>
                         </div>
-                        
-                        <div class="question-text">
-                            <?php echo htmlspecialchars($question['question_text']); ?>
-                        </div>
-                        
-                        <?php if (!empty($question['image_path'])): ?>
-                            <img src="../../uploads/cbt_images/<?php echo $question['image_path']; ?>" 
-                                 alt="Question Image" class="question-image">
-                        <?php endif; ?>
-                        
-                        <div class="options">
-                            <?php if ($question['question_type'] === 'Multiple Choice'): ?>
-                                <?php
-                                // Get options for this question
-                                $optionsQuery = "SELECT * FROM cbt_options WHERE question_id = ?";
-                                $stmt = $conn->prepare($optionsQuery);
-                                $stmt->bind_param("i", $question['id']);
-                                $stmt->execute();
-                                $optionsResult = $stmt->get_result();
-                                
-                                while ($option = $optionsResult->fetch_assoc()):
-                                ?>
-                                    <label class="option-item">
-                                        <input type="radio" name="answers[<?php echo $question['id']; ?>]" 
-                                               value="<?php echo htmlspecialchars($option['option_text']); ?>" required>
-                                        <?php echo htmlspecialchars($option['option_text']); ?>
-                                    </label>
-                                <?php endwhile; ?>
-                            <?php elseif ($question['question_type'] === 'True/False'): ?>
-                                <label class="option-item">
-                                    <input type="radio" name="answers[<?php echo $question['id']; ?>]" 
-                                           value="True" required>
-                                    True
-                                </label>
-                                <label class="option-item">
-                                    <input type="radio" name="answers[<?php echo $question['id']; ?>]" 
-                                           value="False" required>
-                                    False
-                                </label>
-                            <?php endif; ?>
-                        </div>
                     </div>
-                <?php endforeach; ?>
-                
-                <div class="text-center mt-4">
-                    <button type="submit" name="submit_exam" class="btn btn-primary btn-lg btn-submit">
-                        <i class="fas fa-paper-plane"></i> Submit Exam
-                    </button>
+                    <?php endforeach; ?>
                 </div>
-            </form>
+                <?php else: ?>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle mr-2"></i> There are no exams currently available for your class.
+                    <p class="mt-2 mb-0">If you believe this is an error, please contact your teacher or administrator.</p>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
+        
+        <div class="text-center mt-4">
+            <p class="text-muted">&copy; <?php echo date('Y'); ?> <?php echo SCHOOL_NAME; ?>. All rights reserved.</p>
         </div>
     </div>
     
-    <!-- Bootstrap JS and dependencies -->
+    <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js"></script>
-    
-    <script>
-        // Timer functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            let timeLimit = <?php echo $exam['time_limit']; ?> * 60; // Convert to seconds
-            const timerDisplay = document.getElementById('timer');
-            
-            const timer = setInterval(function() {
-                timeLimit--;
-                
-                const minutes = Math.floor(timeLimit / 60);
-                const seconds = timeLimit % 60;
-                
-                // Format the time display
-                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                // Change color when time is running low
-                if (timeLimit < 300) { // Less than 5 minutes
-                    timerDisplay.style.color = '#ff9f1c';
-                }
-                if (timeLimit < 60) { // Less than 1 minute
-                    timerDisplay.style.color = '#e71d36';
-                }
-                
-                // Auto-submit when time is up
-                if (timeLimit <= 0) {
-                    clearInterval(timer);
-                    alert('Time is up! Your exam will be submitted automatically.');
-                    document.getElementById('exam-form').submit();
-                }
-            }, 1000);
-            
-            // Save timer value in sessionStorage
-            window.addEventListener('beforeunload', function() {
-                sessionStorage.setItem('examTimeRemaining', timeLimit);
-            });
-            
-            // Check if there's a saved timer value and use it if it exists
-            const savedTime = sessionStorage.getItem('examTimeRemaining');
-            if (savedTime !== null && !isNaN(savedTime)) {
-                timeLimit = parseInt(savedTime);
-            }
-        });
-        
-        // Confirmation before submitting
-        function confirmSubmit() {
-            // Check if all questions are answered
-            const form = document.getElementById('exam-form');
-            const questions = <?php echo count($questions); ?>;
-            let answeredCount = 0;
-            
-            const inputs = form.querySelectorAll('input[type="radio"]:checked');
-            answeredCount = inputs.length;
-            
-            if (answeredCount < questions) {
-                const unanswered = questions - answeredCount;
-                return confirm(`You have ${unanswered} unanswered question(s). Are you sure you want to submit your exam?`);
-            }
-            
-            return confirm('Are you sure you want to submit your exam? You cannot change your answers after submission.');
-        }
-    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html> 

@@ -26,10 +26,18 @@ class Auth {
         if ($result && $result->num_rows > 0) {
             $user = $result->fetch_assoc();
             if (password_verify($password, $user['password'])) {
+                // Start session if not already started
+                if (session_status() == PHP_SESSION_NONE) {
+                    session_start();
+                }
+                
+                // Set all necessary session variables
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['role'] = $user['role'];
-                $_SESSION['name'] = $user['first_name'] . ' ' . $user['last_name'];
+                $_SESSION['first_name'] = $user['first_name'] ?? '';
+                $_SESSION['last_name'] = $user['last_name'] ?? '';
+                $_SESSION['name'] = trim(($user['first_name'] ?? '') . ' ' . ($user['last_name'] ?? ''));
                 
                 // Try to update last login time but don't fail if column doesn't exist
                 try {
@@ -90,10 +98,10 @@ class Auth {
     public function getCurrentUser() {
         if ($this->isLoggedIn()) {
             return [
-                'id' => $_SESSION['user_id'],
-                'username' => $_SESSION['username'],
-                'role' => $_SESSION['role'],
-                'name' => $_SESSION['name']
+                'id' => $_SESSION['user_id'] ?? null,
+                'username' => $_SESSION['username'] ?? null,
+                'role' => $_SESSION['role'] ?? null,
+                'name' => $_SESSION['name'] ?? null
             ];
         }
         return null;

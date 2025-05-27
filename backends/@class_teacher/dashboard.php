@@ -364,13 +364,25 @@ include '../admin/include/header.php';
                                     </a>
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <a href="update_payment.php" class="btn btn-block btn-success elevation-1">
+                                    <a href="payments.php" class="btn btn-block btn-success elevation-1">
                                         <i class="fas fa-money-bill-wave mr-2"></i> Record Payments
                                     </a>
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <a href="reports.php" class="btn btn-block btn-danger elevation-1">
                                         <i class="fas fa-chart-bar mr-2"></i> Generate Reports
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <a href="../cbt/results.php" class="btn btn-block btn-secondary elevation-1">
+                                        <i class="fas fa-poll mr-2"></i> View Exam Results
+                                    </a>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <a href="activate_results.php" class="btn btn-block btn-success elevation-1">
+                                        <i class="fas fa-check-circle mr-2"></i> Activate Exam Results
                                     </a>
                                 </div>
                             </div>
@@ -444,9 +456,9 @@ include '../admin/include/header.php';
                                             <td><?php echo htmlspecialchars($student['registration_number'] ?? 'N/A'); ?></td>
                                             <td>
                                                 <?php if (isset($student['gender']) && strtolower($student['gender']) == 'male'): ?>
-                                                    <span class="badge badge-info"><i class="fas fa-male mr-1"></i> Male</span>
+                                                    <span style="background-color: #007bff; color: #fff;" class="badge badge-info"><i class="fas fa-male mr-1"></i> Male</span>
                                                 <?php elseif (isset($student['gender']) && strtolower($student['gender']) == 'female'): ?>
-                                                    <span class="badge badge-warning"><i class="fas fa-female mr-1"></i> Female</span>
+                                                    <span style="background-color: #ffc107; color: #fff;" class="badge badge-warning"><i class="fas fa-female mr-1"></i> Female</span>
                                                 <?php else: ?>
                                                     <span class="badge badge-secondary">N/A</span>
                                                 <?php endif; ?>
@@ -1109,99 +1121,269 @@ include '../admin/include/header.php';
     border-color: #bac8f3;
 }
 
-/* Responsive adjustments */
+/* Enhanced Mobile Responsiveness */
 @media (max-width: 768px) {
-    .quick-nav-menu {
-        bottom: 20px;
-        top: auto;
-        right: 20px;
-        transform: none;
-        flex-direction: row;
+    /* Container adjustments */
+    .container-fluid {
+        padding: 10px;
     }
-    .quick-nav-toggle {
-        margin-bottom: 0;
-        margin-right: 10px;
+
+    /* Card adjustments */
+    .card {
+        margin-bottom: 15px;
     }
-    .quick-nav-items {
-        flex-direction: row;
+
+    .card-body {
+        padding: 15px;
     }
-    .dashboard-toolbar {
-        flex-direction: column;
-        gap: 10px;
-    }
-    .toolbar-search {
-        width: 100%;
-    }
-    
+
+    /* Stats boxes */
     .small-box {
         margin-bottom: 15px;
     }
-}
 
-/* Mobile optimizations */
-@media (max-width: 576px) {
-    .table-responsive {
-        border: 0;
+    .small-box h3 {
+        font-size: 1.5rem;
     }
-    .table-responsive table {
-        border: 0;
+
+    .small-box p {
+        font-size: 0.9rem;
     }
-    .table-responsive table thead {
+
+    /* Quick nav menu repositioning */
+    .quick-nav-menu {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        top: auto;
+        transform: none;
+        flex-direction: row;
+        z-index: 1050;
+    }
+
+    .quick-nav-items {
         display: none;
-    }
-    .table-responsive table tr {
-        display: block;
-        border: 1px solid #e3e6f0;
-        margin-bottom: 15px;
+        position: absolute;
+        bottom: 60px;
+        right: 0;
+        background: white;
         border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        padding: 10px;
+        flex-direction: column;
     }
-    .table-responsive table td {
-        display: block;
-        text-align: right;
-        border-bottom: 1px solid #e3e6f0;
+
+    .quick-nav-items.show {
+        display: flex;
+    }
+
+    .quick-nav-item {
+        margin: 5px;
+    }
+
+    /* Dashboard toolbar */
+    .dashboard-toolbar {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .dashboard-toolbar .btn-group {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5px;
+    }
+
+    .dashboard-toolbar .btn {
+        margin: 0;
+        width: 100%;
+    }
+
+    .toolbar-search {
+        width: 100%;
+    }
+
+    /* Table responsiveness */
+    .table-responsive {
+        margin-bottom: 15px;
+        border: 0;
+    }
+
+    .table {
+        min-width: 650px;
+    }
+
+    /* Card header adjustments */
+    .card-header {
         padding: 12px 15px;
     }
-    .table-responsive table td:before {
-        content: attr(data-label);
-        float: left;
-        font-weight: bold;
-        color: #4e73df;
+
+    .card-header h3 {
+        font-size: 1.1rem;
     }
-    .table-responsive table td:last-child {
-        border-bottom: 0;
+
+    /* Button adjustments */
+    .btn {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
     }
-    
-    /* Make buttons full width on mobile */
-    .btn-group {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
+
+    /* Pagination adjustments */
+    .pagination {
+        justify-content: center;
+        flex-wrap: wrap;
     }
-    .btn-group .btn {
-        width: 100%;
-        margin-bottom: 5px;
-        border-radius: 6px !important;
-    }
-    
-    /* Fix pagination on mobile */
-    .pagination-container {
-        width: 100%;
-        overflow-x: auto;
+
+    .pagination .page-link {
+        padding: 0.4rem 0.6rem;
     }
 }
 
-/* Print styles */
+/* Extra small devices */
+@media (max-width: 576px) {
+    /* Header adjustments */
+    .content-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .breadcrumb {
+        display: none;
+    }
+
+    /* Table adjustments for mobile */
+    .table-responsive table {
+        display: block;
+    }
+
+    .table-responsive thead {
+        display: none;
+    }
+
+    .table-responsive tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .table-responsive td {
+        display: block;
+        text-align: left;
+        padding: 0.75rem;
+        position: relative;
+        padding-left: 50%;
+    }
+
+    .table-responsive td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0.75rem;
+        width: 45%;
+        font-weight: bold;
+    }
+
+    /* Action buttons in table */
+    .table-responsive .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .table-responsive .btn-group .btn {
+        width: 100%;
+        margin: 0;
+    }
+
+    /* Stats boxes full width */
+    .col-lg-3.col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Modal adjustments */
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    /* Help modal adjustments */
+    #helpModal .row {
+        flex-direction: column;
+    }
+
+    #helpModal .col-md-6 {
+        margin-bottom: 1rem;
+    }
+
+    /* Filter buttons */
+    .btn-filter {
+        font-size: 0.8rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    /* Entries per page selector */
+    #entriesPerPage {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    /* Print button */
+    #printStudentList {
+        width: 100%;
+    }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .quick-nav-menu {
+        display: none;
+    }
+
+    .content-header {
+        margin-bottom: 10px;
+    }
+
+    .small-box {
+        margin-bottom: 10px;
+    }
+}
+
+/* Dark mode support for OLED screens */
+@media (prefers-color-scheme: dark) {
+    .table-responsive tbody tr {
+        background:rgb(255, 255, 255);
+        border-color: #rgb(255, 255, 255);;
+    }
+
+    .card {
+        background: #rgb(255, 255, 255);;
+    }
+
+    .modal-content {
+        background: #rgb(255, 255, 255);;
+    }
+}
+
+/* Print optimization */
 @media print {
-    .no-print {
+    .quick-nav-menu,
+    .dashboard-toolbar,
+    .btn-group,
+    .card-tools {
         display: none !important;
     }
+
     .card {
-        border: 1px solid #ddd !important;
-        box-shadow: none !important;
+        break-inside: avoid;
     }
-    .content-wrapper {
-        margin-left: 0 !important;
+
+    .table-responsive {
+        overflow: visible !important;
     }
 }
 </style>
@@ -1221,19 +1403,112 @@ $(document).ready(function() {
     
     // Global search functionality
     $("#globalSearch").on("keyup", function() {
-        var value = $(this).val().toLowerCase();
-        if(value.length > 2) {
-            // Highlight matching items or perform other search logic
-            $(".card").each(function() {
-                if($(this).text().toLowerCase().indexOf(value) > -1) {
-                    $(this).addClass("search-highlight");
-                } else {
-                    $(this).removeClass("search-highlight");
+        const searchValue = $(this).val().toLowerCase();
+        
+        // Search in student table
+        $("#studentTable tbody tr").each(function() {
+            const studentData = $(this).text().toLowerCase();
+            $(this).toggle(studentData.includes(searchValue));
+        });
+        
+        // Search in activities list
+        $(".list-group-item").each(function() {
+            const activityData = $(this).text().toLowerCase();
+            $(this).toggle(activityData.includes(searchValue));
+        });
+        
+        // Search in cards
+        $(".card").each(function() {
+            const cardData = $(this).text().toLowerCase();
+            if (cardData.includes(searchValue)) {
+                $(this).show();
+                // Highlight matching card with a subtle animation
+                $(this).addClass('search-highlight');
+                setTimeout(() => {
+                    $(this).removeClass('search-highlight');
+                }, 2000);
+            } else {
+                // Only hide cards that are not main section cards
+                if (!$(this).closest('.content-wrapper').length) {
+                    $(this).hide();
                 }
-            });
-        } else {
-            $(".card").removeClass("search-highlight");
+            }
+        });
+        
+        // Update "Showing X-Y of Z entries" text for student table
+        updateEntriesInfo();
+    });
+    
+    // Add search button click handler
+    $('.toolbar-search .btn').on('click', function() {
+        // Trigger search on button click
+        $('#globalSearch').trigger('keyup');
+    });
+    
+    // Clear search when clicking the clear button (x) in the search input
+    $('#globalSearch').on('search', function() {
+        if ($(this).val() === '') {
+            // Show all elements when search is cleared
+            $("#studentTable tbody tr").show();
+            $(".list-group-item").show();
+            $(".card").show();
+            updateEntriesInfo();
         }
+    });
+    
+    // Function to update entries info
+    function updateEntriesInfo() {
+        const visibleRows = $("#studentTable tbody tr:visible").length;
+        const totalRows = $("#studentTable tbody tr").length;
+        const entriesPerPage = parseInt($("#entriesPerPage").val()) || 10;
+        const start = Math.min(1, visibleRows);
+        const end = Math.min(entriesPerPage, visibleRows);
+        
+        $("#shownEntries").text(start + "-" + end + " of " + visibleRows);
+        
+        // Update pagination if needed
+        updatePagination();
+    }
+    
+    // Add keyboard shortcut (Ctrl/Cmd + F) to focus search
+    $(document).on('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+            e.preventDefault();
+            $('#globalSearch').focus();
+        }
+    });
+    
+    // Add clear search button
+    $('.toolbar-search .input-group').append(
+        '<div class="input-group-append">' +
+        '<button class="btn btn-outline-secondary clear-search" type="button" title="Clear Search">' +
+        '<i class="fas fa-times"></i>' +
+        '</button>' +
+        '</div>'
+    );
+    
+    // Clear search button handler
+    $('.clear-search').on('click', function() {
+        $('#globalSearch').val('').trigger('keyup');
+    });
+    
+    // Add search type indicator
+    let searchTimeout;
+    $('#globalSearch').on('input', function() {
+        clearTimeout(searchTimeout);
+        const $this = $(this);
+        
+        // Show searching indicator
+        if ($this.val()) {
+            $('.toolbar-search .input-group').addClass('searching');
+        } else {
+            $('.toolbar-search .input-group').removeClass('searching');
+        }
+        
+        // Debounce search for better performance
+        searchTimeout = setTimeout(function() {
+            $this.trigger('keyup');
+        }, 300);
     });
     
     // Quick navigation toggle

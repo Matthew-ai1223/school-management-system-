@@ -32,23 +32,35 @@ if ($exam_id <= 0) {
     exit;
 }
 
+// Redirect to the centralized view_result.php
+header("Location: ../../cbt/view_result.php?exam_id=" . $exam_id . "&student_id=" . $student_id);
+exit;
+
 // Get exam details
-$examQuery = "SELECT e.*, s.name AS subject_name 
+$examQuery = "SELECT e.*, s.name AS subject_name, se.status, se.score, se.started_at, se.completed_at 
               FROM cbt_exams e
-              JOIN subjects s ON e.subject_id = s.id
+              LEFT JOIN subjects s ON e.subject = s.name
+              JOIN cbt_student_exams se ON e.id = se.exam_id AND se.student_id = ?
               WHERE e.id = ?";
 $stmt = $conn->prepare($examQuery);
-$stmt->bind_param("i", $exam_id);
+$stmt->bind_param("ii", $student_id, $exam_id);
 $stmt->execute();
 $examResult = $stmt->get_result();
 
 if ($examResult->num_rows === 0) {
-    $_SESSION['error'] = "Exam not found.";
+    $_SESSION['error'] = "Exam not found or you don't have access to view this exam.";
     header('Location: student_dashboard.php#cbt-exams');
     exit;
 }
 
 $exam = $examResult->fetch_assoc();
+
+// Check if student is allowed to view results
+if (!$exam['show_results'] && $exam['status'] !== 'In Progress') {
+    $_SESSION['error'] = "Results are not available for viewing at this time.";
+    header('Location: student_dashboard.php#cbt-exams');
+    exit;
+}
 
 // Get student's exam attempt
 $studentExamQuery = "SELECT * FROM cbt_student_exams 
@@ -164,41 +176,133 @@ while ($question = $questionsResult->fetch_assoc()) {
 // Total questions
 $total_questions = count($questions);
 
+// Add navigation links
+$navigation = '
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="student_dashboard.php">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="student_dashboard.php#cbt-exams">CBT Exams</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Exam Results</li>
+    </ol>
+</nav>';
+
+// Calculate score and grade
+$score_percentage = 0;
+$grade = 'N/A';
+
+if ($total_questions > 0) {
+    $score_percentage = round(($total_correct / $total_questions) * 100, 1);
+    
+    // Determine grade based on score
+    if ($score_percentage >= 90) {
+        $grade = 'A+';
+    } elseif ($score_percentage >= 80) {
+        $grade = 'A';
+    } elseif ($score_percentage >= 70) {
+        $grade = 'B';
+    } elseif ($score_percentage >= 60) {
+        $grade = 'C';
+    } elseif ($score_percentage >= 50) {
+        $grade = 'D';
+    } else {
+        $grade = 'F';
+    }
+}
+
+// Add result summary card
+$result_summary = '
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Result Summary</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 text-center mb-3">
+                <div class="h1">' . $score_percentage . '%</div>
+                <div class="text-muted">Overall Score</div>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <div class="h1">' . $grade . '</div>
+                <div class="text-muted">Grade</div>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <div class="h1">' . $total_correct . '/' . $total_questions . '</div>
+                <div class="text-muted">Correct Answers</div>
+            </div>
+            <div class="col-md-3 text-center mb-3">
+                <div class="h1">' . round(($total_answered / $total_questions) * 100) . '%</div>
+                <div class="text-muted">Completion</div>
+            </div>
+        </div>
+    </div>
+</div>';
+
 // Include header
 include 'includes/header.php';
 ?>
 
 <div class="container py-4">
+    <?php echo $navigation; ?>
+    
     <div class="row">
-        <div class="col-md-12 mb-4">
+        <div class="col-md-12">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0"><?php echo htmlspecialchars($exam['title']); ?> - Results</h4>
+                        <h4 class="mb-0"><?php echo htmlspecialchars($exam['title']); ?> Results</h4>
                         <a href="student_dashboard.php#cbt-exams" class="btn btn-light btn-sm">
                             <i class="fas fa-arrow-left"></i> Back to Dashboard
                         </a>
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="row">
+                    <?php echo $result_summary; ?>
+                    
+                    <div class="row mb-4">
                         <div class="col-md-6">
-                            <p><strong>Subject:</strong> <?php echo htmlspecialchars($exam['subject_name']); ?></p>
-                            <p><strong>Total Questions:</strong> <?php echo $total_questions; ?></p>
-                            <p><strong>Questions Answered:</strong> <?php echo $total_answered; ?></p>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Exam Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Subject:</strong> <?php echo htmlspecialchars($exam['subject_name']); ?></p>
+                                    <p><strong>Duration:</strong> <?php echo $exam['duration']; ?> minutes</p>
+                                    <p><strong>Total Questions:</strong> <?php echo $total_questions; ?></p>
+                                    <p><strong>Questions Answered:</strong> <?php echo $total_answered; ?></p>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Started:</strong> <?php echo date('M d, Y g:i A', strtotime($student_exam['started_at'])); ?></p>
-                            <p><strong>Submitted:</strong> 
-                                <?php echo $student_exam['submitted_at'] 
-                                      ? date('M d, Y g:i A', strtotime($student_exam['submitted_at'])) 
-                                      : 'Not submitted'; ?>
-                            </p>
-                            <p><strong>Status:</strong> 
-                                <span class="badge bg-<?php echo $student_exam['status'] === 'Completed' ? 'success' : 'warning'; ?>">
-                                    <?php echo $student_exam['status']; ?>
-                                </span>
-                            </p>
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">Attempt Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p><strong>Started:</strong> <?php echo date('M d, Y g:i A', strtotime($student_exam['started_at'])); ?></p>
+                                    <p><strong>Submitted:</strong> 
+                                        <?php echo $student_exam['submitted_at'] 
+                                              ? date('M d, Y g:i A', strtotime($student_exam['submitted_at'])) 
+                                              : 'Not submitted'; ?>
+                                    </p>
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge bg-<?php echo $student_exam['status'] === 'Completed' ? 'success' : 'warning'; ?>">
+                                            <?php echo $student_exam['status']; ?>
+                                        </span>
+                                    </p>
+                                    <p><strong>Time Taken:</strong> 
+                                        <?php
+                                        if ($student_exam['submitted_at']) {
+                                            $start = new DateTime($student_exam['started_at']);
+                                            $end = new DateTime($student_exam['submitted_at']);
+                                            $diff = $start->diff($end);
+                                            echo $diff->format('%H:%I:%S');
+                                        } else {
+                                            echo 'N/A';
+                                        }
+                                        ?>
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     

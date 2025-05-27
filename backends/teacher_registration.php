@@ -20,6 +20,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $qualification = $_POST['qualification'] ?? '';
     $joiningDate = $_POST['joining_date'] ?? '';
     
+    // Handle passport image upload
+    $passportImage = null;
+    if (isset($_FILES['passport_image']) && $_FILES['passport_image']['error'] === UPLOAD_ERR_OK) {
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        $maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (!in_array($_FILES['passport_image']['type'], $allowedTypes)) {
+            $errorMessage = "Invalid file type. Only JPG, JPEG, and PNG files are allowed.";
+        } elseif ($_FILES['passport_image']['size'] > $maxSize) {
+            $errorMessage = "File is too large. Maximum size is 5MB.";
+        } else {
+            $uploadDir = 'uploads/passport_images/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
+            $fileName = uniqid('passport_') . '_' . basename($_FILES['passport_image']['name']);
+            $targetPath = $uploadDir . $fileName;
+            
+            if (move_uploaded_file($_FILES['passport_image']['tmp_name'], $targetPath)) {
+                $passportImage = $fileName;
+            } else {
+                $errorMessage = "Failed to upload image.";
+            }
+        }
+    }
+    
     // Basic validation
     if (empty($firstName) || empty($lastName) || empty($employeeId) || empty($email)) {
         $errorMessage = "Required fields cannot be empty.";
@@ -82,11 +109,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute();
             $userId = $conn->insert_id;
             
-            // Insert teacher
-            $insertTeacher = "INSERT INTO teachers (user_id, first_name, last_name, employee_id, joining_date, qualification, phone) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?)";
+            // Insert teacher with passport image
+            $insertTeacher = "INSERT INTO teachers (user_id, first_name, last_name, employee_id, joining_date, qualification, phone, passport_image) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($insertTeacher);
-            $stmt->bind_param("issssss", $userId, $firstName, $lastName, $employeeId, $joiningDate, $qualification, $phone);
+            $stmt->bind_param("isssssss", $userId, $firstName, $lastName, $employeeId, $joiningDate, $qualification, $phone, $passportImage);
             
             if ($stmt->execute()) {
                 // Notify admin (you could send an email here)
@@ -159,23 +186,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Complete the form below to register as a teacher. Your account will be reviewed by an administrator before activation.</p>
             </div>
             
-            <form method="post" action="">
+            <form method="post" action="" enctype="multipart/form-data">
                 <div class="card mb-4">
                     <div class="card-header">
                         <h5>Personal Information</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-3 mb-3">
+                                <label for="passport_image" class="required-field">Passport Photo</label>
+                                <input type="file" class="form-control" id="passport_image" name="passport_image" accept="image/jpeg,image/png,image/jpg" required>
+                                <small class="text-muted">Max size: 5MB. Formats: JPG, JPEG, PNG</small>
+                                <div id="image_preview" class="mt-2 d-none">
+                                    <img src="" alt="Preview" class="img-thumbnail" style="max-width: 150px;">
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
                                 <label for="first_name" class="required-field">First Name</label>
                                 <input type="text" class="form-control" id="first_name" name="first_name" required>
                             </div>
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-3 mb-3">
                                 <label for="last_name" class="required-field">Last Name</label>
                                 <input type="text" class="form-control" id="last_name" name="last_name" required>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="employee_id" class="required-field">Employee ID</label>
+                            <div class="col-md-3 mb-3">
+                                <label for="employee_id" class="required-field">Employee ID/Password</label>
                                 <input type="text" class="form-control" id="employee_id" name="employee_id" required>
                             </div>
                         </div>
@@ -191,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="qualification">Qualification</label>
+                                <label for="qualification">List Of Subject Teaching</label>
                                 <input type="text" class="form-control" id="qualification" name="qualification">
                             </div>
                             <div class="col-md-6 mb-3">
@@ -218,5 +253,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.getElementById('passport_image').addEventListener('change', function(e) {
+        const preview = document.getElementById('image_preview');
+        const img = preview.querySelector('img');
+        const file = e.target.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                preview.classList.remove('d-none');
+            }
+            reader.readAsDataURL(file);
+        } else {
+            preview.classList.add('d-none');
+        }
+    });
+    </script>
 </body>
 </html> 

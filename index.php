@@ -1453,7 +1453,7 @@
 							<li><a href="contact.php">Contact</a></li>
 							<li class="btn-cta"><a href="backends\student\registration\login.php"><span>Student Login</span></a></li>
 							<li class="btn-cta"><a href="backends\student\registration\login.php"><span>Parent Login</span></a></li>
-							<li class="btn-cta"><a href="backends\teacher\login.php"><span>Teacher Login</span></a></li>
+							<li class="btn-cta"><a href="backends\cbt\login.php"><span>Teacher Login</span></a></li>
 							<li class="btn-cta"><a href="backends\@class_teacher\login.php"><span>Class Teacher Login</span></a></li>
 							<li class="btn-cta"><a href="backends\admin\login.php"><span>Admin Login</span></a></li>
 						</ul>
@@ -2133,7 +2133,7 @@
 						<li style="margin-bottom: 8px;"><a href="apply.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Apply Now</a></li>
 						<li style="margin-bottom: 8px;"><a href="backends\student\registration\login.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Student Login</a></li>
 						<li style="margin-bottom: 8px;"><a href="backends\student\registration\login.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Parent Login</a></li>
-						<li style="margin-bottom: 8px;"><a href="backends\teacher\login.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Teacher Login</a></li>
+						<li style="margin-bottom: 8px;"><a href="backends\cbt\login.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Teacher Login</a></li>
 						<li style="margin-bottom: 8px;"><a href="backends\@class_teacher\login.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Class Teacher Login</a></li>
 						<li style="margin-bottom: 8px;"><a href="backends\admin\login.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Admin Login</a></li>
 					</ul>

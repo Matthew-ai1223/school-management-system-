@@ -29,6 +29,33 @@ if (isset($_POST['add_teacher'])) {
     $joiningDate = $_POST['joining_date'] ?? '';
     $address = $_POST['address'] ?? '';
     
+    // Handle passport image upload
+    $passportImage = null;
+    if (isset($_FILES['passport_image']) && $_FILES['passport_image']['error'] === UPLOAD_ERR_OK) {
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        $maxSize = 5 * 1024 * 1024; // 5MB
+        
+        if (!in_array($_FILES['passport_image']['type'], $allowedTypes)) {
+            $errorMessage = "Invalid file type. Only JPG, JPEG, and PNG files are allowed.";
+        } elseif ($_FILES['passport_image']['size'] > $maxSize) {
+            $errorMessage = "File is too large. Maximum size is 5MB.";
+        } else {
+            $uploadDir = '../uploads/passport_images/';
+            if (!file_exists($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
+            $fileName = uniqid('passport_') . '_' . basename($_FILES['passport_image']['name']);
+            $targetPath = $uploadDir . $fileName;
+            
+            if (move_uploaded_file($_FILES['passport_image']['tmp_name'], $targetPath)) {
+                $passportImage = $fileName;
+            } else {
+                $errorMessage = "Failed to upload image.";
+            }
+        }
+    }
+    
     if (empty($firstName) || empty($lastName) || empty($employeeId) || empty($email)) {
         $errorMessage = "Required fields cannot be empty.";
     } else {
@@ -90,11 +117,11 @@ if (isset($_POST['add_teacher'])) {
             $stmt->execute();
             $userId = $conn->insert_id;
             
-            // Insert teacher
-            $insertTeacher = "INSERT INTO teachers (user_id, first_name, last_name, employee_id, joining_date, qualification, phone, address) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            // Insert teacher with passport image
+            $insertTeacher = "INSERT INTO teachers (user_id, first_name, last_name, employee_id, joining_date, qualification, phone, address, passport_image) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($insertTeacher);
-            $stmt->bind_param("isssssss", $userId, $firstName, $lastName, $employeeId, $joiningDate, $qualification, $phone, $address);
+            $stmt->bind_param("issssssss", $userId, $firstName, $lastName, $employeeId, $joiningDate, $qualification, $phone, $address, $passportImage);
             
             if ($stmt->execute()) {
                 $conn->commit();
@@ -220,8 +247,18 @@ include 'include/header.php';
                         <div class="card-header">
                             <h3 class="card-title">Add New Teacher</h3>
                         </div>
-                        <form method="post" action="">
+                        <form method="post" action="" enctype="multipart/form-data">
                             <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="passport_image" class="required-field">Passport Photo</label>
+                                        <input type="file" class="form-control" id="passport_image" name="passport_image" accept="image/jpeg,image/png,image/jpg" required>
+                                        <small class="text-muted">Max size: 5MB. Formats: JPG, JPEG, PNG</small>
+                                        <div id="image_preview" class="mt-2 d-none">
+                                            <img src="" alt="Preview" class="img-thumbnail" style="max-width: 150px;">
+                                        </div>
+                                    </div>
+                                </div>
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
@@ -290,14 +327,20 @@ include 'include/header.php';
                     <div class="card card-info">
                         <div class="card-header">
                             <h3 class="card-title">Teachers List</h3>
+                            <div class="card-tools">
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addTeacherModal">
+                                    <i class="fas fa-plus"></i> Add New Teacher
+                                </button>
+                            </div>
                         </div>
                         <div class="card-body table-responsive p-0">
                             <?php if (count($teachers) > 0): ?>
                             <table class="table table-hover text-nowrap">
                                 <thead>
                                     <tr>
-                                        <th>Employee ID</th>
+                                        <th>Photo</th>
                                         <th>Name</th>
+                                        <th>Employee ID</th>
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>Qualification</th>
@@ -308,12 +351,26 @@ include 'include/header.php';
                                 <tbody>
                                     <?php foreach ($teachers as $teacher): ?>
                                     <tr>
-                                        <td><?php echo $teacher['employee_id']; ?></td>
-                                        <td><?php echo $teacher['first_name'] . ' ' . $teacher['last_name']; ?></td>
-                                        <td><?php echo $teacher['email']; ?></td>
-                                        <td><?php echo $teacher['phone']; ?></td>
-                                        <td><?php echo $teacher['qualification']; ?></td>
-                                        <td><?php echo !empty($teacher['joining_date']) ? date('M d, Y', strtotime($teacher['joining_date'])) : ''; ?></td>
+                                        <td>
+                                            <?php if (!empty($teacher['passport_image'])): ?>
+                                                <img src="../uploads/passport_images/<?php echo htmlspecialchars($teacher['passport_image']); ?>" 
+                                                     alt="Passport Photo" 
+                                                     class="img-thumbnail"
+                                                     style="max-width: 50px; cursor: pointer;"
+                                                     onclick="showFullImage(this.src)">
+                                            <?php else: ?>
+                                                <img src="../assets/img/default-avatar.png" 
+                                                     alt="Default Avatar" 
+                                                     class="img-thumbnail"
+                                                     style="max-width: 50px;">
+                                            <?php endif; ?>
+                                        </td>
+                                        <td><?php echo htmlspecialchars($teacher['first_name'] . ' ' . $teacher['last_name']); ?></td>
+                                        <td><?php echo htmlspecialchars($teacher['employee_id']); ?></td>
+                                        <td><?php echo htmlspecialchars($teacher['email']); ?></td>
+                                        <td><?php echo htmlspecialchars($teacher['phone']); ?></td>
+                                        <td><?php echo htmlspecialchars($teacher['qualification']); ?></td>
+                                        <td><?php echo htmlspecialchars($teacher['joining_date']); ?></td>
                                         <td>
                                             <a href="edit_teacher.php?id=<?php echo $teacher['id']; ?>" class="btn btn-sm btn-info">
                                                 <i class="fas fa-edit"></i> Edit
@@ -366,5 +423,135 @@ include 'include/header.php';
         </div>
     </div>
 </div>
+
+<!-- Add Teacher Modal -->
+<div class="modal fade" id="addTeacherModal" tabindex="-1" role="dialog" aria-labelledby="addTeacherModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post" action="" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTeacherModalLabel">Add New Teacher</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="passport_image" class="required-field">Passport Photo</label>
+                            <input type="file" class="form-control" id="passport_image" name="passport_image" accept="image/jpeg,image/png,image/jpg" required>
+                            <small class="text-muted">Max size: 5MB. Formats: JPG, JPEG, PNG</small>
+                            <div id="image_preview" class="mt-2 d-none">
+                                <img src="" alt="Preview" class="img-thumbnail" style="max-width: 150px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="first_name">First Name*</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="last_name">Last Name*</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="employee_id">Employee ID*</label>
+                                <input type="text" class="form-control" id="employee_id" name="employee_id" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="email">Email*</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="text" class="form-control" id="phone" name="phone">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="joining_date">Joining Date</label>
+                                <input type="date" class="form-control" id="joining_date" name="joining_date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="qualification">Qualification</label>
+                                <input type="text" class="form-control" id="qualification" name="qualification">
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label for="address">Address</label>
+                                <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" name="add_teacher" class="btn btn-primary">Add Teacher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1" role="dialog" aria-labelledby="imagePreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewModalLabel">Passport Photo</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="" alt="Full Size Passport" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add this script at the bottom of the file
+document.getElementById('passport_image').addEventListener('change', function(e) {
+    const preview = document.getElementById('image_preview');
+    const img = preview.querySelector('img');
+    const file = e.target.files[0];
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+            preview.classList.remove('d-none');
+        }
+        reader.readAsDataURL(file);
+    } else {
+        preview.classList.add('d-none');
+    }
+});
+
+function showFullImage(src) {
+    const modal = document.getElementById('imagePreviewModal');
+    const modalImg = modal.querySelector('.modal-body img');
+    modalImg.src = src;
+    $(modal).modal('show');
+}
+</script>
 
 <?php include 'include/footer.php'; ?> 

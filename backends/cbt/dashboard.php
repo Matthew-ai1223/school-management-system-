@@ -17,6 +17,72 @@ if (!isset($_SESSION['teacher_id']) || !isset($_SESSION['role']) || ($_SESSION['
 $db = Database::getInstance();
 $conn = $db->getConnection();
 
+// Function to check if a column exists in a table
+function columnExists($conn, $table, $column) {
+    $query = "SHOW COLUMNS FROM $table LIKE '$column'";
+    $result = $conn->query($query);
+    return $result->num_rows > 0;
+}
+
+// Function to create necessary tables and columns
+function setupDatabase($conn) {
+    try {
+        // Create cbt_exams table if it doesn't exist
+        $conn->query("CREATE TABLE IF NOT EXISTS cbt_exams (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            title VARCHAR(255) NOT NULL,
+            subject VARCHAR(100) NOT NULL,
+            class VARCHAR(50) NOT NULL,
+            duration INT NOT NULL,
+            passing_score INT DEFAULT 40,
+            is_active TINYINT(1) DEFAULT 0,
+            teacher_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )");
+
+        // Create cbt_exam_attempts table if it doesn't exist
+        $conn->query("CREATE TABLE IF NOT EXISTS cbt_exam_attempts (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            exam_id INT NOT NULL,
+            student_id INT NOT NULL,
+            start_time DATETIME NOT NULL,
+            end_time DATETIME,
+            submit_time DATETIME,
+            status ENUM('in_progress', 'completed', 'abandoned') DEFAULT 'in_progress',
+            score DECIMAL(5,2) DEFAULT 0,
+            show_result TINYINT(1) DEFAULT 0,
+            attempt_number INT DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )");
+
+        // Add allow_retake column to cbt_exams if it doesn't exist
+        if (!columnExists($conn, 'cbt_exams', 'allow_retake')) {
+            $conn->query("ALTER TABLE cbt_exams ADD COLUMN allow_retake TINYINT(1) DEFAULT 0");
+        }
+
+        // Add attempt_number column to cbt_exam_attempts if it doesn't exist
+        if (!columnExists($conn, 'cbt_exam_attempts', 'attempt_number')) {
+            $conn->query("ALTER TABLE cbt_exam_attempts ADD COLUMN attempt_number INT DEFAULT 1");
+        }
+
+        // Add show_result column to cbt_exam_attempts if it doesn't exist
+        if (!columnExists($conn, 'cbt_exam_attempts', 'show_result')) {
+            $conn->query("ALTER TABLE cbt_exam_attempts ADD COLUMN show_result TINYINT(1) DEFAULT 0");
+        }
+
+        return true;
+    } catch (Exception $e) {
+        error_log("Database setup error: " . $e->getMessage());
+        return false;
+    }
+}
+
+// Run database setup
+if (!setupDatabase($conn)) {
+    $_SESSION['error_message'] = "There was an error setting up the database. Please contact the administrator.";
+}
+
 // Get teacher details
 $teacherId = $_SESSION['teacher_id'];
 $teacherName = $_SESSION['name'];
@@ -58,7 +124,7 @@ $pageTitle = "CBT Dashboard";
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title><?php echo $pageTitle; ?> - ACE MODEL COLLEGE</title>
+    <title><?php echo $pageTitle; ?> - ACE COLLEGE</title>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
@@ -149,7 +215,7 @@ $pageTitle = "CBT Dashboard";
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <a class="navbar-brand" href="dashboard.php">
-            <i class="fas fa-laptop-code mr-2"></i> ACE MODEL COLLEGE - CBT System
+            <i class="fas fa-laptop-code mr-2"></i> ACE COLLEGE - CBT System
         </a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -180,11 +246,14 @@ $pageTitle = "CBT Dashboard";
                 <a href="create_exam.php" class="sidebar-link">
                     <i class="fas fa-plus-circle mr-2"></i> Create New Exam
                 </a>
-                <a href="view_results.php" class="sidebar-link">
+                <a href="results.php" class="sidebar-link">
                     <i class="fas fa-chart-bar mr-2"></i> View Results
                 </a>
                 <a href="question_bank.php" class="sidebar-link">
                     <i class="fas fa-database mr-2"></i> Question Bank
+                </a>
+                <a href="../@class_teacher/dashboard.php" class="sidebar-link">
+                    <i class="fas fa-user-tie mr-2"></i> Class Teacher
                 </a>
                 <a href="logout.php" class="sidebar-link">
                     <i class="fas fa-sign-out-alt mr-2"></i> Logout
@@ -255,6 +324,7 @@ $pageTitle = "CBT Dashboard";
                                             <th>Class</th>
                                             <th>Duration (mins)</th>
                                             <th>Status</th>
+                                            <th>Retakes</th>
                                             <th>Created</th>
                                             <th>Actions</th>
                                         </tr>
@@ -273,6 +343,13 @@ $pageTitle = "CBT Dashboard";
                                                         <span class="badge badge-secondary">Inactive</span>
                                                     <?php endif; ?>
                                                 </td>
+                                                <td>
+                                                    <?php if (isset($exam['allow_retake']) && $exam['allow_retake']): ?>
+                                                        <span class="badge badge-info">Allowed</span>
+                                                    <?php else: ?>
+                                                        <span class="badge badge-warning">Not Allowed</span>
+                                                    <?php endif; ?>
+                                                </td>
                                                 <td><?php echo date('M d, Y', strtotime($exam['created_at'])); ?></td>
                                                 <td>
                                                     <!-- Edit Exam Button -->
@@ -289,6 +366,25 @@ $pageTitle = "CBT Dashboard";
                                                     <a href="view_exam_results.php?exam_id=<?php echo $exam['id']; ?>" class="btn btn-sm btn-success" title="View Results">
                                                         <i class="fas fa-chart-bar"></i>
                                                     </a>
+                                                    
+                                                    <!-- Toggle Retake Button -->
+                                                    <?php if (isset($exam['allow_retake']) && $exam['allow_retake']): ?>
+                                                        <form method="post" action="toggle_retake.php" style="display: inline;">
+                                                            <input type="hidden" name="exam_id" value="<?php echo $exam['id']; ?>">
+                                                            <input type="hidden" name="action" value="disable_retake">
+                                                            <button type="submit" class="btn btn-sm btn-warning" title="Disable Retakes">
+                                                                <i class="fas fa-redo-alt"></i>
+                                                            </button>
+                                                        </form>
+                                                    <?php else: ?>
+                                                        <form method="post" action="toggle_retake.php" style="display: inline;">
+                                                            <input type="hidden" name="exam_id" value="<?php echo $exam['id']; ?>">
+                                                            <input type="hidden" name="action" value="enable_retake">
+                                                            <button type="submit" class="btn btn-sm btn-info" title="Enable Retakes">
+                                                                <i class="fas fa-redo"></i>
+                                                            </button>
+                                                        </form>
+                                                    <?php endif; ?>
                                                     
                                                     <!-- Toggle Active Status Button -->
                                                     <?php if ($exam['is_active']): ?>
@@ -344,7 +440,7 @@ $pageTitle = "CBT Dashboard";
     <script>
     $(document).ready(function() {
         $('#examsTable').DataTable({
-            "order": [[5, "desc"]] // Sort by created date (column 5) in descending order
+            "order": [[6, "desc"]] // Sort by created date (column 6) in descending order
         });
     });
     </script>

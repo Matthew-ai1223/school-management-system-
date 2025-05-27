@@ -198,7 +198,7 @@ include '../admin/include/header.php';
                                         </tr>
                                         <tr>
                                             <th>Status</th>
-                                            <td><?php echo formatPaymentStatus($payment['status'] ?? ''); ?></td>
+                                            <td style="color:rgb(238, 37, 37);"><?php echo formatPaymentStatus($payment['status'] ?? ''); ?></td>
                                         </tr>
                                         <tr>
                                             <th>Created By</th>
@@ -206,10 +206,10 @@ include '../admin/include/header.php';
                                                 <?php 
                                                 $createdBy = $payment['created_by'] ?? 0;
                                                 if ($createdBy > 0) {
-                                                    $userQuery = "SELECT name FROM users WHERE id = $createdBy LIMIT 1";
+                                                    $userQuery = "SELECT CONCAT(first_name, ' ', last_name) as full_name FROM users WHERE id = $createdBy LIMIT 1";
                                                     $userResult = $conn->query($userQuery);
                                                     if ($userResult && $userResult->num_rows > 0) {
-                                                        echo $userResult->fetch_assoc()['name'];
+                                                        echo $userResult->fetch_assoc()['full_name'];
                                                     } else {
                                                         echo "User ID: $createdBy";
                                                     }
@@ -261,7 +261,7 @@ include '../admin/include/header.php';
                         </div>
                         <div class="card-body">
                             <div class="text-center mb-3">
-                                <img src="../assets/img/logo.png" alt="School Logo" style="max-height: 100px;">
+                                <img src="../../images/logo.png" alt="School Logo" style="max-height: 100px;">
                                 <h4 class="mt-2"><?php echo SCHOOL_NAME; ?></h4>
                                 <p class="text-muted"><?php echo SCHOOL_ADDRESS; ?></p>
                             </div>
@@ -300,7 +300,7 @@ include '../admin/include/header.php';
                                 </tr>
                                 <tr>
                                     <td>Status:</td>
-                                    <td><?php echo formatPaymentStatus($payment['status'] ?? ''); ?></td>
+                                    <td style="color:rgb(238, 37, 37);" ><?php echo formatPaymentStatus($payment['status'] ?? ''); ?></td>
                                 </tr>
                             </table>
                             
@@ -334,24 +334,24 @@ include '../admin/include/header.php';
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="" method="POST">
+            <form id="updateStatusForm" method="POST">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="new_status">New Status</label>
-                        <select name="new_status" id="new_status" class="form-control" required>
+                        <label for="status">New Status</label>
+                        <select name="status" id="status" class="form-control" required>
                             <option value="completed">Completed</option>
                             <option value="pending" <?php echo $payment['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
                             <option value="failed" <?php echo $payment['status'] === 'failed' ? 'selected' : ''; ?>>Failed</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="update_notes">Notes</label>
-                        <textarea name="update_notes" id="update_notes" class="form-control" rows="3" placeholder="Enter any notes about this status update"></textarea>
+                        <label for="notes">Notes</label>
+                        <textarea name="notes" id="notes" class="form-control" rows="3" placeholder="Enter any notes about this status update"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer justify-content-between">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="submit" name="update_status" class="btn btn-primary">Update Status</button>
+                    <button type="submit" class="btn btn-primary">Update Status</button>
                 </div>
             </form>
         </div>
@@ -401,6 +401,69 @@ function printReceipt() {
     `);
     printWindow.document.close();
 }
+
+// Add new function to handle status updates
+function updatePaymentStatus(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    formData.append('payment_id', '<?php echo $payment['id']; ?>');
+    
+    // Show loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+    
+    // Use fetch with proper headers
+    fetch('update_payment_status.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message using SweetAlert or similar
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Payment status has been updated successfully.',
+                timer: 2000
+            }).then(() => {
+                location.reload(); // Reload to show updated status
+            });
+        } else {
+            // Show error message
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'Failed to update payment status'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while updating the payment status.'
+        });
+    })
+    .finally(() => {
+        // Reset button state
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+}
+
+// Attach event listener when document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('updateStatusForm');
+    if (form) {
+        form.addEventListener('submit', updatePaymentStatus);
+    }
+});
 </script>
 
 <?php include '../admin/include/footer.php'; ?> 
