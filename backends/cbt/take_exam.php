@@ -2,6 +2,7 @@
 require_once '../config.php';
 require_once '../database.php';
 require_once '../utils.php';
+require_once 'test_db.php';
 
 // Enable error reporting
 error_reporting(E_ALL);
@@ -24,32 +25,20 @@ $student = null;
 $exam = null;
 $available_exams = [];
 
-// Connect to database
+// Initialize database
+$testDb = TestDatabase::getInstance();
 $db = Database::getInstance();
 $conn = $db->getConnection();
 
-// Function to get exam by ID
-function getExamById($conn, $exam_id) {
-    $stmt = $conn->prepare("SELECT * FROM cbt_exams WHERE id = ? AND is_active = 1");
-    if (!$stmt) {
-        return null;
-    }
-    
-    $stmt->bind_param("i", $exam_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result && $result->num_rows > 0) {
-        return $result->fetch_assoc();
-    }
-    
-    return null;
-}
-
 // Function to get student by registration number and class
 function getStudentByRegNumAndClass($conn, $reg_number, $class) {
-    // Try with both admission_number and registration_number
-    $stmt = $conn->prepare("SELECT * FROM students WHERE (registration_number = ? OR admission_number = ?) AND TRIM(class) = ? LIMIT 1");
+    $stmt = $conn->prepare("
+        SELECT * FROM students 
+        WHERE (registration_number = ? OR admission_number = ?) 
+        AND TRIM(class) = ? 
+        LIMIT 1
+    ");
+    
     if (!$stmt) {
         return null;
     }
@@ -68,10 +57,14 @@ function getStudentByRegNumAndClass($conn, $reg_number, $class) {
 // Function to get available exams for a class
 function getAvailableExamsByClass($conn, $class) {
     $exams = [];
-    
-    // First try with pattern matching
     $searchPattern = '%' . trim($class) . '%';
-    $stmt = $conn->prepare("SELECT * FROM cbt_exams WHERE is_active = 1 AND TRIM(class) LIKE ? ORDER BY created_at DESC");
+    
+    $stmt = $conn->prepare("
+        SELECT * FROM cbt_exams 
+        WHERE is_active = 1 
+        AND TRIM(class) LIKE ? 
+        ORDER BY created_at DESC
+    ");
     
     if ($stmt) {
         $stmt->bind_param("s", $searchPattern);
@@ -81,358 +74,70 @@ function getAvailableExamsByClass($conn, $class) {
         while ($row = $result->fetch_assoc()) {
             $exams[] = $row;
         }
-        
-        // If no results, try with exact matching
-        if (count($exams) == 0) {
-            $all_exams_query = "SELECT * FROM cbt_exams WHERE is_active = 1 ORDER BY created_at DESC";
-            $result = $conn->query($all_exams_query);
-            
-            if ($result) {
-                while ($row = $result->fetch_assoc()) {
-                    // Compare class names case-insensitively after trimming
-                    if (strcasecmp(trim($row['class']), trim($class)) == 0) {
-                        $exams[] = $row;
-                    }
-                }
-            }
-        }
     }
     
     return $exams;
 }
 
-// Function to save student exam results
-function saveExamResults($conn, $student_id, $exam_id, $answers, $score) {
-    try {
-        // Start transaction
-        $conn->begin_transaction();
-        
-        // Get exam passing score
-        $stmt = $conn->prepare("SELECT passing_score FROM cbt_exams WHERE id = ?");
-        if (!$stmt) {
-            throw new Exception("Failed to prepare exam query");
-        }
-        
-        $stmt->bind_param("i", $exam_id);
-        if (!$stmt->execute()) {
-            throw new Exception("Failed to get exam details");
-        }
-        
-        $result = $stmt->get_result();
-        $exam = $result->fetch_assoc();
-        if (!$exam) {
-            throw new Exception("Exam not found");
-        }
-        
-        // 1. Update cbt_student_exams
-        $status = ($score >= $exam['passing_score']) ? 'passed' : 'failed';
-        $stmt = $conn->prepare("
-            UPDATE cbt_student_exams 
-            SET score = ?, status = ?, completed_at = NOW() 
-            WHERE student_id = ? AND exam_id = ?
-        ");
-        
-        if (!$stmt) {
-            throw new Exception("Failed to prepare student exams update statement");
-        }
-        
-        $stmt->bind_param("dsii", $score, $status, $student_id, $exam_id);
-        if (!$stmt->execute()) {
-            throw new Exception("Failed to update student exams");
-        }
-        
-        // 2. Create/Update exam attempt
-        $stmt = $conn->prepare("
-            INSERT INTO cbt_exam_attempts (exam_id, student_id, start_time, end_time, submit_time, status)
-            VALUES (?, ?, NOW(), NOW(), NOW(), 'completed')
-            ON DUPLICATE KEY UPDATE end_time = NOW(), submit_time = NOW(), status = 'completed'
-        ");
-        
-        if (!$stmt) {
-            throw new Exception("Failed to prepare exam attempts statement");
-        }
-        
-        $stmt->bind_param("ii", $exam_id, $student_id);
-        if (!$stmt->execute()) {
-            throw new Exception("Failed to create/update exam attempt");
-        }
-        
-        $attempt_id = $stmt->insert_id ?: getExistingAttemptId($conn, $student_id, $exam_id);
-        
-        // 3. Save student answers
-        $stmt = $conn->prepare("
-            INSERT INTO cbt_student_answers (attempt_id, question_id, selected_option, is_correct)
-            VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE selected_option = VALUES(selected_option), is_correct = VALUES(is_correct)
-        ");
-        
-        if (!$stmt) {
-            throw new Exception("Failed to prepare student answers statement");
-        }
-        
-        foreach ($answers as $question_id => $answer) {
-            $is_correct = isAnswerCorrect($conn, $question_id, $answer);
-            $stmt->bind_param("iisi", $attempt_id, $question_id, $answer, $is_correct);
-            if (!$stmt->execute()) {
-                throw new Exception("Failed to save student answer");
-            }
-        }
-        
-        // Commit transaction
-        $conn->commit();
-        return true;
-        
-    } catch (Exception $e) {
-        // Rollback on error
-        $conn->rollback();
-        error_log("Error saving exam results: " . $e->getMessage());
-        return false;
-    }
-}
-
-// Helper function to get existing attempt ID
-function getExistingAttemptId($conn, $student_id, $exam_id) {
-    $stmt = $conn->prepare("
-        SELECT id FROM cbt_exam_attempts 
-        WHERE student_id = ? AND exam_id = ? 
-        ORDER BY start_time DESC LIMIT 1
-    ");
-    
-    if ($stmt) {
-        $stmt->bind_param("ii", $student_id, $exam_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result && $row = $result->fetch_assoc()) {
-            return $row['id'];
-        }
-    }
-    return null;
-}
-
-// Helper function to check if answer is correct
-function isAnswerCorrect($conn, $question_id, $selected_option) {
-    // First get the question type
-    $stmt = $conn->prepare("
-        SELECT question_type, correct_answer 
-        FROM cbt_questions 
-        WHERE id = ?
-    ");
-    
-    if ($stmt) {
-        $stmt->bind_param("i", $question_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result && $row = $result->fetch_assoc()) {
-            if ($row['question_type'] === 'True/False') {
-                // For True/False questions, compare directly with correct_answer
-                return strtoupper(trim($selected_option)) === strtoupper(trim($row['correct_answer'])) ? 1 : 0;
-            } else {
-                // For Multiple Choice questions, check if the selected option is marked as correct
-                $stmt = $conn->prepare("
-                    SELECT is_correct 
-                    FROM cbt_options 
-                    WHERE question_id = ? AND option_text = ?
-                ");
-                $stmt->bind_param("is", $question_id, $selected_option);
-                $stmt->execute();
-                $optionResult = $stmt->get_result();
-                if ($optionResult && $optionRow = $optionResult->fetch_assoc()) {
-                    return $optionRow['is_correct'] ? 1 : 0;
-                }
-            }
-        }
-    }
-    return 0;
-}
-
 // Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['student_login'])) {
-        // Student login form submission
         $reg_number = trim($_POST['registration_number']);
         $class = trim($_POST['class']);
         
-        // Add debug logging
         error_log("Student Login - Registration Number: $reg_number, Class: $class");
-        error_log("Session Data Before Login: " . json_encode($_SESSION));
         
         if (empty($reg_number) || empty($class)) {
             $error = "Please provide both registration number and class";
             error_log("Login Error: $error");
         } else {
             $student = getStudentByRegNumAndClass($conn, $reg_number, $class);
-            error_log("Student Data: " . json_encode($student));
             
             if ($student) {
-                // Set session variables
                 $_SESSION['student_id'] = $student['id'];
                 $_SESSION['student_name'] = $student['first_name'] . ' ' . $student['last_name'];
                 $_SESSION['registration_number'] = $student['registration_number'] ?? $student['admission_number'];
                 $_SESSION['student_class'] = $student['class'];
-                error_log("Session Data After Login: " . json_encode($_SESSION));
                 
-                // Get available exams
                 $available_exams = getAvailableExamsByClass($conn, $student['class']);
             } else {
                 $error = "Invalid registration number or class. Please try again.";
-                error_log("Login Error: $error");
             }
         }
     } elseif (isset($_POST['start_exam'])) {
-        $student_id = $_POST['student_id'] ?? $_SESSION['student_id'] ?? null;
+        $student_id = $_SESSION['student_id'] ?? null;
         $exam_id = $_POST['exam_id'] ?? null;
-        
-        // Debug log
-        error_log("Starting exam - Student ID: $student_id, Exam ID: $exam_id");
-        error_log("Session Data Before Starting Exam: " . json_encode($_SESSION));
         
         if (!$student_id || !$exam_id) {
             $error = "Missing student ID or exam ID";
-            error_log("Start Exam Error: $error");
             $_SESSION['error_message'] = $error;
-            header("Location: ../student/registration/student_dashboard.php");
+            header("Location: take_exam.php");
             exit;
         }
         
         try {
-            // Start transaction
-            $conn->begin_transaction();
-            error_log("Transaction started");
-            
-            // First check if there's an existing in-progress session
-            $check_session = "SELECT id FROM cbt_student_exams 
-                            WHERE student_id = ? AND exam_id = ? AND status = 'In Progress'";
-            $stmt = $conn->prepare($check_session);
-            $stmt->bind_param("ii", $student_id, $exam_id);
-            $stmt->execute();
-            $existing_session = $stmt->get_result()->fetch_assoc();
-            
-            $session_id = null;
-            if ($existing_session) {
-                // Use existing session
-                $session_id = $existing_session['id'];
-                error_log("Using existing exam session with ID: $session_id");
-            } else {
-                // Create new exam session
-                $create_session = "INSERT INTO cbt_student_exams (student_id, exam_id, status, started_at) 
-                                 VALUES (?, ?, 'In Progress', NOW())";
-                $stmt = $conn->prepare($create_session);
-                $stmt->bind_param("ii", $student_id, $exam_id);
-                $stmt->execute();
-                $session_id = $conn->insert_id;
-                error_log("Created new exam session with ID: $session_id");
+            // Verify exam exists and is active
+            $exam = $testDb->getExamById($exam_id);
+            if (!$exam) {
+                throw new Exception("Exam not found or is no longer active");
             }
             
-            // Get attempt info
-            $check_attempts = "SELECT COUNT(*) as attempts, MAX(attempt_number) as last_attempt 
-                             FROM cbt_exam_attempts 
-                             WHERE student_id = ? AND exam_id = ? AND status = 'completed'";
-            $stmt = $conn->prepare($check_attempts);
-            $stmt->bind_param("ii", $student_id, $exam_id);
-            $stmt->execute();
-            $attempt_info = $stmt->get_result()->fetch_assoc();
-            error_log("Attempt Info: " . json_encode($attempt_info));
+            // Create exam attempt
+            $attempt_id = $testDb->createExamAttempt($student_id, $exam_id);
             
-            // Check if retakes are allowed for completed exams
-            if ($attempt_info['attempts'] > 0) {
-                $check_retake = "SELECT allow_retake FROM cbt_exams WHERE id = ?";
-                $stmt = $conn->prepare($check_retake);
-                $stmt->bind_param("i", $exam_id);
-                $stmt->execute();
-                $retake_result = $stmt->get_result()->fetch_assoc();
-                
-                if (!$retake_result['allow_retake']) {
-                    throw new Exception("You have already completed this exam and retakes are not allowed.");
-                }
+            if (!$attempt_id) {
+                throw new Exception("Failed to create exam attempt. Please try again.");
             }
             
-            // Check for existing in-progress attempt
-            $check_attempt = "SELECT id FROM cbt_exam_attempts 
-                            WHERE student_id = ? AND exam_id = ? AND status = 'in_progress'";
-            $stmt = $conn->prepare($check_attempt);
-            $stmt->bind_param("ii", $student_id, $exam_id);
-            $stmt->execute();
-            $existing_attempt = $stmt->get_result()->fetch_assoc();
-            
-            $attempt_id = null;
-            $attempt_number = 1;
-            if ($existing_attempt) {
-                $attempt_id = $existing_attempt['id'];
-                error_log("Using existing attempt ID: $attempt_id");
-            } else {
-                // Get the next attempt number
-                $attempt_number = ($attempt_info['last_attempt'] ?? 0) + 1;
-                
-                // Create new attempt
-                $create_attempt = "INSERT INTO cbt_exam_attempts 
-                                 (student_id, exam_id, start_time, status, attempt_number) 
-                                 VALUES (?, ?, NOW(), 'in_progress', ?)";
-                $stmt = $conn->prepare($create_attempt);
-                $stmt->bind_param("iii", $student_id, $exam_id, $attempt_number);
-                $stmt->execute();
-                $attempt_id = $conn->insert_id;
-                error_log("Created new attempt number: $attempt_number, ID: $attempt_id");
-            }
-            
-            // Store exam session in PHP session
-            $_SESSION['current_exam'] = [
-                'session_id' => $session_id,
-                'exam_id' => $exam_id,
-                'student_id' => $student_id,
-                'attempt_id' => $attempt_id,
-                'attempt_number' => $attempt_number,
-                'start_time' => time()
-            ];
-            error_log("Stored exam session in PHP session: " . json_encode($_SESSION['current_exam']));
-            
-            // Commit transaction
-            $conn->commit();
-            error_log("Transaction committed successfully");
-            
-            // Set the full URL for the redirect
-            $exam_interface_url = "exam_interface.php?session_id=" . $session_id;
-            error_log("Redirecting to: $exam_interface_url");
-            
-            // Redirect to exam interface with session ID
-            header("Location: " . $exam_interface_url);
+            // Redirect to exam interface
+            header("Location: exam_interface.php?session_id=" . $attempt_id);
             exit;
             
         } catch (Exception $e) {
-            // Rollback on error
-            $conn->rollback();
-            error_log("Error occurred: " . $e->getMessage());
-            $_SESSION['error_message'] = $e->getMessage();
-            header("Location: ../student/registration/student_dashboard.php");
+            error_log("Error starting exam: " . $e->getMessage());
+            $_SESSION['error_message'] = "Error: " . $e->getMessage();
+            header("Location: take_exam.php");
             exit;
-        }
-    } elseif (isset($_POST['submit_exam'])) {
-        $student_id = $_SESSION['student_id'] ?? null;
-        $exam_id = $_POST['exam_id'] ?? null;
-        $answers = $_POST['answers'] ?? [];
-        
-        if (!$student_id || !$exam_id) {
-            $error = "Missing student ID or exam ID";
-        } else {
-            // Calculate score
-            $total_questions = count($answers);
-            $correct_answers = 0;
-            
-            foreach ($answers as $question_id => $answer) {
-                if (isAnswerCorrect($conn, $question_id, $answer)) {
-                    $correct_answers++;
-                }
-            }
-            
-            $score = $total_questions > 0 ? ($correct_answers / $total_questions) * 100 : 0;
-            
-            // Save results
-            if (saveExamResults($conn, $student_id, $exam_id, $answers, $score)) {
-                // Redirect to results page
-                header("Location: view_result.php?exam_id=$exam_id&student_id=$student_id");
-                exit;
-            } else {
-                $error = "Failed to save exam results. Please try again or contact administrator.";
-            }
         }
     }
 }
@@ -442,11 +147,9 @@ if (isset($_GET['exam_id']) && isset($_GET['student_id'])) {
     $exam_id = $_GET['exam_id'];
     $student_id = $_GET['student_id'];
     
-    // Verify student is logged in or provided in URL
     if (isset($_SESSION['student_id']) || $student_id) {
         $student_id = $_SESSION['student_id'] ?? $student_id;
         
-        // Get student details
         $stmt = $conn->prepare("SELECT * FROM students WHERE id = ?");
         if ($stmt) {
             $stmt->bind_param("i", $student_id);
@@ -460,8 +163,7 @@ if (isset($_GET['exam_id']) && isset($_GET['student_id'])) {
                 $_SESSION['registration_number'] = $student['registration_number'] ?? $student['admission_number'];
                 $_SESSION['student_class'] = $student['class'];
                 
-                // Get exam details
-                $exam = getExamById($conn, $exam_id);
+                $exam = $testDb->getExamById($exam_id);
                 
                 if (!$exam) {
                     $error = "Exam not found or not active";
@@ -470,11 +172,8 @@ if (isset($_GET['exam_id']) && isset($_GET['student_id'])) {
                 $error = "Student not found";
             }
         }
-    } else {
-        // If no student is logged in and none provided in URL, show login form
     }
 } elseif (isset($_SESSION['student_id'])) {
-    // Student is already logged in, get their details
     $stmt = $conn->prepare("SELECT * FROM students WHERE id = ?");
     if ($stmt) {
         $stmt->bind_param("i", $_SESSION['student_id']);
@@ -483,8 +182,6 @@ if (isset($_GET['exam_id']) && isset($_GET['student_id'])) {
         
         if ($result && $result->num_rows > 0) {
             $student = $result->fetch_assoc();
-            
-            // Get available exams
             $available_exams = getAvailableExamsByClass($conn, $student['class']);
         }
     }
@@ -661,6 +358,20 @@ if (isset($_GET['exam_id']) && isset($_GET['student_id'])) {
             <h2><?php echo SCHOOL_NAME; ?></h2>
             <h4>Computer Based Test (CBT) Portal</h4>
         </div>
+        
+        <?php 
+        // Display session error messages if any
+        if (isset($_SESSION['error_message'])): ?>
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle"></i> <?php echo $_SESSION['error_message']; ?>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <?php 
+            // Clear the error message after displaying
+            unset($_SESSION['error_message']);
+        endif; ?>
         
         <?php if (!empty($error)): ?>
         <div class="alert alert-danger">

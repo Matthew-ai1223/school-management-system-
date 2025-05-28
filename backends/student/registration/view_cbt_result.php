@@ -37,10 +37,10 @@ header("Location: ../../cbt/view_result.php?exam_id=" . $exam_id . "&student_id=
 exit;
 
 // Get exam details
-$examQuery = "SELECT e.*, s.name AS subject_name, se.status, se.score, se.started_at, se.completed_at 
+$examQuery = "SELECT e.*, s.name AS subject_name, se.status, se.score, se.start_time, se.end_time 
               FROM cbt_exams e
               LEFT JOIN subjects s ON e.subject = s.name
-              JOIN cbt_student_exams se ON e.id = se.exam_id AND se.student_id = ?
+              JOIN cbt_student_attempts se ON e.id = se.exam_id AND se.student_id = ?
               WHERE e.id = ?";
 $stmt = $conn->prepare($examQuery);
 $stmt->bind_param("ii", $student_id, $exam_id);
@@ -278,10 +278,10 @@ include 'includes/header.php';
                                     <h5 class="mb-0">Attempt Details</h5>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>Started:</strong> <?php echo date('M d, Y g:i A', strtotime($student_exam['started_at'])); ?></p>
+                                    <p><strong>Started:</strong> <?php echo date('M d, Y g:i A', strtotime($student_exam['start_time'])); ?></p>
                                     <p><strong>Submitted:</strong> 
-                                        <?php echo $student_exam['submitted_at'] 
-                                              ? date('M d, Y g:i A', strtotime($student_exam['submitted_at'])) 
+                                        <?php echo $student_exam['end_time'] 
+                                              ? date('M d, Y g:i A', strtotime($student_exam['end_time'])) 
                                               : 'Not submitted'; ?>
                                     </p>
                                     <p><strong>Status:</strong> 
@@ -291,9 +291,9 @@ include 'includes/header.php';
                                     </p>
                                     <p><strong>Time Taken:</strong> 
                                         <?php
-                                        if ($student_exam['submitted_at']) {
-                                            $start = new DateTime($student_exam['started_at']);
-                                            $end = new DateTime($student_exam['submitted_at']);
+                                        if ($student_exam['end_time']) {
+                                            $start = new DateTime($student_exam['start_time']);
+                                            $end = new DateTime($student_exam['end_time']);
                                             $diff = $start->diff($end);
                                             echo $diff->format('%H:%I:%S');
                                         } else {

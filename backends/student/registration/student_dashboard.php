@@ -300,7 +300,7 @@ $upcoming_exams_query = "
         (SELECT COUNT(*) FROM cbt_questions WHERE exam_id = e.id) as question_count
     FROM cbt_exams e
     JOIN subjects s ON e.subject = s.name
-    LEFT JOIN cbt_student_exams se ON se.exam_id = e.id AND se.student_id = ?
+    LEFT JOIN cbt_student_attempts se ON se.exam_id = e.id AND se.student_id = ?
     WHERE e.is_active = 1 
     AND se.id IS NULL
     AND e.class = ?
@@ -313,22 +313,22 @@ $completed_exams_query = "
         s.name as subject_name,
         se.status,
         se.score,
-        se.completed_at,
+        se.end_time as completed_at,
         (SELECT COUNT(*) FROM cbt_questions WHERE exam_id = e.id) as question_count,
         (
             SELECT COUNT(*) 
             FROM cbt_student_answers sa 
-            JOIN cbt_exam_attempts ea ON sa.attempt_id = ea.id 
+            JOIN cbt_student_attempts ea ON sa.attempt_id = ea.id 
             WHERE ea.exam_id = e.id 
             AND ea.student_id = ? 
             AND sa.is_correct = 1
         ) as correct_answers
     FROM cbt_exams e
     JOIN subjects s ON e.subject = s.name
-    JOIN cbt_student_exams se ON se.exam_id = e.id AND se.student_id = ?
+    JOIN cbt_student_attempts se ON se.exam_id = e.id AND se.student_id = ?
     WHERE se.status = 'Completed'
     AND e.class = ?
-    ORDER BY se.completed_at DESC
+    ORDER BY se.end_time DESC
 ";
 
 $stmt = $conn->prepare($upcoming_exams_query);
@@ -347,14 +347,14 @@ $pastExamsQuery = "
         e.*,
         se.status,
         se.score,
-        se.started_at,
-        se.completed_at,
+        se.start_time,
+        se.end_time as completed_at,
         se.id as student_exam_id,
         e.id as exam_id
     FROM cbt_exams e
-    JOIN cbt_student_exams se ON e.id = se.exam_id
+    JOIN cbt_student_attempts se ON e.id = se.exam_id
     WHERE se.student_id = ?
-    ORDER BY se.completed_at DESC, se.started_at DESC";
+    ORDER BY se.end_time DESC, se.start_time DESC";
 
 $stmt = $conn->prepare($pastExamsQuery);
 $stmt->bind_param("i", $student_id);
@@ -1464,7 +1464,7 @@ while ($row = $pastExamsResult->fetch_assoc()) {
                                         <h4>Exams</h4>
                                         <?php
                                         // Get total exams count from cbt_student_exams table
-                                        $total_exams_query = "SELECT COUNT(*) as total_exams FROM cbt_student_exams WHERE student_id = ?";
+                                        $total_exams_query = "SELECT COUNT(*) as total_exams FROM cbt_student_attempts WHERE student_id = ?";
                                         $stmt = $conn->prepare($total_exams_query);
                                         $stmt->bind_param("i", $student_id);
                                         $stmt->execute();
@@ -2067,7 +2067,7 @@ while ($row = $pastExamsResult->fetch_assoc()) {
                                             // Get student's exam results
                                             $results_query = "SELECT e.*, ea.score, ea.status, ea.end_time, ea.show_result 
                                                            FROM cbt_exams e 
-                                                           JOIN cbt_exam_attempts ea ON e.id = ea.exam_id 
+                                                           JOIN cbt_student_attempts ea ON e.id = ea.exam_id 
                                                            WHERE ea.student_id = ? AND ea.status = 'completed'
                                                            ORDER BY ea.end_time DESC";
                                             
@@ -2191,7 +2191,7 @@ while ($row = $pastExamsResult->fetch_assoc()) {
                                         $pastExamsQuery = "SELECT se.*, e.title, e.subject, 
                                     e.duration as time_limit, e.passing_score, 
                                     e.show_results
-                              FROM cbt_student_exams se
+                              FROM cbt_student_attempts se
                               JOIN cbt_exams e ON se.exam_id = e.id
                               WHERE se.student_id = ?
                               ORDER BY se.completed_at DESC";
@@ -2469,7 +2469,7 @@ while ($row = $pastExamsResult->fetch_assoc()) {
                                         $pastExamsQuery = "SELECT se.*, e.title, e.subject, 
                                     e.duration as time_limit, e.passing_score, 
                                     e.show_results
-                              FROM cbt_student_exams se
+                              FROM cbt_student_attempts se
                               JOIN cbt_exams e ON se.exam_id = e.id
                               WHERE se.student_id = ?
                               ORDER BY se.completed_at DESC";
@@ -2577,8 +2577,8 @@ while ($row = $pastExamsResult->fetch_assoc()) {
                                                 <td>
                                                     <?php echo isset($exam['completed_at']) 
                                                           ? date('M d, Y g:i A', strtotime($exam['completed_at'])) 
-                                                          : (isset($exam['started_at']) 
-                                                             ? date('M d, Y g:i A', strtotime($exam['started_at'])) . ' (Not submitted)' 
+                                                          : (isset($exam['start_time']) 
+                                                             ? date('M d, Y g:i A', strtotime($exam['start_time'])) . ' (Not submitted)' 
                                                              : 'N/A'); ?>
                                                 </td>
                                                 <td>

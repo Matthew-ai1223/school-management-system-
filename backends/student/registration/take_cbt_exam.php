@@ -56,7 +56,7 @@ if ($examResult->num_rows === 0) {
 $exam = $examResult->fetch_assoc();
 
 // Check if student has an existing attempt for this exam
-$checkAttemptQuery = "SELECT * FROM cbt_student_exams WHERE student_id = ? AND exam_id = ?";
+$checkAttemptQuery = "SELECT * FROM cbt_student_attempts WHERE student_id = ? AND exam_id = ?";
 $stmt = $conn->prepare($checkAttemptQuery);
 $stmt->bind_param("ii", $student_id, $exam_id);
 $stmt->execute();
@@ -68,18 +68,52 @@ if ($attemptResult->num_rows === 0) {
     // Create new attempt
     $isNewAttempt = true;
     
-    $createAttemptQuery = "INSERT INTO cbt_student_exams (student_id, exam_id, started_at, status)
-                          VALUES (?, ?, NOW(), 'In Progress')";
+    // Calculate end time based on exam duration
+    $duration = $exam['time_limit'] ?? 60; // Default to 60 minutes if not set
+    $start_time = date('Y-m-d H:i:s');
+    $end_time = date('Y-m-d H:i:s', strtotime("+{$duration} minutes"));
+    
+    $createAttemptQuery = "INSERT INTO cbt_student_attempts (
+        exam_id,
+        student_id,
+        start_time,
+        end_time,
+        status,
+        total_marks,
+        marks_obtained,
+        score,
+        show_result,
+        attempt_number,
+        time_spent,
+        ip_address,
+        user_agent
+    ) VALUES (?, ?, ?, ?, ?, ?, 0, 0, 0, ?, 0, ?, ?)";
+    
+    $total_marks = $exam['total_questions'] * ($exam['marks_per_question'] ?? 1);
+    $ip_address = $_SERVER['REMOTE_ADDR'];
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+    $status = 'In Progress';
+    
     $stmt = $conn->prepare($createAttemptQuery);
-    $stmt->bind_param("ii", $student_id, $exam_id);
+    $stmt->bind_param("iisssiss", 
+        $exam_id, 
+        $student_id, 
+        $start_time, 
+        $end_time,
+        $status,
+        $total_marks,
+        $attempt_number,
+        $ip_address,
+        $user_agent
+    );
     $stmt->execute();
     
     $studentExam = [
         'id' => $conn->insert_id,
         'student_id' => $student_id,
         'exam_id' => $exam_id,
-        'started_at' => date('Y-m-d H:i:s'),
-        'submitted_at' => null,
+        'start_time' => $start_time,
+        'end_time' => $end_time,
         'score' => null,
         'status' => 'In Progress'
     ];
@@ -235,8 +269,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $percentageScore = ($totalMarks > 0) ? round(($totalScore / $totalMarks) * 100) : 0;
             
             // Update the student exam record
-            $updateExamQuery = "UPDATE cbt_student_exams 
-                              SET submitted_at = NOW(), status = 'Completed', score = ? 
+            $updateExamQuery = "UPDATE cbt_student_attempts 
+                              SET end_time = NOW(), status = 'Completed', score = ? 
                               WHERE id = ?";
             $stmt = $conn->prepare($updateExamQuery);
             $stmt->bind_param("di", $percentageScore, $student_exam_id);
@@ -256,7 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Timer logic
-$startTime = strtotime($studentExam['started_at']);
+$startTime = strtotime($studentExam['start_time']);
 $currentTime = time();
 $elapsedSeconds = $currentTime - $startTime;
 $timeLimit = $exam['time_limit'] * 60; // convert minutes to seconds
