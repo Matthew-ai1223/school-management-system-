@@ -291,83 +291,6 @@ $studentAnnouncements = [];
 while ($row = $announcementsResult->fetch_assoc()) {
     $studentAnnouncements[] = $row;
 }
-
-// Get CBT exam information
-$upcoming_exams_query = "
-    SELECT 
-        e.*,
-        s.name as subject_name,
-        (SELECT COUNT(*) FROM cbt_questions WHERE exam_id = e.id) as question_count
-    FROM cbt_exams e
-    JOIN subjects s ON e.subject = s.name
-    LEFT JOIN cbt_student_attempts se ON se.exam_id = e.id AND se.student_id = ?
-    WHERE e.is_active = 1 
-    AND se.id IS NULL
-    AND e.class = ?
-    ORDER BY e.created_at ASC
-";
-
-$completed_exams_query = "
-    SELECT 
-        e.*,
-        s.name as subject_name,
-        se.status,
-        se.score,
-        se.end_time as completed_at,
-        (SELECT COUNT(*) FROM cbt_questions WHERE exam_id = e.id) as question_count,
-        (
-            SELECT COUNT(*) 
-            FROM cbt_student_answers sa 
-            JOIN cbt_student_attempts ea ON sa.attempt_id = ea.id 
-            WHERE ea.exam_id = e.id 
-            AND ea.student_id = ? 
-            AND sa.is_correct = 1
-        ) as correct_answers
-    FROM cbt_exams e
-    JOIN subjects s ON e.subject = s.name
-    JOIN cbt_student_attempts se ON se.exam_id = e.id AND se.student_id = ?
-    WHERE se.status = 'Completed'
-    AND e.class = ?
-    ORDER BY se.end_time DESC
-";
-
-$stmt = $conn->prepare($upcoming_exams_query);
-$stmt->bind_param("is", $student_id, $student_class);
-$stmt->execute();
-$upcoming_exams = $stmt->get_result();
-
-$stmt = $conn->prepare($completed_exams_query);
-$stmt->bind_param("iis", $student_id, $student_id, $student_class);
-$stmt->execute();
-$completed_exams = $stmt->get_result();
-
-// Get past exams for this student
-$pastExamsQuery = "
-    SELECT 
-        e.*,
-        se.status,
-        se.score,
-        se.start_time,
-        se.end_time as completed_at,
-        se.id as student_exam_id,
-        e.id as exam_id
-    FROM cbt_exams e
-    JOIN cbt_student_attempts se ON e.id = se.exam_id
-    WHERE se.student_id = ?
-    ORDER BY se.end_time DESC, se.start_time DESC";
-
-$stmt = $conn->prepare($pastExamsQuery);
-$stmt->bind_param("i", $student_id);
-$stmt->execute();
-$pastExamsResult = $stmt->get_result();
-$pastExams = [];
-
-while ($row = $pastExamsResult->fetch_assoc()) {
-    $pastExams[] = $row;
-}
-
-// Process form submission
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -1462,16 +1385,7 @@ while ($row = $pastExamsResult->fetch_assoc()) {
                                     <div class="text-center">
                                         <i class="fas fa-file-alt card-icon"></i>
                                         <h4>Exams</h4>
-                                        <?php
-                                        // Get total exams count from cbt_student_exams table
-                                        $total_exams_query = "SELECT COUNT(*) as total_exams FROM cbt_student_attempts WHERE student_id = ?";
-                                        $stmt = $conn->prepare($total_exams_query);
-                                        $stmt->bind_param("i", $student_id);
-                                        $stmt->execute();
-                                        $total_exams_result = $stmt->get_result();
-                                        $total_exams = $total_exams_result->fetch_assoc()['total_exams'];
-                                        ?>
-                                        <p class="h3"><?php echo $total_exams; ?></p>
+                                        <!-- <p class="h3"><?php echo $total_exams; ?></p> -->
                                         <p>Total exams completed</p>
                                     </div>
                                 </div>
@@ -2063,161 +1977,13 @@ while ($row = $pastExamsResult->fetch_assoc()) {
                                             </div>
                                         </div>
                                         <div class="card-body p-4">
-                                            <?php
-                                            // Get student's exam results
-                                            $results_query = "SELECT e.*, ea.score, ea.status, ea.end_time, ea.show_result 
-                                                           FROM cbt_exams e 
-                                                           JOIN cbt_student_attempts ea ON e.id = ea.exam_id 
-                                                           WHERE ea.student_id = ? AND ea.status = 'completed'
-                                                           ORDER BY ea.end_time DESC";
-                                            
-                                            $stmt = $conn->prepare($results_query);
-                                            if ($stmt) {
-                                                $stmt->bind_param("i", $student_id);
-                                                $stmt->execute();
-                                                $results = $stmt->get_result();
-                                                
-                                                if ($results->num_rows > 0) {
-                                                    echo '<div class="table-responsive">';
-                                                    echo '<table class="table table-hover align-middle">';
-                                                    echo '<thead class="bg-light">
-                                                            <tr>
-                                                                <th class="border-0">Subject</th>
-                                                                <th class="border-0">Title</th>
-                                                                <th class="border-0">Date Taken</th>
-                                                                <th class="border-0">Score</th>
-                                                                <th class="border-0">Status</th>
-                                                                <th class="border-0 text-center">Action</th>
-                                                            </tr>
-                                                          </thead>';
-                                                    echo '<tbody>';
-                                                    
-                                                    while ($result = $results->fetch_assoc()) {
-                                                        $status_class = ($result['score'] >= $result['passing_score']) ? 'success' : 'danger';
-                                                        $status_text = ($result['score'] >= $result['passing_score']) ? 'Passed' : 'Failed';
-                                                        
-                                                        echo '<tr class="border-bottom">';
-                                                        echo '<td class="py-3"><i class="fas fa-book text-primary mr-2"></i>' . htmlspecialchars($result['subject']) . '</td>';
-                                                        echo '<td class="py-3"><i class="fas fa-file-alt text-info mr-2"></i>' . htmlspecialchars($result['title']) . '</td>';
-                                                        echo '<td class="py-3"><i class="far fa-calendar-alt text-secondary mr-2"></i>' . date('M d, Y H:i', strtotime($result['end_time'])) . '</td>';
-                                                        echo '<td class="py-3"><span class="badge badge-pill badge-' . $status_class . ' px-3 py-2">' . $result['score'] . '%</span></td>';
-                                                        echo '<td class="py-3"><span class="badge badge-pill badge-' . $status_class . ' px-3 py-2">' . $status_text . '</span></td>';
-                                                        echo '<td class="py-3 text-center">';
-                                                        if ($result['show_result']) {
-                                                            echo '<a href="../../../backends/cbt/view_result.php?exam_id=' . $result['id'] . '&student_id=' . $student_id . '" 
-                                                                      class="btn btn-info btn-sm px-3 py-2" target="_blank">
-                                                                      <i class="fas fa-eye mr-1"></i> View Details
-                                                                  </a>';
-                                                        } else {
-                                                            echo '<button class="btn btn-secondary btn-sm px-3 py-2" disabled>
-                                                                    <i class="fas fa-clock mr-1"></i> Results Pending
-                                                                  </button>';
-                                                        }
-                                                        echo '</td>';
-                                                        echo '</tr>';
-                                                    }
-                                                    
-                                                    echo '</tbody></table>';
-                                                    echo '</div>';
-                                                } else {
-                                                    echo '<div class="alert alert-info d-flex align-items-center p-4 border-0 shadow-sm">';
-                                                    echo '<i class="fas fa-info-circle fa-2x mr-3"></i>';
-                                                    echo '<div>';
-                                                    echo '<h6 class="mb-1">No Exam Results</h6>';
-                                                    echo '<p class="mb-0 text-muted">You haven\'t taken any exams yet.</p>';
-                                                    echo '</div>';
-                                                    echo '</div>';
-                                                }
-                                            }
-                                            ?>
+                                           
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <?php
-                            // Get student's class
-                            $studentClass = isset($student['class']) ? $student['class'] : '';
-                            
-                            // Initialize arrays for exams
-                            $availableExams = [];
-                            $pastExams = [];
-                            
-                            try {
-                                // DIRECT QUERY APPROACH - Skip table existence checks
-                                $availableExamsQuery = "SELECT id, title, class, subject, 
-                                   duration as time_limit, total_questions, 
-                                   passing_score, show_results, is_active
-                             FROM cbt_exams 
-                             WHERE is_active = 1
-                             AND TRIM(class) LIKE ?
-                             ORDER BY created_at DESC";
-                                
-                                // Use pattern matching to find exams for this class
-                                $searchPattern = '%' . trim($studentClass) . '%';
-                                $stmt = $conn->prepare($availableExamsQuery);
-                                
-                                if ($stmt) {
-                                    $stmt->bind_param("s", $searchPattern);
-                                    $stmt->execute();
-                                    $availableExamsResult = $stmt->get_result();
-                                    
-                                    while ($row = $availableExamsResult->fetch_assoc()) {
-                                        $availableExams[] = $row;
-                                    }
-                                    
-                                    // If specific query failed, try a second approach with exact class names
-                                    if (count($availableExams) == 0) {
-                                        $exactQuery = "SELECT id, title, class, subject, 
-                                 duration as time_limit, total_questions, 
-                                 passing_score, show_results, is_active
-                           FROM cbt_exams 
-                           WHERE is_active = 1
-                           ORDER BY created_at DESC";
-                                        
-                                        $result = $conn->query($exactQuery);
-                                        if ($result) {
-                                            while ($row = $result->fetch_assoc()) {
-                                                // String comparison including trimming
-                                                if (strcasecmp(trim($row['class']), trim($studentClass)) == 0) {
-                                                    $availableExams[] = $row;
-                                                }
-                                            }
-                                        }
-                                    }
-                                    
-                                    // Try to get past exams if student_exams table exists
-                                    try {
-                                        $pastExamsQuery = "SELECT se.*, e.title, e.subject, 
-                                    e.duration as time_limit, e.passing_score, 
-                                    e.show_results
-                              FROM cbt_student_attempts se
-                              JOIN cbt_exams e ON se.exam_id = e.id
-                              WHERE se.student_id = ?
-                              ORDER BY se.completed_at DESC";
-                                        
-                                        $stmt = $conn->prepare($pastExamsQuery);
-                                        if ($stmt) {
-                                            $stmt->bind_param("i", $student_id);
-                                            $stmt->execute();
-                                            $pastExamsResult = $stmt->get_result();
-                                            
-                                            while ($row = $pastExamsResult->fetch_assoc()) {
-                                                $pastExams[] = $row;
-                                            }
-                                        }
-                                    } catch (Exception $e) {
-                                        // Silently handle missing student_exams table
-                                    }
-                                }
-                            } catch (Exception $e) {
-                                // Just initialize empty arrays if any errors
-                                $availableExams = [];
-                                $pastExams = [];
-                            }
-                            ?>
-                            
-                            <?php if (count($availableExams) > 0): ?>
+                            <!-- <?php if (count($availableExams) > 0): ?>
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-striped">
                                         <thead>
@@ -2273,7 +2039,7 @@ while ($row = $pastExamsResult->fetch_assoc()) {
                                         Access Exam Portal <i class="fas fa-external-link-alt ml-1"></i>
                                     </a>
                                 </div>
-                            <?php endif; ?>
+                            <?php endif; ?> -->
                             
                             <!-- <h4 class="mt-5"><i class="fas fa-history"></i> My Past Exams</h4> -->
                             

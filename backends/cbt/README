@@ -1,0 +1,86 @@
+# CBT_System
+
+## Overview
+
+The `CBT_System` is a Computer-Based Testing platform designed to manage exams, students, and administrators. It allows users to take exams online, and administrators to manage exams, questions, and users. The system is built using PHP and MySQL, with Bootstrap for styling.
+
+## Features
+
+- **User Authentication**: Secure login system for students and administrators.
+- **Exam Management**: Create, edit, and delete exams.
+- **Question Management**: Add, edit, and delete questions for each exam.
+- **CSV Download**: Admins can download questions in CSV format.
+- **Dashboard**: Overview of exams, students, and recent activities.
+- **Responsive Design**: Uses Bootstrap for a mobile-friendly interface.
+
+## Setup Instructions
+
+1. **Clone the Repository**: 
+   ```bash
+   git clone https://github.com/yourusername/CBT_System.git
+   ```
+
+2. **Install Dependencies**: 
+   Ensure you have Composer installed, then run:
+   ```bash
+   composer install
+   ```
+
+3. **Database Setup**:
+   - Import the `cbt_system.sql` file into your MySQL database.
+   - Update the `config/config.php` file with your database credentials.
+
+4. **Run the Application**:
+   - Start your local server (e.g., XAMPP, WAMP).
+   - Access the application via `http://localhost/CBT_System`.
+
+## Code Structure
+
+- **config/**: Contains configuration files, including database settings.
+- **includes/**: Contains helper classes for database and authentication.
+- **admin/**: Contains admin-specific pages for managing exams and users.
+- **download-questions.php**: Script for downloading questions in CSV format.
+- **dashboard.php**: Main dashboard for users to view available exams.
+- **exams.php**: Admin page for managing exams.
+
+## Flow Diagram
+
+Below is a simplified flow diagram of the CBT_System:
+
+
++------------------+       +------------------+
+| User Login       | ----> | Dashboard        |
++------------------+       +------------------+
+        |                        |
+        v                        v
++------------------+       +------------------+
+| View Exams       |<----->| Manage Exams     |
++------------------+       +------------------+
+        |                        |
+        v                        v
++------------------+       +------------------+
+| Take Exam        |       | Manage Questions |
++------------------+       +------------------+
+        |                        |
+        v                        v
++------------------+       +------------------+
+| View Results     |       | Download CSV     |
++------------------+       +------------------+
+
+## Contributing
+
+Contributions are welcome! Please fork the repository and submit a pull request for any enhancements or bug fixes.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+
+
+Flow Diagram Explanation
+User Login: Users authenticate to access the system.
+Dashboard: Users see an overview of available exams and their status.
+View Exams: Users can view and take exams.
+Manage Exams: Admins can create, edit, and delete exams.
+Manage Questions: Admins can manage questions for each exam.
+View Results: Users can view their exam results.

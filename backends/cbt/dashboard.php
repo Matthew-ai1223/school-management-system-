@@ -1,448 +1,291 @@
 <?php
-require_once '../config.php';
-require_once '../database.php';
+require_once 'config/config.php';
+require_once 'includes/Database.php';
 
-// Start session if not already started
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit();
 }
 
-// Check if teacher is logged in (either regular teacher or class teacher)
-if (!isset($_SESSION['teacher_id']) || !isset($_SESSION['role']) || ($_SESSION['role'] !== 'teacher' && $_SESSION['role'] !== 'class_teacher')) {
-    header("Location: login.php");
-    exit;
+$db = Database::getInstance()->getConnection();
+
+// Get user details from the appropriate table
+$table = $_SESSION['user_table'];
+$stmt = $db->prepare("SELECT * FROM $table WHERE id = :user_id");
+$stmt->execute([':user_id' => $_SESSION['user_id']]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Check if account is still active and not expired
+$is_expired = strtotime($user['expiration_date']) < strtotime('today');
+if (!$user['is_active'] || $is_expired) {
+    session_destroy();
+    header('Location: login.php?error=expired');
+    exit();
 }
 
-// Initialize database connection
-$db = Database::getInstance();
-$conn = $db->getConnection();
-
-// Function to check if a column exists in a table
-function columnExists($conn, $table, $column) {
-    $query = "SHOW COLUMNS FROM $table LIKE '$column'";
-    $result = $conn->query($query);
-    return $result->num_rows > 0;
-}
-
-// Function to create necessary tables and columns
-function setupDatabase($conn) {
-    try {
-        // Create cbt_exams table if it doesn't exist
-        $conn->query("CREATE TABLE IF NOT EXISTS cbt_exams (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            title VARCHAR(255) NOT NULL,
-            subject VARCHAR(100) NOT NULL,
-            class VARCHAR(50) NOT NULL,
-            duration INT NOT NULL,
-            passing_score INT DEFAULT 40,
-            is_active TINYINT(1) DEFAULT 0,
-            teacher_id INT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )");
-
-        // Create cbt_exam_attempts table if it doesn't exist
-        $conn->query("CREATE TABLE IF NOT EXISTS cbt_exam_attempts (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            exam_id INT NOT NULL,
-            student_id INT NOT NULL,
-            start_time DATETIME NOT NULL,
-            end_time DATETIME,
-            submit_time DATETIME,
-            status ENUM('in_progress', 'completed', 'abandoned') DEFAULT 'in_progress',
-            score DECIMAL(5,2) DEFAULT 0,
-            show_result TINYINT(1) DEFAULT 0,
-            attempt_number INT DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )");
-
-        // Add allow_retake column to cbt_exams if it doesn't exist
-        if (!columnExists($conn, 'cbt_exams', 'allow_retake')) {
-            $conn->query("ALTER TABLE cbt_exams ADD COLUMN allow_retake TINYINT(1) DEFAULT 0");
-        }
-
-        // Add attempt_number column to cbt_exam_attempts if it doesn't exist
-        if (!columnExists($conn, 'cbt_exam_attempts', 'attempt_number')) {
-            $conn->query("ALTER TABLE cbt_exam_attempts ADD COLUMN attempt_number INT DEFAULT 1");
-        }
-
-        // Add show_result column to cbt_exam_attempts if it doesn't exist
-        if (!columnExists($conn, 'cbt_exam_attempts', 'show_result')) {
-            $conn->query("ALTER TABLE cbt_exam_attempts ADD COLUMN show_result TINYINT(1) DEFAULT 0");
-        }
-
-        return true;
-    } catch (Exception $e) {
-        error_log("Database setup error: " . $e->getMessage());
-        return false;
-    }
-}
-
-// Run database setup
-if (!setupDatabase($conn)) {
-    $_SESSION['error_message'] = "There was an error setting up the database. Please contact the administrator.";
-}
-
-// Get teacher details
-$teacherId = $_SESSION['teacher_id'];
-$teacherName = $_SESSION['name'];
-
-// Get all exams created by this teacher
-$examsQuery = "SELECT * FROM cbt_exams WHERE teacher_id = ? ORDER BY created_at DESC";
-$stmt = $conn->prepare($examsQuery);
-$stmt->bind_param("i", $teacherId);
-$stmt->execute();
-$examsResult = $stmt->get_result();
-$exams = [];
-
-if ($examsResult && $examsResult->num_rows > 0) {
-    while ($row = $examsResult->fetch_assoc()) {
-        $exams[] = $row;
-    }
-}
-
-// Process success and error messages from session
-$successMessage = '';
-$errorMessage = '';
-
-if (isset($_SESSION['success_message'])) {
-    $successMessage = $_SESSION['success_message'];
-    unset($_SESSION['success_message']);
-}
-
-if (isset($_SESSION['error_message'])) {
-    $errorMessage = $_SESSION['error_message'];
-    unset($_SESSION['error_message']);
-}
-
-// Page title
-$pageTitle = "CBT Dashboard";
+// Get available exams
+$query = "SELECT * FROM exams WHERE is_active = true";
+$stmt = $db->query($query);
+$exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title><?php echo $pageTitle; ?> - ACE COLLEGE</title>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/dataTables.bootstrap4.min.css">
-    
-    <!-- Custom styles -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - <?php echo SITE_NAME; ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary: #4e73df;
-            --secondary: #f6c23e;
-            --success: #1cc88a;
-            --info: #36b9cc;
-            --warning: #f6c23e;
-            --danger: #e74a3b;
-            --light: #f8f9fc;
-            --dark: #5a5c69;
+            --primary-blue: #1a73e8;
+            --secondary-blue: #4285f4;
+            --light-blue: #e8f0fe;
+            --hover-blue: #1557b0;
+            --accent-blue: #8ab4f8;
+            --deep-blue: #174ea6;
+            --pale-blue: #f8fbff;
+            --nav-blue: #f3f8ff;
         }
-        
+
         body {
-            background-color: #f8f9fc;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--pale-blue);
+            color: #2c3e50;
+            min-height: 100vh;
         }
-        
+
+        /* Navbar Styling */
         .navbar {
-            background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
-            padding: 1rem;
+            background: linear-gradient(to right, var(--primary-blue), var(--secondary-blue)) !important;
+            box-shadow: 0 2px 4px rgba(26, 115, 232, 0.1);
+            padding: 1rem 0;
         }
-        
+
         .navbar-brand {
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: white !important;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9) !important;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-link.active {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Profile Button */
+        .profile-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+        }
+
+        .profile-button:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+        }
+
+        .profile-button i {
             font-size: 1.2rem;
         }
-        
-        .sidebar {
-            min-height: calc(100vh - 56px);
-            background-color: #fff;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+
+        /* Welcome Section */
+        .welcome-section {
+            background: linear-gradient(135deg, var(--light-blue) 0%, var(--pale-blue) 100%);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(26, 115, 232, 0.08);
+            border: 1px solid rgba(26, 115, 232, 0.1);
         }
-        
-        .sidebar-link {
-            display: block;
-            padding: 1rem;
-            color: #3a3b45;
-            text-decoration: none;
-            border-left: 4px solid transparent;
-            transition: all 0.2s;
+
+        .welcome-title {
+            font-size: 1.75rem;
+            color: var(--deep-blue);
+            margin-bottom: 1rem;
+            font-weight: 600;
         }
-        
-        .sidebar-link:hover, .sidebar-link.active {
-            background-color: #f8f9fc;
-            border-left-color: #4e73df;
-            color: #4e73df;
-        }
-        
-        .content-wrapper {
-            padding: 1.5rem;
-        }
-        
-        .card {
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
-            border: none;
-            border-radius: 0.35rem;
+
+        /* Exam Cards */
+        .exam-section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--deep-blue);
             margin-bottom: 1.5rem;
+            padding-left: 0.5rem;
+            border-left: 4px solid var(--primary-blue);
         }
-        
-        .card-header {
-            background-color: #f8f9fc;
-            border-bottom: 1px solid #e3e6f0;
-            padding: 0.75rem 1.25rem;
+
+        .exam-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid rgba(26, 115, 232, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            overflow: hidden;
         }
-        
-        .btn-primary {
-            background-color: #4e73df;
-            border-color: #4e73df;
+
+        .exam-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(26, 115, 232, 0.15);
+            border-color: var(--accent-blue);
         }
-        
-        .btn-primary:hover {
-            background-color: #2e59d9;
-            border-color: #2653d4;
+
+        .exam-card .card-body {
+            padding: 1.5rem;
+            background: linear-gradient(to bottom, white, var(--pale-blue));
+        }
+
+        .exam-card .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .exam-card .card-text {
+            color: #5a7184;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .exam-duration {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--secondary-blue);
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+            padding: 0.5rem;
+            background-color: var(--light-blue);
+            border-radius: 6px;
+        }
+
+        .exam-duration i {
+            color: var(--primary-blue);
+        }
+
+        .btn-start-exam {
+            width: 100%;
+            padding: 0.75rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            background-color: var(--primary-blue);
+            border: none;
+            color: white;
+        }
+
+        .btn-start-exam:hover {
+            transform: scale(1.02);
+            background-color: var(--hover-blue);
+            box-shadow: 0 4px 8px rgba(26, 115, 232, 0.2);
+        }
+
+        .btn-start-exam i {
+            margin-left: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-start-exam:hover i {
+            transform: translateX(4px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .welcome-section {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .exam-card {
+                margin-bottom: 1rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark">
-        <a class="navbar-brand" href="dashboard.php">
-            <i class="fas fa-laptop-code mr-2"></i> ACE COLLEGE - CBT System
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
-                        <i class="fas fa-user-circle mr-1"></i> <?php echo htmlspecialchars($teacherName); ?>
-                    </a>
-                    <div class="dropdown-menu dropdown-menu-right">
-                        <a class="dropdown-item" href="logout.php">
-                            <i class="fas fa-sign-out-alt mr-2"></i> Logout
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="#"><?php echo SITE_NAME; ?></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="dashboard.php">
+                            <i class='bx bxs-dashboard'></i> Dashboard
                         </a>
-                    </div>
-                </li>
-            </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link profile-button" href="profile.php">
+                            <i class='bx bx-user'></i> My Profile
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="logout.php">
+                            <i class='bx bx-log-out'></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
-    <div class="container-fluid">
+    <div class="container py-4">
+        <div class="welcome-section">
+            <h2 class="welcome-title">Welcome back, <?php echo isset($user['fullname']) ? htmlspecialchars($user['fullname']) : htmlspecialchars($user['email']); ?>!</h2>
+            <p class="text-muted">Ready to test your knowledge? Choose an exam below to get started.</p>
+        </div>
+        
         <div class="row">
-            <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar py-3">
-                <a href="dashboard.php" class="sidebar-link active">
-                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
-                </a>
-                <a href="create_exam.php" class="sidebar-link">
-                    <i class="fas fa-plus-circle mr-2"></i> Create New Exam
-                </a>
-                <a href="results.php" class="sidebar-link">
-                    <i class="fas fa-chart-bar mr-2"></i> View Results
-                </a>
-                <a href="question_bank.php" class="sidebar-link">
-                    <i class="fas fa-database mr-2"></i> Question Bank
-                </a>
-                <a href="../@class_teacher/dashboard.php" class="sidebar-link">
-                    <i class="fas fa-user-tie mr-2"></i> Class Teacher
-                </a>
-                <a href="logout.php" class="sidebar-link">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                </a>
-            </div>
-            
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 content-wrapper">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 class="h3 mb-0 text-gray-800">Welcome, <?php echo htmlspecialchars($teacherName); ?></h1>
-                    <a href="create_exam.php" class="btn btn-primary">
-                        <i class="fas fa-plus-circle mr-1"></i> Create New Exam
-                    </a>
-                </div>
-                
-                <?php if (!empty($successMessage)): ?>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle mr-2"></i> <?php echo $successMessage; ?>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                <?php endif; ?>
-                
-                <?php if (!empty($errorMessage)): ?>
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle mr-2"></i> <?php echo $errorMessage; ?>
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                <?php endif; ?>
-
-                <div class="row">
-                    <div class="col-xl-3 col-md-6 mb-4">
-                        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="col-12">
+                <h3 class="exam-section-title">Available Exams</h3>
+                <div class="row g-4">
+                    <?php foreach ($exams as $exam): ?>
+                    <div class="col-md-4">
+                        <div class="exam-card card">
                             <div class="card-body">
-                                <div class="row no-gutters align-items-center">
-                                    <div class="col mr-2">
-                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                            Total Exams
-                                        </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800"><?php echo count($exams); ?></div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
-                                    </div>
+                                <h5 class="card-title"><?php echo htmlspecialchars($exam['title']); ?></h5>
+                                <p class="card-text"><?php echo htmlspecialchars($exam['description']); ?></p>
+                                <div class="exam-duration">
+                                    <i class='bx bx-time'></i>
+                                    <span><?php echo $exam['duration']; ?> minutes</span>
                                 </div>
+                                <a href="start-exam.php?id=<?php echo $exam['id']; ?>" class="btn btn-start-exam">
+                                    Start Exam <i class='bx bx-right-arrow-alt'></i>
+                                </a>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- More stats can be added here -->
-                </div>
-                
-                <div class="card shadow">
-                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-primary">My Exams</h6>
-                    </div>
-                    <div class="card-body">
-                        <?php if (count($exams) > 0): ?>
-                            <div class="table-responsive">
-                                <table class="table table-bordered" id="examsTable" width="100%" cellspacing="0">
-                                    <thead>
-                                        <tr>
-                                            <th>Title</th>
-                                            <th>Subject</th>
-                                            <th>Class</th>
-                                            <th>Duration (mins)</th>
-                                            <th>Status</th>
-                                            <th>Retakes</th>
-                                            <th>Created</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($exams as $exam): ?>
-                                            <tr>
-                                                <td><?php echo htmlspecialchars($exam['title']); ?></td>
-                                                <td><?php echo htmlspecialchars($exam['subject']); ?></td>
-                                                <td><?php echo htmlspecialchars($exam['class']); ?></td>
-                                                <td><?php echo htmlspecialchars($exam['duration']); ?></td>
-                                                <td>
-                                                    <?php if ($exam['is_active']): ?>
-                                                        <span class="badge badge-success">Active</span>
-                                                    <?php else: ?>
-                                                        <span class="badge badge-secondary">Inactive</span>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td>
-                                                    <?php if (isset($exam['allow_retake']) && $exam['allow_retake']): ?>
-                                                        <span class="badge badge-info">Allowed</span>
-                                                    <?php else: ?>
-                                                        <span class="badge badge-warning">Not Allowed</span>
-                                                    <?php endif; ?>
-                                                </td>
-                                                <td><?php echo date('M d, Y', strtotime($exam['created_at'])); ?></td>
-                                                <td>
-                                                    <!-- Edit Exam Button -->
-                                                    <a href="edit_exam.php?id=<?php echo $exam['id']; ?>" class="btn btn-sm btn-info" title="Edit Exam">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    
-                                                    <!-- View Questions Button -->
-                                                    <a href="view_questions.php?exam_id=<?php echo $exam['id']; ?>" class="btn btn-sm btn-primary" title="View Questions">
-                                                        <i class="fas fa-list"></i>
-                                                    </a>
-                                                    
-                                                    <!-- View Results Button -->
-                                                    <a href="view_exam_results.php?exam_id=<?php echo $exam['id']; ?>" class="btn btn-sm btn-success" title="View Results">
-                                                        <i class="fas fa-chart-bar"></i>
-                                                    </a>
-                                                    
-                                                    <!-- Toggle Retake Button -->
-                                                    <?php if (isset($exam['allow_retake']) && $exam['allow_retake']): ?>
-                                                        <form method="post" action="toggle_retake.php" style="display: inline;">
-                                                            <input type="hidden" name="exam_id" value="<?php echo $exam['id']; ?>">
-                                                            <input type="hidden" name="action" value="disable_retake">
-                                                            <button type="submit" class="btn btn-sm btn-warning" title="Disable Retakes">
-                                                                <i class="fas fa-redo-alt"></i>
-                                                            </button>
-                                                        </form>
-                                                    <?php else: ?>
-                                                        <form method="post" action="toggle_retake.php" style="display: inline;">
-                                                            <input type="hidden" name="exam_id" value="<?php echo $exam['id']; ?>">
-                                                            <input type="hidden" name="action" value="enable_retake">
-                                                            <button type="submit" class="btn btn-sm btn-info" title="Enable Retakes">
-                                                                <i class="fas fa-redo"></i>
-                                                            </button>
-                                                        </form>
-                                                    <?php endif; ?>
-                                                    
-                                                    <!-- Toggle Active Status Button -->
-                                                    <?php if ($exam['is_active']): ?>
-                                                        <form method="post" action="toggle_exam.php" style="display: inline;">
-                                                            <input type="hidden" name="exam_id" value="<?php echo $exam['id']; ?>">
-                                                            <input type="hidden" name="action" value="deactivate">
-                                                            <button type="submit" class="btn btn-sm btn-warning" title="Deactivate Exam">
-                                                                <i class="fas fa-pause"></i>
-                                                            </button>
-                                                        </form>
-                                                    <?php else: ?>
-                                                        <form method="post" action="toggle_exam.php" style="display: inline;">
-                                                            <input type="hidden" name="exam_id" value="<?php echo $exam['id']; ?>">
-                                                            <input type="hidden" name="action" value="activate">
-                                                            <button type="submit" class="btn btn-sm btn-success" title="Activate Exam">
-                                                                <i class="fas fa-play"></i>
-                                                            </button>
-                                                        </form>
-                                                    <?php endif; ?>
-                                                    
-                                                    <!-- Delete Exam Button -->
-                                                    <form method="post" action="delete_exam.php" style="display: inline;">
-                                                        <input type="hidden" name="exam_id" value="<?php echo $exam['id']; ?>">
-                                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this exam?')" title="Delete Exam">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php else: ?>
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle mr-2"></i> You haven't created any exams yet. Click the "Create New Exam" button to get started.
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap core JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- DataTables JavaScript -->
-    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.22/js/dataTables.bootstrap4.min.js"></script>
-    
-    <script>
-    $(document).ready(function() {
-        $('#examsTable').DataTable({
-            "order": [[6, "desc"]] // Sort by created date (column 6) in descending order
-        });
-    });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html> 
