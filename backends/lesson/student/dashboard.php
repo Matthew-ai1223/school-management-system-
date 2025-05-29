@@ -401,15 +401,41 @@ $receipt_exists = file_exists($receipt_path);
                                     Access our Computer Based Testing system to take practice tests, assessments, and track your progress. 
                                     The CBT system provides an interactive platform for evaluating your knowledge and improving your performance.
                                 </p>
-                                <div class="note-text">
+                                <!-- <div class="note-text">
                                     <span><i class="fas fa-info-circle me-2"></i>Note:</span> 
                                     You are to register for the CBT system to be able to access the system, if you are first login in the first time.
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                         <div class="col-md-4 text-md-end btn-container">
                             <a href="../CBT_System/login.php" class="btn btn-primary btn-lg cbt-button">
                                 <i class="fas fa-sign-in-alt me-2"></i>Access CBT System
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Library Section -->
+                <div class="dashboard-card mt-4 cbt-section">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4>
+                                <i class="fas fa-book me-2"></i>
+                                Digital Library
+                            </h4>
+                            <div class="description">
+                                <p class="mb-0">
+                                    Access our comprehensive Digital Library system containing study materials, textbooks, and educational resources. 
+                                    Browse through our collection of learning materials to enhance your academic performance.
+                                </p>
+                                <!-- <div class="note-text">
+                                    <span><i class="fas fa-info-circle me-2"></i>Note:</span> 
+                                    Access to library resources is available to all registered students. Make sure you're logged in to access all materials.
+                                </div> -->
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end btn-container">
+                            <a href="../../../lib/user_dashboard.php" class="btn btn-primary btn-lg cbt-button">
+                                <i class="fas fa-book-reader me-2"></i>Access Library
                             </a>
                         </div>
                     </div>

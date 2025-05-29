@@ -37,19 +37,21 @@ $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Get recent exam attempts
 $stmt = $db->prepare("
-    SELECT ea.*, e.title as exam_title, 
-    CASE 
-        WHEN ms.id IS NOT NULL THEN ms.fullname 
-        ELSE afs.fullname 
-    END as student_name,
-    CASE 
-        WHEN ms.id IS NOT NULL THEN 'Morning'
-        ELSE 'Afternoon'
-    END as session
+    SELECT 
+        ea.*,
+        e.title as exam_title,
+        COALESCE(ms.fullname, afs.fullname) as student_name,
+        COALESCE(ms.id, afs.id) as student_id,
+        CASE 
+            WHEN ms.id IS NOT NULL THEN 'Morning'
+            WHEN afs.id IS NOT NULL THEN 'Afternoon'
+            ELSE 'Unknown'
+        END as session
     FROM exam_attempts ea
     JOIN exams e ON ea.exam_id = e.id
     LEFT JOIN morning_students ms ON ea.user_id = ms.id
     LEFT JOIN afternoon_students afs ON ea.user_id = afs.id
+    WHERE ea.status = 'completed'
     ORDER BY ea.start_time DESC
     LIMIT 5
 ");
@@ -207,29 +209,91 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="row mt-4">
                     <div class="col-md-8">
                         <div class="card">
-                            <div class="card-header">
+                            <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="card-title mb-0">Recent Exam Attempts</h5>
+                                <div>
+                                    <button id="refresh-attempts" class="btn btn-sm btn-outline-primary me-2">
+                                        <i class="fas fa-sync-alt"></i> Refresh
+                                    </button>
+                                    <a href="view-attempts.php" class="btn btn-sm btn-primary">View All</a>
+                                </div>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table class="table">
+                                    <table class="table table-hover" id="recentAttemptsTable">
                                         <thead>
                                             <tr>
                                                 <th>Student</th>
                                                 <th>Session</th>
                                                 <th>Exam</th>
                                                 <th>Score</th>
+                                                <th>Status</th>
                                                 <th>Date</th>
+                                                <th>Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php foreach ($recent_attempts as $attempt): ?>
+                                            <?php foreach ($recent_attempts as $attempt): 
+                                                // Calculate status based on score
+                                                $status = '';
+                                                $status_class = '';
+                                                if ($attempt['score'] >= 70) {
+                                                    $status = 'Excellent';
+                                                    $status_class = 'success';
+                                                } elseif ($attempt['score'] >= 50) {
+                                                    $status = 'Pass';
+                                                    $status_class = 'primary';
+                                                } else {
+                                                    $status = 'Fail';
+                                                    $status_class = 'danger';
+                                                }
+                                            ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($attempt['student_name']); ?></td>
-                                                <td><?php echo htmlspecialchars($attempt['session']); ?></td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                                            <span class="text-primary"><?php echo strtoupper(substr($attempt['student_name'] ?? 'NA', 0, 2)); ?></span>
+                                                        </div>
+                                                        <div>
+                                                            <?php echo htmlspecialchars($attempt['student_name'] ?? 'Unknown Student'); ?>
+                                                            <br>
+                                                            <small class="text-muted">
+                                                                ID: <?php echo htmlspecialchars($attempt['student_id'] ?? 'N/A'); ?>
+                                                            </small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="badge bg-info"><?php echo htmlspecialchars($attempt['session']); ?></span></td>
                                                 <td><?php echo htmlspecialchars($attempt['exam_title']); ?></td>
-                                                <td><?php echo $attempt['score']; ?>%</td>
-                                                <td><?php echo date('M d, Y', strtotime($attempt['start_time'])); ?></td>
+                                                <td>
+                                                    <div class="progress" style="height: 20px;">
+                                                        <div class="progress-bar bg-<?php echo $status_class; ?>" 
+                                                             role="progressbar" 
+                                                             style="width: <?php echo $attempt['score']; ?>%"
+                                                             aria-valuenow="<?php echo $attempt['score']; ?>" 
+                                                             aria-valuemin="0" 
+                                                             aria-valuemax="100">
+                                                            <?php echo $attempt['score']; ?>%
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td><span class="badge bg-<?php echo $status_class; ?>"><?php echo $status; ?></span></td>
+                                                <td><?php echo date('M d, Y h:i A', strtotime($attempt['start_time'])); ?></td>
+                                                <td>
+                                                    <div class="btn-group">
+                                                        <a href="view-attempt.php?id=<?php echo $attempt['id']; ?>" 
+                                                           class="btn btn-sm btn-info" 
+                                                           title="View Details">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <button type="button" 
+                                                                class="btn btn-sm btn-success" 
+                                                                onclick="downloadResult(<?php echo $attempt['id']; ?>)"
+                                                                title="Download Result">
+                                                            <i class="fas fa-download"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
                                             </tr>
                                             <?php endforeach; ?>
                                         </tbody>
@@ -270,5 +334,85 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            const attemptsTable = $('#recentAttemptsTable').DataTable({
+                pageLength: 10,
+                order: [[5, 'desc']], // Sort by date column by default
+                responsive: true,
+                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
+                language: {
+                    search: "_INPUT_",
+                    searchPlaceholder: "Search attempts..."
+                }
+            });
+
+            // Refresh button functionality
+            $('#refresh-attempts').click(function() {
+                const button = $(this);
+                const icon = button.find('i');
+                
+                // Add spinning animation
+                icon.addClass('fa-spin');
+                button.prop('disabled', true);
+
+                // Simulate refresh (replace with actual AJAX call)
+                setTimeout(function() {
+                    // Remove spinning animation
+                    icon.removeClass('fa-spin');
+                    button.prop('disabled', false);
+                    
+                    // Show success message
+                    const toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">')
+                        .html(`
+                            <div class="toast-header bg-success text-white">
+                                <strong class="me-auto">Success</strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                            <div class="toast-body">
+                                Data refreshed successfully!
+                            </div>
+                        `)
+                        .appendTo($('body'));
+                    
+                    const bsToast = new bootstrap.Toast(toast);
+                    bsToast.show();
+                    
+                    // Remove toast after it's hidden
+                    toast.on('hidden.bs.toast', function() {
+                        toast.remove();
+                    });
+                }, 1000);
+            });
+        });
+
+        // Function to handle result download
+        function downloadResult(attemptId) {
+            // Add your download logic here
+            alert('Downloading result for attempt ' + attemptId);
+        }
+
+        // Add custom styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .avatar-sm {
+                width: 32px;
+                height: 32px;
+                font-size: 0.875rem;
+            }
+            .progress {
+                background-color: #e9ecef;
+                border-radius: 0.25rem;
+            }
+            .toast {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1050;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>

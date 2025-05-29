@@ -12,6 +12,36 @@ if (!isset($conn)) {
     $conn = $db->getConnection();
 }
 
+// Function to resolve dashboard paths based on current location
+function resolveDashboardPath($target) {
+    $current_script = $_SERVER['SCRIPT_NAME'];
+    $base_path = '';
+    
+    // If we're in the lesson admin section
+    if (strpos($current_script, '/lesson/admin/') !== false) {
+        $base_path = '../../admin/';
+    }
+    // If we're in the lib section
+    else if (strpos($current_script, '/lib/') !== false) {
+        $base_path = '../backends/admin/';
+    }
+    // If we're in the admin section
+    else if (strpos($current_script, '/admin/') !== false) {
+        $base_path = '';
+    }
+    
+    switch ($target) {
+        case 'admin':
+            return $base_path . 'dashboard.php';
+        case 'lesson':
+            return $base_path . '../lesson/admin/dashboard.php';
+        case 'learning':
+            return $base_path . '../../lib/dashboard.php';
+        default:
+            return 'dashboard.php';
+    }
+}
+
 // Create styles directory if it doesn't exist
 $stylesDir = __DIR__ . '/styles';
 if (!file_exists($stylesDir)) {
@@ -54,11 +84,18 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
     <nav class="sidebar-nav">
         <ul class="nav flex-column">
+            <!-- Dashboard Links -->
             <li class="nav-item">
-                <a href="dashboard.php" class="nav-link <?php echo $currentPage === 'dashboard.php' ? 'active' : ''; ?>">
+                <a href="#dashboards-menu" class="nav-link has-dropdown">
                     <i class="bi bi-speedometer2"></i>
-                    <span>Dashboard</span>
+                    <span>Dashboards</span>
+                    <i class="dropdown-icon bi bi-chevron-down"></i>
                 </a>
+                <ul class="dropdown-menu" id="dashboards-menu">
+                    <li><a href="<?php echo resolveDashboardPath('admin'); ?>" class="<?php echo $currentPage === 'dashboard.php' ? 'active' : ''; ?>">Admin Dashboard</a></li>
+                    <li><a href="<?php echo resolveDashboardPath('lesson'); ?>">Lesson Dashboard</a></li>
+                    <li><a href="<?php echo resolveDashboardPath('learning'); ?>">Library Dashboard</a></li>
+                </ul>
             </li>
             
             <!-- Students -->

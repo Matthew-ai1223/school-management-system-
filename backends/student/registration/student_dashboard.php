@@ -1586,9 +1586,9 @@ while ($row = $pastExamsResult->fetch_assoc()) {
                                             </a>
                                         </div>
                                         <div class="col-md-3 col-sm-6 mb-3">
-                                            <a href="#" data-toggle="tab" data-target="#exams" class="btn btn-light btn-block py-3">
+                                            <a href="../../../lib/user_dashboard.php" class="btn btn-light btn-block py-3">
                                                 <i class="fas fa-file-alt mb-2 d-block" style="font-size: 24px;"></i>
-                                                Check Results
+                                                Digital Library
                                             </a>
                                         </div>
                                         <div class="col-md-3 col-sm-6 mb-3">
