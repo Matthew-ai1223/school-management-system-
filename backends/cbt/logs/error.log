@@ -463,3 +463,606 @@ Stack trace:
 [29-May-2025 20:06:52 Europe/Berlin] Successfully loaded exam ID 1 with 0 questions
 [29-May-2025 20:11:22 Europe/Berlin] Successfully loaded exam ID 1 with 1 questions
 [29-May-2025 20:11:37 Europe/Berlin] Successfully loaded exam ID 1 with 2 questions
+[29-May-2025 20:40:17 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'e.subject_id' in 'on clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php:32
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php(32): PDOStatement->execute(Array)
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 32
+[29-May-2025 20:46:34 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'e.subject_id' in 'on clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php:32
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php(32): PDOStatement->execute(Array)
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 32
+[29-May-2025 21:09:29 Europe/Berlin] PHP Fatal error:  Uncaught Error: Call to undefined method PDOStatement::bind_param() in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php:20
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:12:56 Europe/Berlin] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php:35) in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 49
+[29-May-2025 21:15:04 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:15:04 Europe/Berlin] PHP Warning:  Cannot modify header information - headers already sent by (output started at C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php:34) in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 92
+[29-May-2025 21:17:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:17:15 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:52 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:52 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:52 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:52 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:52 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:52 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:52 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:52 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:52 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:52 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:19:54 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:19 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:19 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:19 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:19 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:19 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:19 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:19 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:19 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:19 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:19 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:20 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:20 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:20 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:20 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:20 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:20 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:21 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:21 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:21 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:21 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:26 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:26 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:26 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:26 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:26 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:26 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:26 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:26 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:26 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:26 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:37 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:37 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:37 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:37 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:37 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:37 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:37 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:37 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:37 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:37 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:38 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:38 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:38 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:38 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:38 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:38 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:38 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:38 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:39 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:20:39 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:09 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:09 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:09 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:09 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:09 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:09 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:09 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:09 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:09 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:09 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:11 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:16 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:16 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:16 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:16 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:16 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:16 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:16 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:16 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:16 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:16 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:30 Europe/Berlin] PHP Fatal error:  Uncaught Error: Undefined constant "SCHOOL_NAME" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php:50
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 50
+[29-May-2025 21:21:35 Europe/Berlin] PHP Fatal error:  Uncaught Error: Undefined constant "SCHOOL_NAME" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php:50
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 50
+[29-May-2025 21:21:46 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:46 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:46 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:46 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:46 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:21:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:22:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:22:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:22:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:22:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:22:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:22:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:22:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:22:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:22:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:22:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:25:51 Europe/Berlin] PHP Fatal error:  Uncaught Error: Undefined constant "SCHOOL_NAME" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php:50
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 50
+[29-May-2025 21:27:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:27:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:27:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:27:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:27:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:27:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:27:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:27:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:27:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:27:47 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:37:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:37:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:37:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:37:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:37:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:37:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:37:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:37:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:37:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 21:37:53 Europe/Berlin] Database error in dashboard.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.student_id' in 'field list'
+[29-May-2025 22:14:03 Europe/Berlin] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 22:14:03 Europe/Berlin] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 22:14:03 Europe/Berlin] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 21
+[29-May-2025 22:14:03 Europe/Berlin] PHP Fatal error:  Uncaught Error: Undefined constant "SCHOOL_NAME" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php:66
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 66
+[29-May-2025 22:14:12 Europe/Berlin] PHP Fatal error:  Uncaught Error: Undefined constant "SCHOOL_NAME" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php:66
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 66
+[29-May-2025 22:14:18 Europe/Berlin] PHP Fatal error:  Uncaught Error: Undefined constant "SCHOOL_NAME" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php:66
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 66
+[29-May-2025 22:14:46 Europe/Berlin] PHP Fatal error:  Uncaught Error: Undefined constant "SCHOOL_NAME" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php:66
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 66
+[29-May-2025 21:21:29 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 169
+[29-May-2025 21:21:29 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 169
+[29-May-2025 21:21:40 Africa/Lagos] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:21:40 Africa/Lagos] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:21:40 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 21
+[29-May-2025 21:21:40 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 169
+[29-May-2025 21:21:40 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php on line 169
+[29-May-2025 21:24:11 Africa/Lagos] Database connection error: could not find driver
+[29-May-2025 21:24:18 Africa/Lagos] Database connection error: could not find driver
+[29-May-2025 21:24:50 Africa/Lagos] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:24:50 Africa/Lagos] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:24:50 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 21
+[29-May-2025 21:26:48 Africa/Lagos] Login attempt: reg_no=2425/KID/0010, class=P3
+[29-May-2025 21:26:48 Africa/Lagos] Login query result: Array
+(
+    [id] => 49
+    [admission_number] => 
+    [application_type] => 
+    [registration_number] => 2425/KID/0010
+    [first_name] => 
+    [last_name] => same
+    [date_of_birth] => 1995-10-17
+    [gender] => male
+    [address] => 
+    [parent_name] => 
+    [parent_phone] => 
+    [parent_email] => 
+    [application_date] => 2025-05-19 14:52:48
+    [status] => registered
+    [created_at] => 2025-05-19 14:52:48
+    [file_id] => 
+    [nationality] => Esse quia nemo est t
+    [state] => Asperiores reiciendi
+    [contact_address] => Duis voluptas et et 
+    [email] => quwab@mailinator.com
+    [class] => P3
+    [father_s_name] => Labore ut perspiciat
+    [father_s_occupation] => Voluptatibus ea dolo
+    [father_s_office_address] => Modi officia quo des
+    [father_s_contact_phone_number_s_] => Consequatur dolorem
+    [mother_s_name] => Excepturi adipisci a
+    [mother_s_occupation] => Necessitatibus volup
+    [mother_s_office_address] => Qui et ad quis unde 
+    [mother_s_contact_phone_number_s_] => Qui nihil culpa ut 
+    [guardian_name] => Enim excepturi sit u
+    [guardian_occupation] => Distinctio Sint nec
+    [guardian_office_address] => Voluptatem illo eu q
+    [guardian_contact_phone_number] => Delectus tempor vol
+    [child_lives_with] => Mother, Father, Guardian
+    [allergies] => Accusamus nihil non 
+    [blood_group] => B-
+    [genotype] => SC
+    [photo] => uploads/student_passports/2425_KID_0010.jpg
+)
+
+[29-May-2025 21:26:48 Africa/Lagos] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:26:48 Africa/Lagos] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:26:48 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 21
+[29-May-2025 21:27:08 Africa/Lagos] Login attempt: reg_no=2425/KID/0010, class=P 1
+[29-May-2025 21:27:24 Africa/Lagos] Login query result: 
+[29-May-2025 21:27:38 Africa/Lagos] Login attempt: reg_no=2425/KID/0010, class=P3
+[29-May-2025 21:27:38 Africa/Lagos] Login query result: Array
+(
+    [id] => 49
+    [admission_number] => 
+    [application_type] => 
+    [registration_number] => 2425/KID/0010
+    [first_name] => 
+    [last_name] => same
+    [date_of_birth] => 1995-10-17
+    [gender] => male
+    [address] => 
+    [parent_name] => 
+    [parent_phone] => 
+    [parent_email] => 
+    [application_date] => 2025-05-19 14:52:48
+    [status] => registered
+    [created_at] => 2025-05-19 14:52:48
+    [file_id] => 
+    [nationality] => Esse quia nemo est t
+    [state] => Asperiores reiciendi
+    [contact_address] => Duis voluptas et et 
+    [email] => quwab@mailinator.com
+    [class] => P3
+    [father_s_name] => Labore ut perspiciat
+    [father_s_occupation] => Voluptatibus ea dolo
+    [father_s_office_address] => Modi officia quo des
+    [father_s_contact_phone_number_s_] => Consequatur dolorem
+    [mother_s_name] => Excepturi adipisci a
+    [mother_s_occupation] => Necessitatibus volup
+    [mother_s_office_address] => Qui et ad quis unde 
+    [mother_s_contact_phone_number_s_] => Qui nihil culpa ut 
+    [guardian_name] => Enim excepturi sit u
+    [guardian_occupation] => Distinctio Sint nec
+    [guardian_office_address] => Voluptatem illo eu q
+    [guardian_contact_phone_number] => Delectus tempor vol
+    [child_lives_with] => Mother, Father, Guardian
+    [allergies] => Accusamus nihil non 
+    [blood_group] => B-
+    [genotype] => SC
+    [photo] => uploads/student_passports/2425_KID_0010.jpg
+)
+
+[29-May-2025 21:27:38 Africa/Lagos] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:27:38 Africa/Lagos] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:27:38 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 21
+[29-May-2025 21:31:54 Africa/Lagos] Available classes: Array
+(
+    [0] => JSS3 Pearl
+    [1] => P 1
+    [2] => P 2
+    [3] => P3
+    [4] => SS3
+    [5] => Test Grade 9
+)
+
+[29-May-2025 21:32:03 Africa/Lagos] Login attempt: reg_no=2425/KID/0010, class=P3
+[29-May-2025 21:32:03 Africa/Lagos] Student exists check: Yes
+[29-May-2025 21:32:03 Africa/Lagos] Login query result: Array
+(
+    [id] => 49
+    [admission_number] => 
+    [application_type] => 
+    [registration_number] => 2425/KID/0010
+    [first_name] => 
+    [last_name] => same
+    [date_of_birth] => 1995-10-17
+    [gender] => male
+    [address] => 
+    [parent_name] => 
+    [parent_phone] => 
+    [parent_email] => 
+    [application_date] => 2025-05-19 14:52:48
+    [status] => registered
+    [created_at] => 2025-05-19 14:52:48
+    [file_id] => 
+    [nationality] => Esse quia nemo est t
+    [state] => Asperiores reiciendi
+    [contact_address] => Duis voluptas et et 
+    [email] => quwab@mailinator.com
+    [class] => P3
+    [father_s_name] => Labore ut perspiciat
+    [father_s_occupation] => Voluptatibus ea dolo
+    [father_s_office_address] => Modi officia quo des
+    [father_s_contact_phone_number_s_] => Consequatur dolorem
+    [mother_s_name] => Excepturi adipisci a
+    [mother_s_occupation] => Necessitatibus volup
+    [mother_s_office_address] => Qui et ad quis unde 
+    [mother_s_contact_phone_number_s_] => Qui nihil culpa ut 
+    [guardian_name] => Enim excepturi sit u
+    [guardian_occupation] => Distinctio Sint nec
+    [guardian_office_address] => Voluptatem illo eu q
+    [guardian_contact_phone_number] => Delectus tempor vol
+    [child_lives_with] => Mother, Father, Guardian
+    [allergies] => Accusamus nihil non 
+    [blood_group] => B-
+    [genotype] => SC
+    [photo] => uploads/student_passports/2425_KID_0010.jpg
+)
+
+[29-May-2025 21:32:03 Africa/Lagos] Login successful for student ID: 49
+[29-May-2025 21:32:11 Africa/Lagos] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:32:11 Africa/Lagos] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:32:11 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 21
+[29-May-2025 21:32:11 Africa/Lagos] Available classes: Array
+(
+    [0] => JSS3 Pearl
+    [1] => P 1
+    [2] => P 2
+    [3] => P3
+    [4] => SS3
+    [5] => Test Grade 9
+)
+
+[29-May-2025 21:32:21 Africa/Lagos] Available classes: Array
+(
+    [0] => JSS3 Pearl
+    [1] => P 1
+    [2] => P 2
+    [3] => P3
+    [4] => SS3
+    [5] => Test Grade 9
+)
+
+[29-May-2025 21:32:46 Africa/Lagos] Login attempt: reg_no=2425/KID/0010, class=P3
+[29-May-2025 21:32:46 Africa/Lagos] Student exists check: Yes
+[29-May-2025 21:32:46 Africa/Lagos] Login query result: Array
+(
+    [id] => 49
+    [admission_number] => 
+    [application_type] => 
+    [registration_number] => 2425/KID/0010
+    [first_name] => 
+    [last_name] => same
+    [date_of_birth] => 1995-10-17
+    [gender] => male
+    [address] => 
+    [parent_name] => 
+    [parent_phone] => 
+    [parent_email] => 
+    [application_date] => 2025-05-19 14:52:48
+    [status] => registered
+    [created_at] => 2025-05-19 14:52:48
+    [file_id] => 
+    [nationality] => Esse quia nemo est t
+    [state] => Asperiores reiciendi
+    [contact_address] => Duis voluptas et et 
+    [email] => quwab@mailinator.com
+    [class] => P3
+    [father_s_name] => Labore ut perspiciat
+    [father_s_occupation] => Voluptatibus ea dolo
+    [father_s_office_address] => Modi officia quo des
+    [father_s_contact_phone_number_s_] => Consequatur dolorem
+    [mother_s_name] => Excepturi adipisci a
+    [mother_s_occupation] => Necessitatibus volup
+    [mother_s_office_address] => Qui et ad quis unde 
+    [mother_s_contact_phone_number_s_] => Qui nihil culpa ut 
+    [guardian_name] => Enim excepturi sit u
+    [guardian_occupation] => Distinctio Sint nec
+    [guardian_office_address] => Voluptatem illo eu q
+    [guardian_contact_phone_number] => Delectus tempor vol
+    [child_lives_with] => Mother, Father, Guardian
+    [allergies] => Accusamus nihil non 
+    [blood_group] => B-
+    [genotype] => SC
+    [photo] => uploads/student_passports/2425_KID_0010.jpg
+)
+
+[29-May-2025 21:32:46 Africa/Lagos] Login successful for student ID: 49
+[29-May-2025 21:32:46 Africa/Lagos] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:32:46 Africa/Lagos] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 20
+[29-May-2025 21:32:46 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 21
+[29-May-2025 21:32:46 Africa/Lagos] Available classes: Array
+(
+    [0] => JSS3 Pearl
+    [1] => P 1
+    [2] => P 2
+    [3] => P3
+    [4] => SS3
+    [5] => Test Grade 9
+)
+
+[29-May-2025 21:36:47 Africa/Lagos] Database connection error: SQLSTATE[HY000] [1049] Unknown database 'ace_cbt'
+[29-May-2025 21:37:06 Africa/Lagos] Available classes: Array
+(
+    [0] => JSS3 Pearl
+    [1] => P 1
+    [2] => P 2
+    [3] => P3
+    [4] => SS3
+    [5] => Test Grade 9
+)
+
+[29-May-2025 21:39:36 Africa/Lagos] Available classes: Array
+(
+    [0] => JSS3 Pearl
+    [1] => P 1
+    [2] => P 2
+    [3] => P3
+    [4] => SS3
+    [5] => Test Grade 9
+)
+
+[29-May-2025 21:39:43 Africa/Lagos] === Login Attempt Details ===
+[29-May-2025 21:39:43 Africa/Lagos] Registration Number: 2425/KID/0010
+[29-May-2025 21:39:43 Africa/Lagos] Class: P3
+[29-May-2025 21:39:43 Africa/Lagos] Student exists in database: Yes
+[29-May-2025 21:39:43 Africa/Lagos] Student query result: Found
+[29-May-2025 21:39:43 Africa/Lagos] Student status: registered
+[29-May-2025 21:39:43 Africa/Lagos] Student class: P3
+[29-May-2025 21:39:43 Africa/Lagos] Session variables set successfully
+[29-May-2025 21:39:43 Africa/Lagos] Redirecting to dashboard.php
+[29-May-2025 21:39:43 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 21:39:43 Africa/Lagos] Session student_id: 49
+[29-May-2025 21:39:43 Africa/Lagos] Student lookup result: Found
+[29-May-2025 21:39:43 Africa/Lagos] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 33
+[29-May-2025 21:39:43 Africa/Lagos] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 33
+[29-May-2025 21:39:43 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 34
+[29-May-2025 21:39:43 Africa/Lagos] Account status - Active: No, Expired: Yes
+[29-May-2025 21:39:43 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 35
+[29-May-2025 21:39:43 Africa/Lagos] Available classes: Array
+(
+    [0] => JSS3 Pearl
+    [1] => P 1
+    [2] => P 2
+    [3] => P3
+    [4] => SS3
+    [5] => Test Grade 9
+)
+
+[29-May-2025 21:40:05 Africa/Lagos] === Login Attempt Details ===
+[29-May-2025 21:40:05 Africa/Lagos] Registration Number: 2425/KID/0010
+[29-May-2025 21:40:05 Africa/Lagos] Class: SS3
+[29-May-2025 21:40:05 Africa/Lagos] Student exists in database: Yes
+[29-May-2025 21:40:05 Africa/Lagos] Student query result: Not found
+[29-May-2025 21:40:05 Africa/Lagos] Login failed: Class mismatch or inactive status
+[29-May-2025 21:40:05 Africa/Lagos] Provided class: SS3
+[29-May-2025 21:40:05 Africa/Lagos] Available classes: Array
+(
+    [0] => JSS3 Pearl
+    [1] => P 1
+    [2] => P 2
+    [3] => P3
+    [4] => SS3
+    [5] => Test Grade 9
+)
+
+[29-May-2025 21:40:23 Africa/Lagos] === Login Attempt Details ===
+[29-May-2025 21:40:23 Africa/Lagos] Registration Number: 2425/KID/0010
+[29-May-2025 21:40:23 Africa/Lagos] Class: P3
+[29-May-2025 21:40:23 Africa/Lagos] Student exists in database: Yes
+[29-May-2025 21:40:23 Africa/Lagos] Student query result: Found
+[29-May-2025 21:40:23 Africa/Lagos] Student status: registered
+[29-May-2025 21:40:23 Africa/Lagos] Student class: P3
+[29-May-2025 21:40:23 Africa/Lagos] Session variables set successfully
+[29-May-2025 21:40:23 Africa/Lagos] Redirecting to dashboard.php
+[29-May-2025 21:40:23 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 21:40:23 Africa/Lagos] Session student_id: 49
+[29-May-2025 21:40:23 Africa/Lagos] Student lookup result: Found
+[29-May-2025 21:40:23 Africa/Lagos] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 33
+[29-May-2025 21:40:23 Africa/Lagos] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 33
+[29-May-2025 21:40:23 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 34
+[29-May-2025 21:40:23 Africa/Lagos] Account status - Active: No, Expired: Yes
+[29-May-2025 21:40:23 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\dashboard.php on line 35
+[29-May-2025 21:40:23 Africa/Lagos] Available classes: Array
+(
+    [0] => JSS3 Pearl
+    [1] => P 1
+    [2] => P 2
+    [3] => P3
+    [4] => SS3
+    [5] => Test Grade 9
+)
+
+[29-May-2025 21:42:43 Africa/Lagos] Available classes fetched: JSS3 Pearl, P 1, P 2, P3, SS3, Test Grade 9
+[29-May-2025 21:42:49 Africa/Lagos] === Login Process Start ===
+[29-May-2025 21:42:49 Africa/Lagos] POST data received - Registration: 2425/KID/0010, Class: P3
+[29-May-2025 21:42:49 Africa/Lagos] Database connection successful
+[29-May-2025 21:42:49 Africa/Lagos] Student exists check: Yes
+[29-May-2025 21:42:49 Africa/Lagos] Login error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'is_active' in 'field list'
+[29-May-2025 21:42:49 Africa/Lagos] Stack trace: #0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\login.php(48): PDO->prepare('\r\n             ...')
+#1 {main}
+[29-May-2025 21:42:49 Africa/Lagos] Available classes fetched: JSS3 Pearl, P 1, P 2, P3, SS3, Test Grade 9
+[29-May-2025 21:50:39 Africa/Lagos] === Login Process Start ===
+[29-May-2025 21:50:39 Africa/Lagos] POST data received - Registration: 2425/KID/0010, Class: P3
+[29-May-2025 21:50:39 Africa/Lagos] Database connection successful
+[29-May-2025 21:50:39 Africa/Lagos] Student exists check: Yes
+[29-May-2025 21:50:39 Africa/Lagos] Student query result: Array
+(
+    [id] => 49
+    [first_name] => 
+    [last_name] => same
+    [registration_number] => 2425/KID/0010
+    [class] => P3
+    [status] => registered
+)
+
+[29-May-2025 21:50:39 Africa/Lagos] Session variables set: Array
+(
+    [student_id] => 49
+    [student_name] =>  same
+    [registration_number] => 2425/KID/0010
+    [class] => P3
+    [last_activity] => 1748551839
+)
+
+[29-May-2025 21:50:39 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 21:50:39 Africa/Lagos] Session student_id: 49
+[29-May-2025 21:50:39 Africa/Lagos] Student lookup result: Found
+[29-May-2025 21:50:58 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 21:50:58 Africa/Lagos] Session student_id: 49
+[29-May-2025 21:50:58 Africa/Lagos] Student lookup result: Found
+[29-May-2025 21:51:00 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 21:51:00 Africa/Lagos] Session student_id: 49
+[29-May-2025 21:51:00 Africa/Lagos] Student lookup result: Found
+[29-May-2025 21:51:09 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 21:51:09 Africa/Lagos] Session student_id: 49
+[29-May-2025 21:51:09 Africa/Lagos] Student lookup result: Found
+[29-May-2025 21:51:35 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 21:51:35 Africa/Lagos] Session student_id: 49
+[29-May-2025 21:51:35 Africa/Lagos] Student lookup result: Found
+[29-May-2025 21:52:00 Africa/Lagos] === Login Process Start ===
+[29-May-2025 21:52:00 Africa/Lagos] POST data received - Registration: 2425/COL/0010, Class: JSS3 Pearl
+[29-May-2025 21:52:00 Africa/Lagos] Database connection successful
+[29-May-2025 21:52:00 Africa/Lagos] Student exists check: Yes
+[29-May-2025 21:52:00 Africa/Lagos] Student query result: Array
+(
+    [id] => 50
+    [first_name] => OO1
+    [last_name] => Nihil deleniti quasi
+    [registration_number] => 2425/COL/0010
+    [class] => JSS3 Pearl
+    [status] => registered
+)
+
+[29-May-2025 21:52:00 Africa/Lagos] Session variables set: Array
+(
+    [student_id] => 50
+    [student_name] => OO1 Nihil deleniti quasi
+    [registration_number] => 2425/COL/0010
+    [class] => JSS3 Pearl
+    [last_activity] => 1748551920
+)
+
+[29-May-2025 21:52:00 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 21:52:00 Africa/Lagos] Session student_id: 50
+[29-May-2025 21:52:00 Africa/Lagos] Student lookup result: Found
+[29-May-2025 21:53:14 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 21:53:14 Africa/Lagos] Session student_id: 49
+[29-May-2025 21:53:14 Africa/Lagos] Student lookup result: Found
+[29-May-2025 21:54:27 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 21:54:27 Africa/Lagos] Session student_id: 49
+[29-May-2025 21:54:27 Africa/Lagos] Student lookup result: Found

@@ -6,12 +6,17 @@ class Database {
     private function __construct() {
         try {
             $this->connection = new PDO(
-                "mysql:host=localhost;dbname=ace_school_system",
-                "root",
-                "",
-                array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)
+                "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME,
+                DB_USER,
+                DB_PASS,
+                array(
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false
+                )
             );
         } catch (PDOException $e) {
+            error_log("Database connection error: " . $e->getMessage());
             die("Connection failed: " . $e->getMessage());
         }
     }

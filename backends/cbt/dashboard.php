@@ -4,31 +4,42 @@ require_once 'includes/Database.php';
 
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
+error_log("=== Dashboard Access Attempt ===");
+error_log("Session student_id: " . (isset($_SESSION['student_id']) ? $_SESSION['student_id'] : 'Not set'));
+
+if (!isset($_SESSION['student_id'])) {
+    error_log("No student_id in session - redirecting to login");
     header('Location: login.php');
     exit();
 }
 
-$db = Database::getInstance()->getConnection();
+try {
+    $db = Database::getInstance()->getConnection();
 
-// Get user details from the appropriate table
-$table = $_SESSION['user_table'];
-$stmt = $db->prepare("SELECT * FROM $table WHERE id = :user_id");
-$stmt->execute([':user_id' => $_SESSION['user_id']]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Get student details
+    $stmt = $db->prepare("SELECT * FROM students WHERE id = :student_id AND status IN ('active', 'registered')");
+    $stmt->execute([':student_id' => $_SESSION['student_id']]);
+    $student = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    error_log("Student lookup result: " . ($student ? "Found" : "Not found"));
+    if (!$student) {
+        error_log("Student not found in database or not active - redirecting to login");
+        session_destroy();
+        header('Location: login.php?error=not_found');
+        exit();
+    }
 
-// Check if account is still active and not expired
-$is_expired = strtotime($user['expiration_date']) < strtotime('today');
-if (!$user['is_active'] || $is_expired) {
+    // Get available exams for student's class
+    $query = "SELECT * FROM exams WHERE is_active = true AND (class = :class OR class = 'all')";
+    $stmt = $db->prepare($query);
+    $stmt->execute([':class' => $student['class']]);
+    $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    error_log("Database error in dashboard.php: " . $e->getMessage());
     session_destroy();
-    header('Location: login.php?error=expired');
+    header('Location: login.php?error=database_error');
     exit();
 }
-
-// Get available exams
-$query = "SELECT * FROM exams WHERE is_active = true";
-$stmt = $db->query($query);
-$exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -256,7 +267,8 @@ $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="container py-4">
         <div class="welcome-section">
-            <h2 class="welcome-title">Welcome back, <?php echo isset($user['fullname']) ? htmlspecialchars($user['fullname']) : htmlspecialchars($user['email']); ?>!</h2>
+            <h2 class="welcome-title">Welcome back, <?php echo htmlspecialchars($student['first_name'] . ' ' . $student['last_name']); ?>!</h2>
+            <p class="text-muted">Class: <?php echo htmlspecialchars($student['class']); ?></p>
             <p class="text-muted">Ready to test your knowledge? Choose an exam below to get started.</p>
         </div>
         

@@ -1,9 +1,23 @@
 <?php
 
-// Session Configuration - MUST be set before any session_start() calls
+// Error Reporting - Set this first
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+
+// Create logs directory if it doesn't exist
+$logDir = __DIR__ . '/../logs';
+if (!file_exists($logDir)) {
+    mkdir($logDir, 0777, true);
+}
+ini_set('error_log', $logDir . '/error.log');
+
+// Session Configuration
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
 ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
+ini_set('session.gc_maxlifetime', 1800); // 30 minutes
+ini_set('session.cookie_lifetime', 1800);
 
 // Site Configuration
 define('SITE_NAME', 'ACE MODEL COLLEGE CBT');
@@ -21,17 +35,11 @@ define('SMTP_PORT', 587);
 define('SMTP_USER', 'your-email@gmail.com');
 define('SMTP_PASS', 'your-app-password');
 
-// Error Reporting
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-ini_set('log_errors', 1);
-ini_set('error_log', __DIR__ . '/../logs/error.log');
-
 // Session timeout in minutes
 define('SESSION_TIMEOUT', 30);
 
 // Upload directory
-define('UPLOAD_DIR', $_SERVER['DOCUMENT_ROOT'] . '/CBT_System/uploads/');
+define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('UPLOAD_URL', SITE_URL . '/uploads/');
 
 // Create upload directories if they don't exist
@@ -41,4 +49,7 @@ if (!file_exists(UPLOAD_DIR)) {
 if (!file_exists(UPLOAD_DIR . 'questions/')) {
     mkdir(UPLOAD_DIR . 'questions/', 0777, true);
 }
+
+// Set default timezone
+date_default_timezone_set('Africa/Lagos');
 ?>
