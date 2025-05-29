@@ -1,27 +1,67 @@
 <?php
 require_once '../config/config.php';
 require_once '../includes/Database.php';
+require_once '../includes/Auth.php';
 
 session_start();
 
-// Check admin authentication
-// if (!isset($_SESSION['admin_id'])) {
-//     header('Location: login.php');
-//     exit();
-// }
+$auth = new Auth();
+
+// Check teacher authentication
+if (!isset($_SESSION['teacher_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'teacher') {
+    header('Location: login.php');
+    exit();
+}
 
 $db = Database::getInstance()->getConnection();
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Get all exams with creator info and statistics
 $query = "SELECT e.*, 
-          a.name as created_by_name,
-          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
-          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
-          (SELECT AVG(score) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
-          FROM exams e
-          LEFT JOIN admins a ON e.created_by = a.id
+          (SELECT COUNT(*) FROM ace_school_system.questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM ace_school_system.exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM ace_school_system.exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM ace_school_system.exams e
+          WHERE e.created_by = :teacher_id
           ORDER BY e.created_at DESC";
-$exams = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
+
+try {
+    $stmt = $db->prepare($query);
+    $stmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
+    $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Verify each exam ID
+    foreach ($exams as $key => $exam) {
+        if (!is_numeric($exam['id']) || $exam['id'] <= 0) {
+            error_log("Invalid exam ID found: " . print_r($exam, true));
+            unset($exams[$key]);
+        }
+    }
+
+} catch (PDOException $e) {
+    error_log("Error fetching exams: " . $e->getMessage());
+    $exams = [];
+    $_SESSION['error_message'] = "Error loading exams. Please try again.";
+}
+
+// Store current exam ID in session if provided
+if (isset($_GET['exam_id'])) {
+    $_SESSION['current_exam_id'] = $_GET['exam_id'];
+}
+
+// Get any messages
+$message = '';
+if (isset($_SESSION['error_message'])) {
+    $message = '<div class="alert alert-danger">' . $_SESSION['error_message'] . '</div>';
+    unset($_SESSION['error_message']);
+}
+if (isset($_SESSION['success_message'])) {
+    $message = '<div class="alert alert-success">' . $_SESSION['success_message'] . '</div>';
+    unset($_SESSION['success_message']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -44,6 +84,16 @@ $exams = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
         .btn-group .btn {
             padding: 0.25rem 0.5rem;
         }
+        .table > tbody > tr.active {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        .badge.bg-class {
+            background-color: #34495e;
+        }
+        .table > tbody > tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -52,6 +102,10 @@ $exams = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
             <?php include 'includes/sidebar.php'; ?>
 
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <?php if ($message): ?>
+                    <?php echo $message; ?>
+                <?php endif; ?>
+
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                     <h1 class="h2">Manage Exams</h1>
                     <div class="btn-group">
@@ -69,26 +123,47 @@ $exams = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
                 <div class="card">
                     <div class="card-body">
+                        <?php if (empty($exams)): ?>
+                            <div class="alert alert-info">
+                                <i class='bx bx-info-circle me-2'></i>
+                                No exams found. <a href="create-exam.php" class="alert-link">Create your first exam</a>
+                            </div>
+                        <?php else: ?>
                         <div class="table-responsive">
-                            <table class="table">
+                            <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Title</th>
+                                        <th>Class</th>
                                         <th>Questions</th>
                                         <th>Attempts</th>
                                         <th>Avg Score</th>
                                         <th>Duration</th>
                                         <th>Passing Score</th>
                                         <th>Status</th>
-                                        <th>Created By</th>
                                         <th>Created At</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php foreach ($exams as $exam): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($exam['title']); ?></td>
+                                    <?php foreach ($exams as $exam): 
+                                        $isActive = isset($_SESSION['current_exam_id']) && $_SESSION['current_exam_id'] == $exam['id'];
+                                    ?>
+                                    <tr class="<?php echo $isActive ? 'active' : ''; ?>" 
+                                        data-exam-id="<?php echo $exam['id']; ?>">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class='bx bx-file me-2'></i>
+                                                <a href="manage-questions.php?exam_id=<?php echo $exam['id']; ?>" class="text-decoration-none text-dark">
+                                                    <?php echo htmlspecialchars($exam['title']); ?>
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-class">
+                                                <?php echo htmlspecialchars($exam['class']); ?>
+                                            </span>
+                                        </td>
                                         <td><?php echo $exam['question_count']; ?></td>
                                         <td><?php echo $exam['attempt_count']; ?></td>
                                         <td><?php echo $exam['avg_score'] ? round($exam['avg_score'], 1) . '%' : 'N/A'; ?></td>
@@ -99,7 +174,6 @@ $exams = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
                                                 <?php echo $exam['is_active'] ? 'Active' : 'Inactive'; ?>
                                             </span>
                                         </td>
-                                        <td><?php echo htmlspecialchars($exam['created_by_name']); ?></td>
                                         <td><?php echo date('M d, Y', strtotime($exam['created_at'])); ?></td>
                                         <td>
                                             <div class="btn-group">
@@ -108,7 +182,8 @@ $exams = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
                                                     <i class='bx bx-edit'></i>
                                                 </a>
                                                 <a href="manage-questions.php?exam_id=<?php echo $exam['id']; ?>" 
-                                                   class="btn btn-sm btn-outline-info" title="Manage Questions">
+                                                   class="btn btn-sm btn-outline-info" 
+                                                   title="Manage Questions">
                                                     <i class='bx bx-list-ul'></i>
                                                 </a>
                                                 <button type="button" class="btn btn-sm btn-outline-danger"
@@ -123,6 +198,7 @@ $exams = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
                                 </tbody>
                             </table>
                         </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </main>
@@ -131,6 +207,33 @@ $exams = $db->query($query)->fetchAll(PDO::FETCH_ASSOC);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Prevent row click when clicking on action buttons
+        document.querySelectorAll('.btn-group').forEach(group => {
+            group.addEventListener('click', (e) => e.stopPropagation());
+        });
+
+        function handleRowClick(event, examId) {
+            console.log('Row clicked, exam ID:', examId);
+            navigateToManageQuestions(examId);
+        }
+
+        function handleManageQuestions(event, examId) {
+            event.preventDefault();
+            event.stopPropagation();
+            console.log('Manage questions clicked, exam ID:', examId);
+            navigateToManageQuestions(examId);
+        }
+
+        function navigateToManageQuestions(examId) {
+            if (!examId) {
+                console.error('No exam ID provided');
+                return;
+            }
+            const url = `manage-questions.php?exam_id=${examId}`;
+            console.log('Navigating to:', url);
+            window.location.href = url;
+        }
+
         function deleteExam(examId) {
             if (confirm('Are you sure you want to delete this exam? This action cannot be undone.')) {
                 fetch('delete-exam.php', {

@@ -1,76 +1,93 @@
 <?php
-session_start();
 require_once '../config/config.php';
 require_once '../includes/Database.php';
+require_once '../includes/Auth.php';
 
-// Check admin authentication
-// if (!isset($_SESSION['admin_id'])) {
-//     header('Location: login.php');
-//     exit();
-// }
+session_start();
+
+$auth = new Auth();
+
+// Check teacher authentication
+if (!isset($_SESSION['teacher_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'teacher') {
+    header('Location: login.php');
+    exit();
+}
 
 $db = Database::getInstance()->getConnection();
 
-// // Get admin details
-// $stmt = $db->prepare("SELECT * FROM admins WHERE id = :admin_id");
-// $stmt->execute([':admin_id' => $_SESSION['admin_id']]);
-// $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+// Get teacher details
+$stmt = $db->prepare("SELECT t.*, u.username, u.email, u.role 
+                     FROM teachers t 
+                     JOIN users u ON t.user_id = u.id 
+                     WHERE t.id = :teacher_id");
+$stmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
+$teacher = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// if (!$admin) {
-//     session_destroy();
-//     header('Location: login.php');
-//     exit();
-// }
+if (!$teacher) {
+    session_destroy();
+    header('Location: login.php');
+    exit();
+}
 
 // Get statistics
 $stats = [];
 
-// Total students (both morning and afternoon)
-$stmt = $db->query("SELECT 
-    (SELECT COUNT(*) FROM morning_students) + 
-    (SELECT COUNT(*) FROM afternoon_students) as total_students,
-    (SELECT COUNT(*) FROM morning_students WHERE is_active = true) +
-    (SELECT COUNT(*) FROM afternoon_students WHERE is_active = true) as active_students,
-    (SELECT COUNT(*) FROM exams) as total_exams,
-    (SELECT COUNT(*) FROM exam_attempts WHERE status = 'completed') as total_attempts");
+// Get teacher's subjects (with fallback if table doesn't exist)
+try {
+    $stmt = $db->prepare("SELECT DISTINCT subject FROM teacher_subjects WHERE teacher_id = :teacher_id ORDER BY subject");
+    $stmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
+    $teacher_subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    // If table doesn't exist, use default subjects
+    $teacher_subjects = [
+        ['subject' => 'All Subjects']
+    ];
+}
+
+// Get selected subject
+$selected_subject = isset($_GET['subject']) ? $_GET['subject'] : ($teacher_subjects[0]['subject'] ?? 'All Subjects');
+
+// Get subject-specific statistics
+$stmt = $db->prepare("SELECT 
+    (SELECT COUNT(*) FROM exams WHERE created_by = :teacher_id" . 
+    ($selected_subject !== 'All Subjects' ? " AND subject = :subject" : "") . ") as total_exams,
+    (SELECT COUNT(*) FROM exam_attempts ea 
+     JOIN exams e ON ea.exam_id = e.id 
+     WHERE e.created_by = :teacher_id" .
+    ($selected_subject !== 'All Subjects' ? " AND e.subject = :subject" : "") . "
+     AND ea.status = 'completed') as total_attempts");
+
+$params = [':teacher_id' => $_SESSION['teacher_id']];
+if ($selected_subject !== 'All Subjects') {
+    $params[':subject'] = $selected_subject;
+}
+$stmt->execute($params);
 $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Get recent exam attempts
+// Get recent exam attempts for selected subject
 $stmt = $db->prepare("
     SELECT 
         ea.*,
         e.title as exam_title,
-        COALESCE(ms.fullname, afs.fullname) as student_name,
-        COALESCE(ms.id, afs.id) as student_id,
-        CASE 
-            WHEN ms.id IS NOT NULL THEN 'Morning'
-            WHEN afs.id IS NOT NULL THEN 'Afternoon'
-            ELSE 'Unknown'
-        END as session
+        e.subject,
+        u.username as student_name,
+        u.id as student_id
     FROM exam_attempts ea
     JOIN exams e ON ea.exam_id = e.id
-    LEFT JOIN morning_students ms ON ea.user_id = ms.id
-    LEFT JOIN afternoon_students afs ON ea.user_id = afs.id
-    WHERE ea.status = 'completed'
+    JOIN users u ON ea.user_id = u.id
+    WHERE e.created_by = :teacher_id" .
+    ($selected_subject !== 'All Subjects' ? " AND e.subject = :subject" : "") . "
+    AND ea.status = 'completed'
     ORDER BY ea.start_time DESC
     LIMIT 5
 ");
-$stmt->execute();
-$recent_attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Get expiring accounts (within next 7 days)
-$stmt = $db->prepare("
-    (SELECT id, fullname, email, expiration_date, 'Morning' as session 
-     FROM morning_students 
-     WHERE expiration_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY))
-    UNION
-    (SELECT id, fullname, email, expiration_date, 'Afternoon' as session 
-     FROM afternoon_students 
-     WHERE expiration_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY))
-    ORDER BY expiration_date ASC
-");
-$stmt->execute();
-$expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$params = [':teacher_id' => $_SESSION['teacher_id']];
+if ($selected_subject !== 'All Subjects') {
+    $params[':subject'] = $selected_subject;
+}
+$stmt->execute($params);
+$recent_attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -78,7 +95,7 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - <?php echo SITE_NAME; ?></title>
+    <title>Teacher Dashboard - <?php echo SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
     <style>
@@ -114,10 +131,61 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease-in-out;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
         .stat-card i {
             font-size: 2rem;
             color: #3498db;
+        }
+        .subject-selector select {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .subject-selector select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        }
+        .subject-selector .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+        }
+        .subject-selector .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+        }
+        .alert-info {
+            background-color: rgba(52, 152, 219, 0.1);
+            color: #2980b9;
+        }
+        @media (max-width: 768px) {
+            .subject-selector {
+                width: 100%;
+            }
+            .subject-selector form {
+                width: 100%;
+            }
+            .subject-selector .d-flex {
+                flex-direction: column;
+                width: 100%;
+            }
+            .subject-selector select,
+            .subject-selector button {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -126,7 +194,7 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="row">
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 px-0 sidebar">
-                <h4 class="text-white mb-4">Admin Panel</h4>
+                <h4 class="text-white mb-4">Teacher Panel</h4>
                 <nav class="nav flex-column">
                     <a class="nav-link active" href="dashboard.php">
                         <i class='bx bxs-dashboard'></i> Dashboard
@@ -137,11 +205,11 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <a class="nav-link" href="exams.php">
                         <i class='bx bxs-book'></i> Exams
                     </a>
+                    <a class="nav-link" href="assign-subjects.php">
+                        <i class='bx bxs-book-content'></i> Assign Subjects
+                    </a>
                     <a class="nav-link" href="reports.php">
                         <i class='bx bxs-report'></i> Reports
-                    </a>
-                    <a class="nav-link" href="admins.php">
-                        <i class='bx bxs-user'></i> Admins
                     </a>
                     <a class="nav-link text-danger" href="logout.php">
                         <i class='bx bxs-log-out'></i> Logout
@@ -151,53 +219,69 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             <!-- Main Content -->
             <div class="col-md-9 col-lg-10 main-content">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2>Welcome, Admin!</h2>
-                    <!-- <h2>Welcome, <?php echo htmlspecialchars($admin['name']); ?>!</h2> -->
-                    <span class="text-muted"><?php echo date('F d, Y'); ?></span>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <div>
+                        <h2 class="mb-1">Welcome, <?php echo htmlspecialchars($teacher['first_name'] . ' ' . $teacher['last_name']); ?>!</h2>
+                        <p class="text-muted mb-0">Here's what's happening with your subjects today.</p>
+                    </div>
+                    <div class="subject-selector">
+                        <form method="GET" class="bg-white p-2 rounded shadow-sm">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="position-relative">
+                                    <select name="subject" id="subject" class="form-select form-select-lg pe-5" onchange="this.form.submit()" style="min-width: 200px;">
+                                        <?php foreach ($teacher_subjects as $subject): ?>
+                                            <option value="<?php echo htmlspecialchars($subject['subject']); ?>"
+                                                    <?php echo $selected_subject === $subject['subject'] ? 'selected' : ''; ?>>
+                                                <?php echo htmlspecialchars($subject['subject']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <i class='bx bx-book-open position-absolute' style="right: 2rem; top: 50%; transform: translateY(-50%);"></i>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class='bx bx-filter-alt'></i>
+                                    Filter
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                            <i class='bx bx-info-circle me-2 fs-5'></i>
+                            <div>
+                                <?php if ($selected_subject === 'All Subjects'): ?>
+                                    Showing statistics for all your subjects
+                                <?php else: ?>
+                                    Currently viewing statistics for <strong><?php echo htmlspecialchars($selected_subject); ?></strong>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Statistics Cards -->
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <div class="stat-card">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6 class="text-muted">Total Students</h6>
-                                    <h3><?php echo $stats['total_students']; ?></h3>
-                                </div>
-                                <i class='bx bxs-group'></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-muted">Active Students</h6>
-                                    <h3><?php echo $stats['active_students']; ?></h3>
-                                </div>
-                                <i class='bx bxs-user-check'></i>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-muted">Total Exams</h6>
-                                    <h3><?php echo $stats['total_exams']; ?></h3>
+                                    <h6 class="text-muted">Total Exams<?php echo $selected_subject !== 'All Subjects' ? ' (' . htmlspecialchars($selected_subject) . ')' : ''; ?></h6>
+                                    <h3><?php echo $stats['total_exams'] ?? 0; ?></h3>
                                 </div>
                                 <i class='bx bxs-book-content'></i>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <div class="stat-card">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h6 class="text-muted">Exam Attempts</h6>
-                                    <h3><?php echo $stats['total_attempts']; ?></h3>
+                                    <h6 class="text-muted">Total Attempts<?php echo $selected_subject !== 'All Subjects' ? ' (' . htmlspecialchars($selected_subject) . ')' : ''; ?></h6>
+                                    <h3><?php echo $stats['total_attempts'] ?? 0; ?></h3>
                                 </div>
                                 <i class='bx bxs-bar-chart-alt-2'></i>
                             </div>
@@ -207,7 +291,7 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 <!-- Recent Activity -->
                 <div class="row mt-4">
-                    <div class="col-md-8">
+                    <div class="col-12">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="card-title mb-0">Recent Exam Attempts</h5>
@@ -224,7 +308,6 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                         <thead>
                                             <tr>
                                                 <th>Student</th>
-                                                <th>Session</th>
                                                 <th>Exam</th>
                                                 <th>Score</th>
                                                 <th>Status</th>
@@ -263,7 +346,6 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td><span class="badge bg-info"><?php echo htmlspecialchars($attempt['session']); ?></span></td>
                                                 <td><?php echo htmlspecialchars($attempt['exam_title']); ?></td>
                                                 <td>
                                                     <div class="progress" style="height: 20px;">
@@ -302,32 +384,6 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title mb-0">Expiring Accounts</h5>
-                            </div>
-                            <div class="card-body">
-                                <?php if (empty($expiring_accounts)): ?>
-                                    <p class="text-muted">No accounts expiring in the next 7 days.</p>
-                                <?php else: ?>
-                                    <div class="list-group">
-                                        <?php foreach ($expiring_accounts as $account): ?>
-                                        <div class="list-group-item">
-                                            <h6 class="mb-1"><?php echo htmlspecialchars($account['fullname']); ?></h6>
-                                            <p class="mb-1 text-muted">
-                                                <?php echo htmlspecialchars($account['session']); ?> Session
-                                            </p>
-                                            <small class="text-danger">
-                                                Expires: <?php echo date('M d, Y', strtotime($account['expiration_date'])); ?>
-                                            </small>
-                                        </div>
-                                        <?php endforeach; ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -335,64 +391,6 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Initialize DataTable
-            const attemptsTable = $('#recentAttemptsTable').DataTable({
-                pageLength: 10,
-                order: [[5, 'desc']], // Sort by date column by default
-                responsive: true,
-                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search attempts..."
-                }
-            });
-
-            // Refresh button functionality
-            $('#refresh-attempts').click(function() {
-                const button = $(this);
-                const icon = button.find('i');
-                
-                // Add spinning animation
-                icon.addClass('fa-spin');
-                button.prop('disabled', true);
-
-                // Simulate refresh (replace with actual AJAX call)
-                setTimeout(function() {
-                    // Remove spinning animation
-                    icon.removeClass('fa-spin');
-                    button.prop('disabled', false);
-                    
-                    // Show success message
-                    const toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">')
-                        .html(`
-                            <div class="toast-header bg-success text-white">
-                                <strong class="me-auto">Success</strong>
-                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
-                            <div class="toast-body">
-                                Data refreshed successfully!
-                            </div>
-                        `)
-                        .appendTo($('body'));
-                    
-                    const bsToast = new bootstrap.Toast(toast);
-                    bsToast.show();
-                    
-                    // Remove toast after it's hidden
-                    toast.on('hidden.bs.toast', function() {
-                        toast.remove();
-                    });
-                }, 1000);
-            });
-        });
-
-        // Function to handle result download
-        function downloadResult(attemptId) {
-            // Add your download logic here
-            alert('Downloading result for attempt ' + attemptId);
-        }
-
         // Add custom styles
         const style = document.createElement('style');
         style.textContent = `
@@ -413,6 +411,17 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             }
         `;
         document.head.appendChild(style);
+
+        // Refresh button functionality
+        document.getElementById('refresh-attempts').addEventListener('click', function() {
+            location.reload();
+        });
+
+        // Function to handle result download
+        function downloadResult(attemptId) {
+            // Add your download logic here
+            alert('Downloading result for attempt ' + attemptId);
+        }
     </script>
 </body>
 </html>

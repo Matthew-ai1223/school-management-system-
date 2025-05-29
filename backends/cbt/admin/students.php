@@ -1,92 +1,92 @@
 <?php
 require_once '../config/config.php';
 require_once '../includes/Database.php';
+require_once '../includes/Auth.php';
 
 session_start();
 
-// Check admin authentication
-// if (!isset($_SESSION['admin_id'])) {
-//     header('Location: login.php');
-//     exit();
-// }
+$auth = new Auth();
+
+// Check teacher authentication
+if (!isset($_SESSION['teacher_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'teacher') {
+    header('Location: login.php');
+    exit();
+}
 
 $db = Database::getInstance()->getConnection();
 
 // Handle search and pagination
-$search = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_STRING);
+$search = isset($_GET['search']) ? htmlspecialchars(trim($_GET['search']), ENT_QUOTES, 'UTF-8') : '';
 $page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT) ?: 1;
 $per_page = 10;
 $offset = ($page - 1) * $per_page;
 
-// Build query for both morning and afternoon students
-$query = "(SELECT 
-            ms.id,
-            ms.fullname,
-            ms.email,
-            ms.phone,
-            ms.department,
-            ms.expiration_date,
-            'Morning' as session,
-            COUNT(DISTINCT ea.id) as total_exams,
-            AVG(ea.score) as avg_score
-          FROM morning_students ms
-          LEFT JOIN exam_attempts ea ON ms.id = ea.user_id";
+// Get teacher's subjects
+$stmt = $db->prepare("SELECT DISTINCT subject FROM teacher_subjects WHERE teacher_id = :teacher_id ORDER BY subject");
+$stmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
+$teacher_subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-if ($search) {
-    $query .= " WHERE (ms.fullname LIKE :search OR ms.email LIKE :search OR ms.department LIKE :search)";
+// Get selected subject
+$selected_subject = isset($_GET['subject']) ? htmlspecialchars(trim($_GET['subject']), ENT_QUOTES, 'UTF-8') : ($teacher_subjects[0]['subject'] ?? 'All Subjects');
+
+// Build query for students
+$query = "SELECT 
+            u.id,
+            u.username as fullname,
+            u.email,
+            u.phone,
+            u.department,
+            COUNT(DISTINCT ea.id) as total_exams,
+            AVG(ea.score) as avg_score,
+            (SELECT COUNT(*) FROM exam_attempts ea2 
+             JOIN exams e2 ON ea2.exam_id = e2.id 
+             WHERE ea2.user_id = u.id 
+             AND ea2.score >= e2.passing_score) as passed_exams
+          FROM users u
+          LEFT JOIN exam_attempts ea ON u.id = ea.user_id
+          LEFT JOIN exams e ON ea.exam_id = e.id
+          WHERE u.role = 'student'
+          AND u.added_by = :teacher_id";
+
+if ($selected_subject !== 'All Subjects') {
+    $query .= " AND e.subject = :subject";
 }
 
-$query .= " GROUP BY ms.id)
-           UNION ALL
-           (SELECT 
-            afs.id,
-            afs.fullname,
-            afs.email,
-            afs.phone,
-            afs.department,
-            afs.expiration_date,
-            'Afternoon' as session,
-            COUNT(DISTINCT ea.id) as total_exams,
-            AVG(ea.score) as avg_score
-           FROM afternoon_students afs
-           LEFT JOIN exam_attempts ea ON afs.id = ea.user_id";
-
 if ($search) {
-    $query .= " WHERE (afs.fullname LIKE :search OR afs.email LIKE :search OR afs.department LIKE :search)";
+    $query .= " AND (u.username LIKE :search OR u.email LIKE :search OR u.department LIKE :search)";
 }
 
-$query .= " GROUP BY afs.id)
-           ORDER BY fullname
-           LIMIT :offset, :per_page";
+$query .= " GROUP BY u.id
+           ORDER BY u.username
+           LIMIT ? OFFSET ?";
 
 $stmt = $db->prepare($query);
-if ($search) {
-    $search_param = "%$search%";
-    $stmt->bindParam(':search', $search_param);
+
+// Bind parameters
+$paramIndex = 1;
+$stmt->bindValue($paramIndex++, $_SESSION['teacher_id']);
+
+if ($selected_subject !== 'All Subjects') {
+    $stmt->bindValue(':subject', $selected_subject);
 }
-$stmt->bindParam(':offset', $offset, PDO::PARAM_INT);
-$stmt->bindParam(':per_page', $per_page, PDO::PARAM_INT);
+
+if ($search) {
+    $stmt->bindValue(':search', "%$search%");
+}
+
+// Bind LIMIT and OFFSET parameters
+$stmt->bindValue($paramIndex++, $per_page, PDO::PARAM_INT);
+$stmt->bindValue($paramIndex, $offset, PDO::PARAM_INT);
+
 $stmt->execute();
 $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get total count for pagination
-$count_query = "(SELECT COUNT(*) as count FROM morning_students";
-if ($search) {
-    $count_query .= " WHERE (fullname LIKE :search OR email LIKE :search OR department LIKE :search)";
-}
-$count_query .= ") UNION ALL (SELECT COUNT(*) FROM afternoon_students";
-if ($search) {
-    $count_query .= " WHERE (fullname LIKE :search OR email LIKE :search OR department LIKE :search)";
-}
-$count_query .= ")";
-
+$count_query = "SELECT COUNT(*) FROM users WHERE role = 'student' AND added_by = ?";
 $stmt = $db->prepare($count_query);
-if ($search) {
-    $stmt->bindParam(':search', $search_param);
-}
+$stmt->bindValue(1, $_SESSION['teacher_id'], PDO::PARAM_INT);
 $stmt->execute();
-$counts = $stmt->fetchAll(PDO::FETCH_COLUMN);
-$total_students = array_sum($counts);
+$total_students = $stmt->fetchColumn();
 $total_pages = ceil($total_students / $per_page);
 
 $message = '';
@@ -115,6 +115,18 @@ if (isset($_SESSION['message'])) {
         .btn-group .btn {
             padding: 0.25rem 0.5rem;
         }
+        .subject-selector select {
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .subject-selector select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -123,32 +135,60 @@ if (isset($_SESSION['message'])) {
             <?php include 'includes/sidebar.php'; ?>
 
             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2">Manage Students</h1>
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3">
                     <div>
-                        <a href="add-student.php" class="btn btn-primary me-2">
+                        <h1 class="h2">Manage Students</h1>
+                        <p class="text-muted">View and manage your students</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <div class="subject-selector">
+                            <form method="GET" class="d-flex align-items-center gap-2">
+                                <?php if ($search): ?>
+                                    <input type="hidden" name="search" value="<?php echo htmlspecialchars($search); ?>">
+                                <?php endif; ?>
+                                <select name="subject" class="form-select" onchange="this.form.submit()">
+                                    <option value="All Subjects">All Subjects</option>
+                                    <?php foreach ($teacher_subjects as $subject): ?>
+                                        <option value="<?php echo htmlspecialchars($subject['subject']); ?>"
+                                                <?php echo $selected_subject === $subject['subject'] ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($subject['subject']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </form>
+                        </div>
+                        <a href="add-student.php" class="btn btn-primary">
                             <i class='bx bx-plus'></i> Add Student
-                        </a>
-                        <a href="bulk-upload-students.php" class="btn btn-success">
-                            <i class='bx bx-upload'></i> Bulk Upload
                         </a>
                     </div>
                 </div>
 
-                <?php echo $message; ?>
+                <?php if ($message): ?>
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <?php echo $message; ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                <?php endif; ?>
 
                 <div class="card mb-4">
                     <div class="card-body">
                         <form method="GET" action="" class="row g-3">
+                            <?php if ($selected_subject !== 'All Subjects'): ?>
+                                <input type="hidden" name="subject" value="<?php echo htmlspecialchars($selected_subject); ?>">
+                            <?php endif; ?>
                             <div class="col-md-8">
-                                <input type="text" class="form-control" name="search" 
-                                       placeholder="Search by name, email, or department" 
-                                       value="<?php echo htmlspecialchars($search ?? ''); ?>">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class='bx bx-search'></i></span>
+                                    <input type="text" class="form-control" name="search" 
+                                           placeholder="Search by name, email, or department" 
+                                           value="<?php echo htmlspecialchars($search ?? ''); ?>">
+                                </div>
                             </div>
                             <div class="col-md-4">
                                 <button type="submit" class="btn btn-primary">Search</button>
                                 <?php if ($search): ?>
-                                    <a href="students.php" class="btn btn-secondary">Clear</a>
+                                    <a href="?<?php echo $selected_subject !== 'All Subjects' ? 'subject=' . urlencode($selected_subject) : ''; ?>" 
+                                       class="btn btn-secondary">Clear</a>
                                 <?php endif; ?>
                             </div>
                         </form>
@@ -158,45 +198,66 @@ if (isset($_SESSION['message'])) {
                 <div class="card">
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-hover">
                                 <thead>
                                     <tr>
                                         <th>Name</th>
                                         <th>Email</th>
                                         <th>Department</th>
-                                        <th>Session</th>
                                         <th>Total Exams</th>
+                                        <th>Passed Exams</th>
                                         <th>Avg Score</th>
-                                        <th>Status</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php foreach ($students as $student): ?>
                                     <tr>
-                                        <td><?php echo htmlspecialchars($student['fullname']); ?></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                                    <span class="text-primary"><?php echo strtoupper(substr($student['fullname'], 0, 2)); ?></span>
+                                                </div>
+                                                <?php echo htmlspecialchars($student['fullname']); ?>
+                                            </div>
+                                        </td>
                                         <td><?php echo htmlspecialchars($student['email']); ?></td>
                                         <td><?php echo htmlspecialchars($student['department']); ?></td>
-                                        <td><?php echo htmlspecialchars($student['session']); ?></td>
                                         <td><?php echo $student['total_exams']; ?></td>
-                                        <td><?php echo $student['avg_score'] ? round($student['avg_score'], 2) . '%' : 'N/A'; ?></td>
                                         <td>
-                                            <span class="badge bg-<?php echo strtotime($student['expiration_date']) > time() ? 'success' : 'danger'; ?>">
-                                                <?php echo strtotime($student['expiration_date']) > time() ? 'Active' : 'Expired'; ?>
+                                            <span class="badge bg-success">
+                                                <?php echo $student['passed_exams']; ?> / <?php echo $student['total_exams']; ?>
                                             </span>
                                         </td>
                                         <td>
+                                            <?php if ($student['avg_score']): ?>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-<?php echo getScoreClass($student['avg_score']); ?>" 
+                                                         role="progressbar" 
+                                                         style="width: <?php echo round($student['avg_score']); ?>%"
+                                                         aria-valuenow="<?php echo round($student['avg_score']); ?>" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        <?php echo round($student['avg_score'], 1); ?>%
+                                                    </div>
+                                                </div>
+                                            <?php else: ?>
+                                                <span class="text-muted">No attempts</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
                                             <div class="btn-group">
-                                                <a href="edit-student.php?id=<?php echo $student['id']; ?>&session=<?php echo strtolower($student['session']); ?>" 
-                                                   class="btn btn-sm btn-outline-primary">
+                                                <a href="edit-student.php?id=<?php echo $student['id']; ?>" 
+                                                   class="btn btn-sm btn-outline-primary" title="Edit">
                                                     <i class='bx bx-edit'></i>
                                                 </a>
-                                                <a href="student-performance.php?id=<?php echo $student['id']; ?>&session=<?php echo strtolower($student['session']); ?>" 
-                                                   class="btn btn-sm btn-outline-info">
+                                                <a href="student-performance.php?id=<?php echo $student['id']; ?>" 
+                                                   class="btn btn-sm btn-outline-info" title="View Performance">
                                                     <i class='bx bx-line-chart'></i>
                                                 </a>
                                                 <button type="button" class="btn btn-sm btn-outline-danger"
-                                                        onclick="deleteStudent(<?php echo $student['id']; ?>, '<?php echo strtolower($student['session']); ?>')">
+                                                        onclick="deleteStudent(<?php echo $student['id']; ?>)"
+                                                        title="Delete">
                                                     <i class='bx bx-trash'></i>
                                                 </button>
                                             </div>
@@ -212,7 +273,10 @@ if (isset($_SESSION['message'])) {
                             <ul class="pagination justify-content-center">
                                 <?php for ($i = 1; $i <= $total_pages; $i++): ?>
                                     <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
-                                        <a class="page-link" href="?page=<?php echo $i; ?><?php echo $search ? '&search=' . urlencode($search) : ''; ?>">
+                                        <a class="page-link" href="?page=<?php echo $i; ?><?php 
+                                            echo $search ? '&search=' . urlencode($search) : ''; 
+                                            echo $selected_subject !== 'All Subjects' ? '&subject=' . urlencode($selected_subject) : '';
+                                        ?>">
                                             <?php echo $i; ?>
                                         </a>
                                     </li>
@@ -228,17 +292,20 @@ if (isset($_SESSION['message'])) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        function deleteStudent(studentId, session) {
+        function getScoreClass(score) {
+            if (score >= 70) return 'success';
+            if (score >= 50) return 'primary';
+            return 'danger';
+        }
+
+        function deleteStudent(studentId) {
             if (confirm('Are you sure you want to delete this student? This will also delete all their exam attempts and records.')) {
                 fetch('delete-student.php', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        student_id: studentId,
-                        session: session
-                    })
+                    body: JSON.stringify({ student_id: studentId })
                 })
                 .then(response => response.json())
                 .then(data => {

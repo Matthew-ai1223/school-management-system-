@@ -7,10 +7,11 @@ session_start();
 
 $auth = new Auth();
 
-// if (!$auth->isLoggedIn() || !in_array($_SESSION['user_role'], ['admin', 'super_admin'])) {
-//     header('Location: login.php');
-//     exit();
-// }
+// Check teacher authentication
+if (!isset($_SESSION['teacher_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'teacher') {
+    header('Location: login.php');
+    exit();
+}
 
 $exam_id = filter_input(INPUT_GET, 'exam_id', FILTER_VALIDATE_INT);
 if (!$exam_id) {
@@ -21,10 +22,13 @@ if (!$exam_id) {
 $db = Database::getInstance()->getConnection();
 $message = '';
 
-// Get exam details
-$query = "SELECT title FROM exams WHERE id = :exam_id";
+// Get exam details and verify ownership
+$query = "SELECT title FROM exams WHERE id = :exam_id AND created_by = :teacher_id";
 $stmt = $db->prepare($query);
-$stmt->execute([':exam_id' => $exam_id]);
+$stmt->execute([
+    ':exam_id' => $exam_id,
+    ':teacher_id' => $_SESSION['teacher_id']
+]);
 $exam = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$exam) {

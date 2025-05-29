@@ -1,34 +1,31 @@
 <?php
-session_start();
 require_once '../config/config.php';
 require_once '../includes/Database.php';
+require_once '../includes/Auth.php';
 
-if (isset($_SESSION['admin_id'])) {
+session_start();
+
+// If already logged in, redirect to dashboard
+if (isset($_SESSION['teacher_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'teacher') {
     header('Location: dashboard.php');
     exit();
 }
 
-$message = '';
+$auth = new Auth();
+$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    
-    $db = Database::getInstance()->getConnection();
-    
-    // Check admin credentials
-    $stmt = $db->prepare("SELECT * FROM admins WHERE email = :email");
-    $stmt->execute([':email' => $email]);
-    $admin = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if ($admin && password_verify($password, $admin['password'])) {
-        $_SESSION['admin_id'] = $admin['id'];
-        $_SESSION['admin_email'] = $admin['email'];
-        $_SESSION['admin_name'] = $admin['name'];
-        header('Location: dashboard.php');
-        exit();
+    $teacher_id = trim($_POST['teacher_id'] ?? '');
+
+    if (empty($teacher_id)) {
+        $error = 'Please enter your Teacher ID.';
     } else {
-        $message = '<div class="alert alert-danger">Invalid email or password.</div>';
+        if ($auth->loginWithTeacherId($teacher_id)) {
+            header('Location: dashboard.php');
+            exit();
+        } else {
+            $error = 'Invalid Teacher ID. Please try again.';
+        }
     }
 }
 ?>
@@ -38,64 +35,90 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - <?php echo SITE_NAME; ?></title>
+    <title>Teacher Login - <?php echo SITE_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
+            background-color: #f8f9fa;
+            height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
         }
         .login-container {
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            padding: 30px;
-            width: 100%;
             max-width: 400px;
+            width: 90%;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
         }
-        .form-label {
+        .school-logo {
+            width: 100px;
+            height: auto;
+            margin-bottom: 1rem;
+        }
+        .login-title {
+            text-align: center;
+            margin-bottom: 2rem;
             color: #2c3e50;
-            font-weight: 500;
         }
-        .btn-primary {
-            background-color: #4a90e2;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #357abd;
-            transform: scale(1.05);
+        .input-group-text {
+            background-color: #f8f9fa;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <h2 class="text-center mb-4">Admin Login</h2>
-        <?php echo $message; ?>
+        <div class="text-center mb-4">
+            <h1 class="h3 text-dark">ACE COLLEGE</h1>
+            <p class="text-muted">Computer-Based Test (CBT) System</p>
+        </div>
+
+        <?php if ($error): ?>
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <?php echo $error; ?>
+            </div>
+        <?php endif; ?>
+
         <form method="POST" action="">
-            <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="email" name="email" required>
+            <div class="mb-4">
+                <label for="teacher_id" class="form-label">
+                    <i class="fas fa-id-card me-2"></i>Teacher ID
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-user"></i>
+                    </span>
+                    <input type="password" 
+                           class="form-control" 
+                           id="teacher_id" 
+                           name="teacher_id" 
+                           placeholder="Enter your Teacher ID"
+                           required 
+                           autofocus>
+                </div>
             </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-            <div class="d-grid">
-                <button type="submit" class="btn btn-primary">Login</button>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </button>
+                <a href="../../index.php" class="btn btn-light">
+                    <i class="fas fa-home me-2"></i>Back to Home
+                </a>
             </div>
         </form>
-        <div class="text-center mt-3">
-            <a href="../" class="text-decoration-none">Back to Main Site</a>
+
+        <div class="text-center mt-4">
+            <p class="text-muted mb-0">
+                <small>&copy; <?php echo date('Y'); ?> ACE COLLEGE. All rights reserved.</small>
+            </p>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html> 

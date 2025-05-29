@@ -7,10 +7,11 @@ session_start();
 
 $auth = new Auth();
 
-// if (!$auth->isLoggedIn() || !in_array($_SESSION['user_role'], ['admin', 'super_admin'])) {
-//     header('Location: login.php');
-//     exit();
-// }
+// Check teacher authentication
+if (!isset($_SESSION['teacher_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'teacher') {
+    header('Location: login.php');
+    exit();
+}
 
 $db = Database::getInstance()->getConnection();
 $message = '';
@@ -29,8 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = bin2hex(random_bytes(8)); // 16 characters long
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        $query = "INSERT INTO users (name, email, password, department, phone, gender, role) 
-                  VALUES (:name, :email, :password, :department, :phone, :gender, 'student')";
+        $query = "INSERT INTO users (name, email, password, department, phone, gender, role, added_by) 
+                  VALUES (:name, :email, :password, :department, :phone, :gender, 'student', :teacher_id)";
         
         $stmt = $db->prepare($query);
         $result = $stmt->execute([
@@ -39,7 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':password' => $hashed_password,
             ':department' => $_POST['department'],
             ':phone' => $_POST['phone'],
-            ':gender' => $_POST['gender']
+            ':gender' => $_POST['gender'],
+            ':teacher_id' => $_SESSION['teacher_id']
         ]);
 
         if ($result) {

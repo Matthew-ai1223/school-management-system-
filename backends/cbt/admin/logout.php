@@ -1,5 +1,8 @@
 <?php
-session_start();
+// Start session if not already started
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Clear all session variables
 $_SESSION = array();
@@ -8,6 +11,6 @@ $_SESSION = array();
 session_destroy();
 
 // Redirect to login page
-header('Location: login.php');
-exit();
+header("Location: login.php");
+exit;
 ?> 

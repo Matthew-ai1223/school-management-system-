@@ -1,0 +1,465 @@
+[29-May-2025 15:50:53 Europe/Berlin] PHP Warning:  Constant SMTP_HOST already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 31
+[29-May-2025 15:50:53 Europe/Berlin] PHP Warning:  Constant SMTP_PORT already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 32
+[29-May-2025 15:50:53 Europe/Berlin] PHP Warning:  Constant SMTP_USER already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 33
+[29-May-2025 15:50:53 Europe/Berlin] PHP Warning:  Constant SMTP_PASS already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 34
+[29-May-2025 15:50:53 Europe/Berlin] PHP Warning:  The magic method Database::__wakeup() must have public visibility in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\includes\Database.php on line 34
+[29-May-2025 15:50:59 Europe/Berlin] PHP Warning:  Constant SMTP_HOST already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 31
+[29-May-2025 15:50:59 Europe/Berlin] PHP Warning:  Constant SMTP_PORT already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 32
+[29-May-2025 15:50:59 Europe/Berlin] PHP Warning:  Constant SMTP_USER already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 33
+[29-May-2025 15:50:59 Europe/Berlin] PHP Warning:  Constant SMTP_PASS already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 34
+[29-May-2025 15:50:59 Europe/Berlin] PHP Warning:  The magic method Database::__wakeup() must have public visibility in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\includes\Database.php on line 34
+[29-May-2025 15:55:59 Europe/Berlin] PHP Warning:  Constant SMTP_HOST already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 31
+[29-May-2025 15:55:59 Europe/Berlin] PHP Warning:  Constant SMTP_PORT already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 32
+[29-May-2025 15:55:59 Europe/Berlin] PHP Warning:  Constant SMTP_USER already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 33
+[29-May-2025 15:55:59 Europe/Berlin] PHP Warning:  Constant SMTP_PASS already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 34
+[29-May-2025 15:55:59 Europe/Berlin] PHP Warning:  The magic method Database::__wakeup() must have public visibility in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\includes\Database.php on line 34
+[29-May-2025 15:57:17 Europe/Berlin] PHP Warning:  Constant SMTP_HOST already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 31
+[29-May-2025 15:57:17 Europe/Berlin] PHP Warning:  Constant SMTP_PORT already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 32
+[29-May-2025 15:57:17 Europe/Berlin] PHP Warning:  Constant SMTP_USER already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 33
+[29-May-2025 15:57:17 Europe/Berlin] PHP Warning:  Constant SMTP_PASS already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 34
+[29-May-2025 15:57:17 Europe/Berlin] PHP Warning:  The magic method Database::__wakeup() must have public visibility in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\includes\Database.php on line 34
+[29-May-2025 15:58:37 Europe/Berlin] PHP Warning:  The magic method Database::__wakeup() must have public visibility in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\includes\Database.php on line 34
+[29-May-2025 15:58:39 Europe/Berlin] PHP Warning:  The magic method Database::__wakeup() must have public visibility in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\includes\Database.php on line 34
+[29-May-2025 16:03:31 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php:35
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php(35): PDO->query('SELECT \r\n    (S...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 35
+[29-May-2025 16:16:22 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.name' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php:88
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php(88): PDOStatement->execute(Array)
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 88
+[29-May-2025 16:16:24 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.name' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php:88
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php(88): PDOStatement->execute(Array)
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 88
+[29-May-2025 16:19:21 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php:102
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php(102): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 102
+[29-May-2025 16:19:22 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php:102
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php(102): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 102
+[29-May-2025 16:21:23 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'expiration_date' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php:100
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php(100): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 100
+[29-May-2025 16:25:02 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 19
+[29-May-2025 16:25:02 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:72
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(72): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 72
+[29-May-2025 16:25:42 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 19
+[29-May-2025 16:25:42 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:72
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(72): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 72
+[29-May-2025 16:38:01 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 19
+[29-May-2025 16:38:01 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:72
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(72): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 72
+[29-May-2025 16:38:06 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 19
+[29-May-2025 16:38:06 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:72
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(72): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 72
+[29-May-2025 16:43:27 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 19
+[29-May-2025 16:43:27 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ''0', '10'' at line 19 in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:78
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(78): PDOStatement->execute(Array)
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 78
+[29-May-2025 16:43:31 Europe/Berlin] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 19
+[29-May-2025 16:43:31 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ''0', '10'' at line 19 in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:78
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(78): PDOStatement->execute(Array)
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 78
+[29-May-2025 16:44:53 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near ''10' OFFSET '0'' at line 19 in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:78
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(78): PDOStatement->execute(Array)
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 78
+[29-May-2025 16:46:13 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY093]: Invalid parameter number: mixed named and positional parameters in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:81
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(81): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 81
+[29-May-2025 16:56:41 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php:118
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php(118): PDOStatement->execute(Array)
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 118
+[29-May-2025 17:06:20 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.cbt_exams' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\exams.php:30
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\exams.php(30): PDOStatement->execute(Array)
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\exams.php on line 30
+[29-May-2025 17:21:43 Europe/Berlin] Invalid exam_id format: 0
+[29-May-2025 17:22:20 Europe/Berlin] Invalid exam_id format: 0
+[29-May-2025 17:22:24 Europe/Berlin] Invalid exam_id format: 0
+[29-May-2025 17:22:25 Europe/Berlin] Invalid exam_id format: 0
+[29-May-2025 17:22:26 Europe/Berlin] Invalid exam_id format: 0
+[29-May-2025 17:28:28 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => englis
+    [subject] => 
+    [description] => eng
+    [duration] => 3
+    [passing_score] => 50
+    [max_attempts] => 2
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 16:22:20
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 17:28:28 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => Math
+    [subject] => 
+    [description] => Math Exam
+    [duration] => 20
+    [passing_score] => 50
+    [max_attempts] => 1
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 15:58:09
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 17:38:51 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.email' in 'field list'
+[29-May-2025 17:38:51 Europe/Berlin] PHP Warning:  Undefined variable $teachers in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 133
+[29-May-2025 17:38:51 Europe/Berlin] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 133
+[29-May-2025 17:40:43 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.email' in 'field list'
+[29-May-2025 17:40:43 Europe/Berlin] PHP Warning:  Undefined variable $teachers in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 133
+[29-May-2025 17:40:43 Europe/Berlin] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 133
+[29-May-2025 17:57:50 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 't.email' in 'field list'
+[29-May-2025 17:57:50 Europe/Berlin] PHP Warning:  Undefined variable $teachers in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 140
+[29-May-2025 17:57:50 Europe/Berlin] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 140
+[29-May-2025 17:59:37 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:02:43 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:05:43 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:05:54 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:06:03 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:08:39 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:09:04 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:12:03 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:12:11 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:13:26 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:13:49 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:14:08 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:17:39 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ts.subject_code' in 'field list'
+[29-May-2025 18:17:53 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ts.subject_code' in 'field list'
+[29-May-2025 18:22:43 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:22:55 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:24:26 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY093]: Invalid parameter number: mixed named and positional parameters in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:81
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(81): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 81
+[29-May-2025 18:24:32 Europe/Berlin] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY093]: Invalid parameter number: mixed named and positional parameters in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:81
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(81): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 81
+[29-May-2025 18:24:40 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:25:54 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:29:27 Europe/Berlin] Database setup error: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject_name' in 'field list'
+[29-May-2025 18:38:55 Europe/Berlin] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'subject' in 'order clause'
+[29-May-2025 18:38:55 Europe/Berlin] PHP Warning:  Undefined variable $subjects in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 431
+[29-May-2025 18:38:55 Europe/Berlin] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 431
+[29-May-2025 18:46:18 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => englis
+    [subject] => 
+    [description] => eng
+    [duration] => 3
+    [passing_score] => 50
+    [max_attempts] => 2
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 16:22:20
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:46:18 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => Math
+    [subject] => 
+    [description] => Math Exam
+    [duration] => 20
+    [passing_score] => 50
+    [max_attempts] => 1
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 15:58:09
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:46:27 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => englis
+    [subject] => 
+    [description] => eng
+    [duration] => 3
+    [passing_score] => 50
+    [max_attempts] => 2
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 16:22:20
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:46:27 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => Math
+    [subject] => 
+    [description] => Math Exam
+    [duration] => 20
+    [passing_score] => 50
+    [max_attempts] => 1
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 15:58:09
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:53:31 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => englis
+    [subject] => 
+    [description] => eng
+    [duration] => 3
+    [passing_score] => 50
+    [max_attempts] => 2
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 16:22:20
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:53:31 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => Math
+    [subject] => 
+    [description] => Math Exam
+    [duration] => 20
+    [passing_score] => 50
+    [max_attempts] => 1
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 15:58:09
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:59:41 Europe/Berlin] Invalid exam_id format: 0
+[29-May-2025 18:59:41 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => Basic Science Exam
+    [subject] => 
+    [description] => bs
+    [duration] => 10
+    [passing_score] => 50
+    [max_attempts] => 1
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 17:59:41
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:59:41 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => englis
+    [subject] => 
+    [description] => eng
+    [duration] => 3
+    [passing_score] => 50
+    [max_attempts] => 2
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 16:22:20
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:59:41 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => Math
+    [subject] => 
+    [description] => Math Exam
+    [duration] => 20
+    [passing_score] => 50
+    [max_attempts] => 1
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 15:58:09
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:59:45 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => Basic Science Exam
+    [subject] => 
+    [description] => bs
+    [duration] => 10
+    [passing_score] => 50
+    [max_attempts] => 1
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 17:59:41
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:59:45 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => englis
+    [subject] => 
+    [description] => eng
+    [duration] => 3
+    [passing_score] => 50
+    [max_attempts] => 2
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 16:22:20
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:59:45 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => Math
+    [subject] => 
+    [description] => Math Exam
+    [duration] => 20
+    [passing_score] => 50
+    [max_attempts] => 1
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 15:58:09
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:59:46 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => Basic Science Exam
+    [subject] => 
+    [description] => bs
+    [duration] => 10
+    [passing_score] => 50
+    [max_attempts] => 1
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 17:59:41
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:59:46 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => englis
+    [subject] => 
+    [description] => eng
+    [duration] => 3
+    [passing_score] => 50
+    [max_attempts] => 2
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 16:22:20
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 18:59:46 Europe/Berlin] Invalid exam ID found: Array
+(
+    [id] => 0
+    [title] => Math
+    [subject] => 
+    [description] => Math Exam
+    [duration] => 20
+    [passing_score] => 50
+    [max_attempts] => 1
+    [is_active] => 1
+    [created_by] => 11
+    [class] => P3
+    [created_at] => 2025-05-29 15:58:09
+    [question_count] => 0
+    [attempt_count] => 0
+    [avg_score] => 0.0000
+)
+
+[29-May-2025 19:15:53 Europe/Berlin] Successfully loaded exam ID 1 with 0 questions
+[29-May-2025 20:06:52 Europe/Berlin] Successfully loaded exam ID 1 with 0 questions
+[29-May-2025 20:11:22 Europe/Berlin] Successfully loaded exam ID 1 with 1 questions
+[29-May-2025 20:11:37 Europe/Berlin] Successfully loaded exam ID 1 with 2 questions
