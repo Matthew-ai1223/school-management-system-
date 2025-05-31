@@ -30,10 +30,29 @@ try {
     }
 
     // Get available exams for student's class
-    $query = "SELECT * FROM exams WHERE is_active = true AND (class = :class OR class = 'all')";
+    $query = "SELECT e.*, 
+              (SELECT COUNT(*) FROM ace_school_system.exam_attempts ea WHERE ea.exam_id = e.id AND ea.student_id = :student_id) as attempts_taken
+              FROM ace_school_system.exams e 
+              WHERE e.is_active = true 
+              AND (e.class = :class OR e.class = 'all')
+              ORDER BY e.created_at DESC";
     $stmt = $db->prepare($query);
-    $stmt->execute([':class' => $student['class']]);
+    $stmt->execute([
+        ':class' => $student['class'],
+        ':student_id' => $_SESSION['student_id']
+    ]);
     $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Get student's exam history
+    $history_query = "SELECT ea.*, e.title as exam_title, e.passing_score
+                     FROM ace_school_system.exam_attempts ea
+                     JOIN ace_school_system.exams e ON ea.exam_id = e.id
+                     WHERE ea.student_id = :student_id
+                     ORDER BY ea.start_time DESC
+                     LIMIT 5";
+    $stmt = $db->prepare($history_query);
+    $stmt->execute([':student_id' => $_SESSION['student_id']]);
+    $exam_history = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     error_log("Database error in dashboard.php: " . $e->getMessage());
     session_destroy();
@@ -276,7 +295,9 @@ try {
             <div class="col-12">
                 <h3 class="exam-section-title">Available Exams</h3>
                 <div class="row g-4">
-                    <?php foreach ($exams as $exam): ?>
+                    <?php foreach ($exams as $exam): 
+                        $can_take_exam = $exam['attempts_taken'] < $exam['max_attempts'];
+                    ?>
                     <div class="col-md-4">
                         <div class="exam-card card">
                             <div class="card-body">
@@ -286,9 +307,15 @@ try {
                                     <i class='bx bx-time'></i>
                                     <span><?php echo $exam['duration']; ?> minutes</span>
                                 </div>
-                                <a href="start-exam.php?id=<?php echo $exam['id']; ?>" class="btn btn-start-exam">
-                                    Start Exam <i class='bx bx-right-arrow-alt'></i>
-                                </a>
+                                <?php if ($can_take_exam): ?>
+                                    <a href="start-exam.php?id=<?php echo $exam['id']; ?>" class="btn btn-start-exam">
+                                        Start Exam <i class='bx bx-right-arrow-alt'></i>
+                                    </a>
+                                <?php else: ?>
+                                    <button class="btn btn-start-exam" disabled>
+                                        Maximum attempts reached
+                                    </button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

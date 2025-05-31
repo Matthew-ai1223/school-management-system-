@@ -21,7 +21,7 @@ $total_questions = count($attempt['questions']);
 if (!$timeout && $_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST['answers'] as $question_id => $answer) {
         // Get correct answer
-        $query = "SELECT correct_answer FROM questions WHERE id = :question_id";
+        $query = "SELECT correct_answer FROM ace_school_system.questions WHERE id = :question_id";
         $stmt = $db->prepare($query);
         $stmt->execute([':question_id' => $question_id]);
         $correct = $stmt->fetch(PDO::FETCH_ASSOC)['correct_answer'];
@@ -30,8 +30,8 @@ if (!$timeout && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $score++;
         }
 
-        // Save user response
-        $response_query = "INSERT INTO user_responses (attempt_id, question_id, selected_answer) 
+        // Save student response
+        $response_query = "INSERT INTO ace_school_system.student_responses (attempt_id, question_id, selected_answer) 
                           VALUES (:attempt_id, :question_id, :answer)";
         $stmt = $db->prepare($response_query);
         $stmt->execute([
@@ -43,7 +43,7 @@ if (!$timeout && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // Update attempt status and score
-$update_query = "UPDATE exam_attempts 
+$update_query = "UPDATE ace_school_system.exam_attempts 
                 SET status = 'completed', 
                     score = :score, 
                     end_time = NOW() 

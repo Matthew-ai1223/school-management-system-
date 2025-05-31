@@ -14,12 +14,11 @@ $db = Database::getInstance()->getConnection();
 
 // Get filter parameters
 $exam_id = isset($_GET['exam_id']) ? (int)$_GET['exam_id'] : null;
-$department = isset($_GET['department']) ? $_GET['department'] : null;
-$session = isset($_GET['session']) ? $_GET['session'] : null;
+$application_type = isset($_GET['application_type']) ? $_GET['application_type'] : null;
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : null;
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : null;
 
-// Base query for both morning and afternoon students
+// Base query for students
 $base_conditions = [];
 $params = [];
 
@@ -28,9 +27,9 @@ if ($exam_id) {
     $params[':exam_id'] = $exam_id;
 }
 
-if ($department) {
-    $base_conditions[] = "department = :department";
-    $params[':department'] = $department;
+if ($application_type) {
+    $base_conditions[] = "s.application_type = :application_type";
+    $params[':application_type'] = $application_type;
 }
 
 if ($date_from) {
@@ -45,74 +44,25 @@ if ($date_to) {
 
 $where_clause = !empty($base_conditions) ? " AND " . implode(" AND ", $base_conditions) : "";
 
-if ($session === 'morning') {
-    $query = "SELECT 
-                ms.id as student_id,
-                ms.fullname as student_name,
-                ms.department,
-                'Morning' as session,
-                e.title as exam_title,
-                ea.score,
-                ea.start_time,
-                ea.end_time,
-                e.passing_score,
-                CASE WHEN ea.score >= e.passing_score THEN 'Pass' ELSE 'Fail' END as status
-              FROM morning_students ms
-              JOIN exam_attempts ea ON ms.id = ea.user_id
-              JOIN exams e ON ea.exam_id = e.id
-              WHERE ea.status = 'completed'" . $where_clause . "
-              ORDER BY ea.start_time DESC";
-} elseif ($session === 'afternoon') {
-    $query = "SELECT 
-                afs.id as student_id,
-                afs.fullname as student_name,
-                afs.department,
-                'Afternoon' as session,
-                e.title as exam_title,
-                ea.score,
-                ea.start_time,
-                ea.end_time,
-                e.passing_score,
-                CASE WHEN ea.score >= e.passing_score THEN 'Pass' ELSE 'Fail' END as status
-              FROM afternoon_students afs
-              JOIN exam_attempts ea ON afs.id = ea.user_id
-              JOIN exams e ON ea.exam_id = e.id
-              WHERE ea.status = 'completed'" . $where_clause . "
-              ORDER BY ea.start_time DESC";
-} else {
-    $query = "(SELECT 
-                ms.id as student_id,
-                ms.fullname as student_name,
-                ms.department,
-                'Morning' as session,
-                e.title as exam_title,
-                ea.score,
-                ea.start_time,
-                ea.end_time,
-                e.passing_score,
-                CASE WHEN ea.score >= e.passing_score THEN 'Pass' ELSE 'Fail' END as status
-              FROM morning_students ms
-              JOIN exam_attempts ea ON ms.id = ea.user_id
-              JOIN exams e ON ea.exam_id = e.id
-              WHERE ea.status = 'completed'" . $where_clause . ")
-              UNION ALL
-              (SELECT 
-                afs.id as student_id,
-                afs.fullname as student_name,
-                afs.department,
-                'Afternoon' as session,
-                e.title as exam_title,
-                ea.score,
-                ea.start_time,
-                ea.end_time,
-                e.passing_score,
-                CASE WHEN ea.score >= e.passing_score THEN 'Pass' ELSE 'Fail' END as status
-              FROM afternoon_students afs
-              JOIN exam_attempts ea ON afs.id = ea.user_id
-              JOIN exams e ON ea.exam_id = e.id
-              WHERE ea.status = 'completed'" . $where_clause . ")
-              ORDER BY start_time DESC";
-}
+// Single query for all students
+$query = "SELECT 
+            s.id as student_id,
+            CONCAT(s.first_name, ' ', s.last_name) as student_name,
+            s.application_type,
+            s.class,
+            e.title as exam_title,
+            e.duration as total_questions,
+            ea.score as raw_score,
+            ROUND((ea.score / e.duration * 100), 2) as score,
+            ea.start_time,
+            ea.end_time,
+            e.passing_score,
+            CASE WHEN (ea.score / e.duration * 100) >= 50 THEN 'Pass' ELSE 'Fail' END as status
+          FROM students s
+          JOIN exam_attempts ea ON s.id = ea.student_id
+          JOIN exams e ON ea.exam_id = e.id
+          WHERE ea.status = 'completed'" . $where_clause . "
+          ORDER BY ea.start_time DESC";
 
 $stmt = $db->prepare($query);
 $stmt->execute($params);
@@ -123,13 +73,39 @@ $exams_query = "SELECT id, title FROM exams ORDER BY title";
 $exams_stmt = $db->query($exams_query);
 $exams = $exams_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Get all departments for filter
-$dept_query = "(SELECT DISTINCT department FROM morning_students)
-               UNION
-               (SELECT DISTINCT department FROM afternoon_students)
-               ORDER BY department";
-$dept_stmt = $db->query($dept_query);
-$departments = $dept_stmt->fetchAll(PDO::FETCH_COLUMN);
+// Get all application types for filter
+$app_types_query = "SELECT DISTINCT application_type FROM students ORDER BY application_type";
+$app_types_stmt = $db->query($app_types_query);
+$application_types = $app_types_stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Get available classes for the filter
+$classes_query = "SELECT DISTINCT class 
+                 FROM ace_school_system.students 
+                 WHERE class IS NOT NULL 
+                 ORDER BY class";
+$stmt = $db->query($classes_query);
+$available_classes = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Get statistics
+$stats_query = "SELECT 
+    MIN(ROUND((ea.score / e.duration * 100), 2)) as lowest_score,
+    MAX(ROUND((ea.score / e.duration * 100), 2)) as highest_score,
+    AVG(ROUND((ea.score / e.duration * 100), 2)) as average_score,
+    COUNT(*) as total_attempts,
+    SUM(CASE WHEN (ea.score / e.duration * 100) >= 50 THEN 1 ELSE 0 END) as passed_count
+FROM exam_attempts ea
+JOIN exams e ON ea.exam_id = e.id
+JOIN students s ON ea.student_id = s.id
+WHERE ea.status = 'completed'" . $where_clause;
+
+$stmt = $db->prepare($stats_query);
+$stmt->execute($params);
+$stats = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Calculate pass percentage
+$pass_percentage = $stats['total_attempts'] > 0 
+    ? round(($stats['passed_count'] / $stats['total_attempts']) * 100, 1)
+    : 0;
 
 // Handle export requests
 if (isset($_GET['export'])) {
@@ -160,8 +136,8 @@ if (isset($_GET['export'])) {
                 <table border="1" cellpadding="4">
                 <tr style="background-color: #f5f5f5;">
                     <th>Student Name</th>
-                    <th>Session</th>
-                    <th>Department</th>
+                    <th>Class</th>
+                    <th>Application Type</th>
                     <th>Exam</th>
                     <th>Score</th>
                     <th>Status</th>
@@ -172,8 +148,8 @@ if (isset($_GET['export'])) {
         foreach ($reports as $row) {
             $html .= '<tr>
                         <td>' . htmlspecialchars($row['student_name']) . '</td>
-                        <td>' . htmlspecialchars($row['session']) . '</td>
-                        <td>' . htmlspecialchars($row['department']) . '</td>
+                        <td>' . htmlspecialchars($row['class']) . '</td>
+                        <td>' . htmlspecialchars($row['application_type']) . '</td>
                         <td>' . htmlspecialchars($row['exam_title']) . '</td>
                         <td>' . $row['score'] . '%</td>
                         <td>' . $row['status'] . '</td>
@@ -202,14 +178,14 @@ if (isset($_GET['export'])) {
         fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
         
         // Output header row
-        fputcsv($output, ['Student Name', 'Session', 'Department', 'Exam', 'Score', 'Status', 'Date']);
+        fputcsv($output, ['Student Name', 'Class', 'Application Type', 'Exam', 'Score', 'Status', 'Date']);
         
         // Output data rows
         foreach ($reports as $row) {
             fputcsv($output, [
                 $row['student_name'],
-                $row['session'],
-                $row['department'],
+                $row['class'],
+                $row['application_type'],
                 $row['exam_title'],
                 $row['score'] . '%',
                 $row['status'],
@@ -277,21 +253,25 @@ if (isset($_GET['export'])) {
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <label class="form-label">Session</label>
-                                <select name="session" class="form-select">
-                                    <option value="">All Sessions</option>
-                                    <option value="morning" <?php echo $session === 'morning' ? 'selected' : ''; ?>>Morning</option>
-                                    <option value="afternoon" <?php echo $session === 'afternoon' ? 'selected' : ''; ?>>Afternoon</option>
+                                <label class="form-label">Class</label>
+                                <select name="class" class="form-select">
+                                    <option value="">All Classes</option>
+                                    <?php foreach ($available_classes as $class): ?>
+                                        <option value="<?php echo htmlspecialchars($class); ?>"
+                                                <?php echo (isset($_GET['class']) && $_GET['class'] === $class) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($class); ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Department</label>
-                                <select name="department" class="form-select">
-                                    <option value="">All Departments</option>
-                                    <?php foreach ($departments as $dept): ?>
-                                        <option value="<?php echo $dept; ?>" 
-                                                <?php echo $department === $dept ? 'selected' : ''; ?>>
-                                            <?php echo htmlspecialchars($dept); ?>
+                                <label class="form-label">Application Type</label>
+                                <select name="application_type" class="form-select">
+                                    <option value="">All Application Types</option>
+                                    <?php foreach ($application_types as $app_type): ?>
+                                        <option value="<?php echo $app_type; ?>" 
+                                                <?php echo $application_type === $app_type ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($app_type); ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>
@@ -312,6 +292,71 @@ if (isset($_GET['export'])) {
                     </div>
                 </div>
 
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Performance Statistics</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="text-center p-3">
+                                            <h6 class="text-muted mb-1">Lowest Score</h6>
+                                            <h2 class="mb-0 text-danger"><?php echo number_format($stats['lowest_score'], 1); ?>%</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center p-3">
+                                            <h6 class="text-muted mb-1">Average Score</h6>
+                                            <h2 class="mb-0 text-primary"><?php echo number_format($stats['average_score'], 1); ?>%</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center p-3">
+                                            <h6 class="text-muted mb-1">Highest Score</h6>
+                                            <h2 class="mb-0 text-success"><?php echo number_format($stats['highest_score'], 1); ?>%</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center p-3">
+                                            <h6 class="text-muted mb-1">Pass Rate</h6>
+                                            <h2 class="mb-0 <?php echo $pass_percentage >= 70 ? 'text-success' : ($pass_percentage >= 50 ? 'text-primary' : 'text-danger'); ?>">
+                                                <?php echo $pass_percentage; ?>%
+                                            </h2>
+                                            <small class="text-muted"><?php echo $stats['passed_count']; ?> of <?php echo $stats['total_attempts']; ?> attempts</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="progress" style="height: 25px;">
+                                            <div class="progress-bar bg-danger" role="progressbar" 
+                                                style="width: <?php echo min($stats['lowest_score'], 100); ?>%" 
+                                                title="Lowest: <?php echo number_format($stats['lowest_score'], 1); ?>%">
+                                            </div>
+                                            <div class="progress-bar bg-primary" role="progressbar" 
+                                                style="width: <?php echo min($stats['average_score'] - $stats['lowest_score'], 100); ?>%" 
+                                                title="Average: <?php echo number_format($stats['average_score'], 1); ?>%">
+                                            </div>
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                style="width: <?php echo min($stats['highest_score'] - $stats['average_score'], 100); ?>%" 
+                                                title="Highest: <?php echo number_format($stats['highest_score'], 1); ?>%">
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-2">
+                                            <small class="text-muted">0%</small>
+                                            <small class="text-muted">Score Distribution</small>
+                                            <small class="text-muted">100%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Reports Table -->
                 <div class="card">
                     <div class="card-body">
@@ -320,8 +365,7 @@ if (isset($_GET['export'])) {
                                 <thead>
                                     <tr>
                                         <th>Student Name</th>
-                                        <th>Session</th>
-                                        <th>Department</th>
+                                        <th>Class</th>
                                         <th>Exam</th>
                                         <th>Score</th>
                                         <th>Status</th>
@@ -337,28 +381,30 @@ if (isset($_GET['export'])) {
                                     <?php else: ?>
                                         <?php foreach ($reports as $report): ?>
                                             <tr>
-                                                <td><?php echo htmlspecialchars($report['student_name']); ?></td>
-                                                <td><?php echo htmlspecialchars($report['session']); ?></td>
-                                                <td><?php echo htmlspecialchars($report['department']); ?></td>
-                                                <td><?php echo htmlspecialchars($report['exam_title']); ?></td>
+                                                <td><?php echo htmlspecialchars($report['student_name'] ?? ''); ?></td>
+                                                <td><?php echo htmlspecialchars($report['class'] ?? ''); ?></td>
+                                                <td><?php echo htmlspecialchars($report['exam_title'] ?? ''); ?></td>
                                                 <td>
-                                                    <span class="badge bg-<?php echo $report['score'] >= $report['passing_score'] ? 'success' : 'danger'; ?>">
-                                                        <?php echo $report['score']; ?>%
+                                                    <span class="badge bg-<?php echo ($report['score'] ?? 0) >= 50 ? 'success' : 'danger'; ?>">
+                                                        <?php echo number_format($report['score'] ?? 0, 2); ?>%
+                                                        <small>(<?php echo $report['raw_score']; ?>/<?php echo $report['total_questions']; ?>)</small>
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-<?php echo $report['status'] === 'Pass' ? 'success' : 'danger'; ?>">
-                                                        <?php echo $report['status']; ?>
+                                                    <span class="badge bg-<?php echo ($report['status'] ?? '') === 'Pass' ? 'success' : 'danger'; ?>">
+                                                        <?php echo $report['status'] ?? 'N/A'; ?>
                                                     </span>
                                                 </td>
-                                                <td><?php echo date('M d, Y H:i', strtotime($report['start_time'])); ?></td>
+                                                <td><?php echo isset($report['start_time']) ? date('M d, Y H:i', strtotime($report['start_time'])) : 'N/A'; ?></td>
                                                 <td>
                                                     <?php
-                                                    if ($report['end_time']) {
+                                                    if (isset($report['end_time']) && isset($report['start_time'])) {
                                                         $start = new DateTime($report['start_time']);
                                                         $end = new DateTime($report['end_time']);
                                                         $duration = $start->diff($end);
                                                         echo $duration->format('%H:%I:%S');
+                                                    } else {
+                                                        echo 'N/A';
                                                     }
                                                     ?>
                                                 </td>

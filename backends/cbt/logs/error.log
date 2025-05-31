@@ -1066,3 +1066,649 @@ Stack trace:
 [29-May-2025 21:54:27 Africa/Lagos] === Dashboard Access Attempt ===
 [29-May-2025 21:54:27 Africa/Lagos] Session student_id: 49
 [29-May-2025 21:54:27 Africa/Lagos] Student lookup result: Found
+[29-May-2025 22:03:55 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 22:03:55 Africa/Lagos] Session student_id: 49
+[29-May-2025 22:03:55 Africa/Lagos] Student lookup result: Found
+[29-May-2025 22:04:01 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 22:04:01 Africa/Lagos] Session student_id: 49
+[29-May-2025 22:04:01 Africa/Lagos] Student lookup result: Found
+[29-May-2025 23:54:58 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 23:54:58 Africa/Lagos] Session student_id: 49
+[29-May-2025 23:54:58 Africa/Lagos] Student lookup result: Found
+[29-May-2025 23:55:05 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 23:55:05 Africa/Lagos] Session student_id: 49
+[29-May-2025 23:55:05 Africa/Lagos] Student lookup result: Found
+[29-May-2025 23:58:43 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 23:58:43 Africa/Lagos] Session student_id: 50
+[29-May-2025 23:58:43 Africa/Lagos] Student lookup result: Found
+[29-May-2025 23:58:50 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 23:58:50 Africa/Lagos] Session student_id: 50
+[29-May-2025 23:58:50 Africa/Lagos] Student lookup result: Found
+[29-May-2025 23:59:09 Africa/Lagos] === Exam Start Attempt ===
+[29-May-2025 23:59:09 Africa/Lagos] Session student_id: 49
+[29-May-2025 23:59:09 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[29-May-2025 23:59:09 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 23:59:09 Africa/Lagos] Session student_id: 49
+[29-May-2025 23:59:09 Africa/Lagos] Student lookup result: Found
+[29-May-2025 23:59:10 Africa/Lagos] === Exam Start Attempt ===
+[29-May-2025 23:59:10 Africa/Lagos] Session student_id: 49
+[29-May-2025 23:59:10 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[29-May-2025 23:59:10 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 23:59:10 Africa/Lagos] Session student_id: 49
+[29-May-2025 23:59:10 Africa/Lagos] Student lookup result: Found
+[29-May-2025 23:59:11 Africa/Lagos] === Exam Start Attempt ===
+[29-May-2025 23:59:11 Africa/Lagos] Session student_id: 49
+[29-May-2025 23:59:11 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[29-May-2025 23:59:11 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 23:59:11 Africa/Lagos] Session student_id: 49
+[29-May-2025 23:59:11 Africa/Lagos] Student lookup result: Found
+[29-May-2025 23:59:12 Africa/Lagos] === Exam Start Attempt ===
+[29-May-2025 23:59:12 Africa/Lagos] Session student_id: 49
+[29-May-2025 23:59:12 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[29-May-2025 23:59:12 Africa/Lagos] === Dashboard Access Attempt ===
+[29-May-2025 23:59:12 Africa/Lagos] Session student_id: 49
+[29-May-2025 23:59:12 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:10:51 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:10:51 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:51 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:10:53 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:10:53 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:53 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[30-May-2025 00:10:53 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:10:53 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:53 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:10:54 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:10:54 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:54 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[30-May-2025 00:10:54 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:10:54 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:54 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:10:55 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:10:55 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:55 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[30-May-2025 00:10:55 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:10:55 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:55 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:10:56 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:10:56 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:56 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[30-May-2025 00:10:56 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:10:56 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:56 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:10:57 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:10:57 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:57 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[30-May-2025 00:10:57 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:10:57 Africa/Lagos] Session student_id: 49
+[30-May-2025 00:10:57 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:11:50 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php:64
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php(64): PDOStatement->execute(Array)
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 64
+[30-May-2025 00:14:26 Africa/Lagos] Successfully loaded exam ID 2 with 0 questions
+[30-May-2025 00:14:47 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:14:47 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:14:47 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:14:48 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:14:48 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:14:48 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[30-May-2025 00:14:48 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:14:48 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:14:48 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:15:06 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:15:06 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:15:06 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:15:13 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:15:13 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:15:13 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:15:19 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:15:19 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:15:19 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:15:44 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:15:44 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:15:44 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:15:49 Africa/Lagos] Successfully loaded exam ID 2 with 0 questions
+[30-May-2025 00:16:15 Africa/Lagos] Successfully loaded exam ID 2 with 1 questions
+[30-May-2025 00:16:24 Africa/Lagos] Successfully loaded exam ID 2 with 2 questions
+[30-May-2025 00:16:40 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:16:40 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:16:40 Africa/Lagos] Database error in start-exam.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'student_id' in 'where clause'
+[30-May-2025 00:16:40 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:16:40 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:16:40 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:29:34 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:29:34 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:29:34 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:29:36 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:29:36 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:29:36 Africa/Lagos] PHP Warning:  Undefined array key "user_table" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\exam.php on line 15
+[30-May-2025 00:29:36 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'WHERE id = ?' at line 1 in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\exam.php:16
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\exam.php(16): PDO->prepare('SELECT * FROM  ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\exam.php on line 16
+[30-May-2025 00:31:09 Africa/Lagos] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\exam.php on line 26
+[30-May-2025 00:31:09 Africa/Lagos] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\exam.php on line 26
+[30-May-2025 00:31:09 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\exam.php on line 27
+[30-May-2025 00:31:09 Africa/Lagos] Available classes fetched: JSS3 Pearl, P 1, P 2, P3, SS3, Test Grade 9
+[30-May-2025 00:31:32 Africa/Lagos] === Login Process Start ===
+[30-May-2025 00:31:32 Africa/Lagos] POST data received - Registration: 2425/COL/0010, Class: JSS3 Pearl
+[30-May-2025 00:31:32 Africa/Lagos] Database connection successful
+[30-May-2025 00:31:32 Africa/Lagos] Student exists check: Yes
+[30-May-2025 00:31:32 Africa/Lagos] Student query result: Array
+(
+    [id] => 50
+    [first_name] => OO1
+    [last_name] => Nihil deleniti quasi
+    [registration_number] => 2425/COL/0010
+    [class] => JSS3 Pearl
+    [status] => registered
+)
+
+[30-May-2025 00:31:32 Africa/Lagos] Session variables set: Array
+(
+    [student_id] => 50
+    [student_name] => OO1 Nihil deleniti quasi
+    [registration_number] => 2425/COL/0010
+    [class] => JSS3 Pearl
+    [last_activity] => 1748561492
+)
+
+[30-May-2025 00:31:33 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:31:33 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:31:33 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:31:35 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:31:35 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:31:35 Africa/Lagos] PHP Warning:  Undefined array key "expiration_date" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\exam.php on line 26
+[30-May-2025 00:31:35 Africa/Lagos] PHP Deprecated:  strtotime(): Passing null to parameter #1 ($datetime) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\exam.php on line 26
+[30-May-2025 00:31:35 Africa/Lagos] PHP Warning:  Undefined array key "is_active" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\exam.php on line 27
+[30-May-2025 00:31:35 Africa/Lagos] Available classes fetched: JSS3 Pearl, P 1, P 2, P3, SS3, Test Grade 9
+[30-May-2025 00:33:56 Africa/Lagos] === Login Process Start ===
+[30-May-2025 00:33:56 Africa/Lagos] POST data received - Registration: 2425/COL/0010, Class: JSS3 Pearl
+[30-May-2025 00:33:56 Africa/Lagos] Database connection successful
+[30-May-2025 00:33:56 Africa/Lagos] Student exists check: Yes
+[30-May-2025 00:33:56 Africa/Lagos] Student query result: Array
+(
+    [id] => 50
+    [first_name] => OO1
+    [last_name] => Nihil deleniti quasi
+    [registration_number] => 2425/COL/0010
+    [class] => JSS3 Pearl
+    [status] => registered
+)
+
+[30-May-2025 00:33:56 Africa/Lagos] Session variables set: Array
+(
+    [student_id] => 50
+    [student_name] => OO1 Nihil deleniti quasi
+    [registration_number] => 2425/COL/0010
+    [class] => JSS3 Pearl
+    [last_activity] => 1748561636
+)
+
+[30-May-2025 00:33:56 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:33:56 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:33:56 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:33:58 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:33:58 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:34:09 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.user_responses' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\submit-exam.php:36
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\submit-exam.php(36): PDO->prepare('INSERT INTO ace...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\submit-exam.php on line 36
+[30-May-2025 00:42:14 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:42:14 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:42:14 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:42:17 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:42:17 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:42:17 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:42:19 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:42:19 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:42:32 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:42:32 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:42:32 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:44:50 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:44:50 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:44:50 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:44:52 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 00:44:52 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:47:00 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'ea.user_id' in 'on clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php:72
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php(72): PDO->prepare('\r\n    SELECT \r\n...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 72
+[30-May-2025 00:47:21 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:47:21 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:47:21 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:47:43 Africa/Lagos] PHP Warning:  Undefined array key "user_table" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\profile.php on line 16
+[30-May-2025 00:47:43 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'WHERE id = ?' at line 1 in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\profile.php:17
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\profile.php(17): PDO->prepare('SELECT * FROM  ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\profile.php on line 17
+[30-May-2025 00:47:47 Africa/Lagos] PHP Warning:  Undefined array key "user_table" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\profile.php on line 16
+[30-May-2025 00:47:47 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42000]: Syntax error or access violation: 1064 You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'WHERE id = ?' at line 1 in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\profile.php:17
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\profile.php(17): PDO->prepare('SELECT * FROM  ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\profile.php on line 17
+[30-May-2025 00:51:37 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 00:51:37 Africa/Lagos] Session student_id: 50
+[30-May-2025 00:51:37 Africa/Lagos] Student lookup result: Found
+[30-May-2025 00:53:39 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php:117
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php(117): PDO->prepare('(SELECT \r\n     ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 117
+[30-May-2025 00:53:55 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY093]: Invalid parameter number: mixed named and positional parameters in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:63
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(63): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 63
+[30-May-2025 00:54:28 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.department' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php:65
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php(65): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 65
+[30-May-2025 00:55:38 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 00:55:38 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 00:55:38 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 00:55:38 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 287
+[30-May-2025 00:55:38 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 287
+[30-May-2025 00:55:38 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 287
+[30-May-2025 00:56:41 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 00:56:41 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 00:56:41 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 00:57:18 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 00:57:18 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 00:57:18 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 00:58:14 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 00:58:14 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 00:58:14 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 00:58:31 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 00:58:31 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 00:58:31 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 00:58:47 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 00:58:47 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 00:58:47 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 00:59:12 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 00:59:12 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 00:59:12 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 00:59:19 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY093]: Invalid parameter number: mixed named and positional parameters in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:63
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(63): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 63
+[30-May-2025 00:59:36 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 00:59:36 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 00:59:36 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 00:59:38 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 00:59:38 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 00:59:38 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 01:00:08 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.phone' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:63
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(63): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 63
+[30-May-2025 01:00:12 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 01:00:12 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 01:00:12 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 01:00:19 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 228
+[30-May-2025 01:00:19 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 229
+[30-May-2025 01:00:19 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 239
+[30-May-2025 01:03:12 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 01:03:12 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 01:03:12 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 01:04:28 Africa/Lagos] Error in assign-subjects.php: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '12-Basic Science' for key 'unique_teacher_subject'
+[30-May-2025 01:04:49 Africa/Lagos] Error in assign-subjects.php: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '12-Basic Science' for key 'unique_teacher_subject'
+[30-May-2025 01:04:51 Africa/Lagos] Error in assign-subjects.php: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '12-Basic Science' for key 'unique_teacher_subject'
+[30-May-2025 01:04:59 Africa/Lagos] Error in assign-subjects.php: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '12-Basic Science' for key 'unique_teacher_subject'
+[30-May-2025 01:05:01 Africa/Lagos] Error in assign-subjects.php: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '12-Basic Science' for key 'unique_teacher_subject'
+[30-May-2025 01:05:24 Africa/Lagos] Error in assign-subjects.php: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '12-Basic Science' for key 'unique_teacher_subject'
+[30-May-2025 01:08:13 Africa/Lagos] Database error in assign-subjects.php: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.created_by' in 'field list'
+[30-May-2025 01:08:13 Africa/Lagos] PHP Warning:  Undefined variable $categories in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 470
+[30-May-2025 01:08:13 Africa/Lagos] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 470
+[30-May-2025 01:08:13 Africa/Lagos] PHP Warning:  Undefined variable $subjects in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 521
+[30-May-2025 01:08:13 Africa/Lagos] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 521
+[30-May-2025 01:08:13 Africa/Lagos] PHP Warning:  Undefined variable $subjects in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 578
+[30-May-2025 01:08:13 Africa/Lagos] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 578
+[30-May-2025 01:08:13 Africa/Lagos] PHP Warning:  Undefined variable $subjects in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 578
+[30-May-2025 01:08:13 Africa/Lagos] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\assign-subjects.php on line 578
+[30-May-2025 01:17:06 Africa/Lagos] Error in assign-subjects.php: One or more invalid subjects selected
+[30-May-2025 01:17:41 Africa/Lagos] Error in assign-subjects.php: One or more invalid subjects selected
+[30-May-2025 01:20:13 Africa/Lagos] Error in assign-subjects.php: Invalid subjects selected: 
+[30-May-2025 01:20:26 Africa/Lagos] Error in assign-subjects.php: Invalid subjects selected: 
+[30-May-2025 01:25:50 Africa/Lagos] Error in assign-subjects.php: Invalid subjects selected: 
+[30-May-2025 01:26:03 Africa/Lagos] Error in assign-subjects.php: Invalid subjects selected: 
+[30-May-2025 01:29:00 Africa/Lagos] Submitted subjects: Basic Science, Civic Education, Basic Science
+[30-May-2025 01:29:00 Africa/Lagos] Valid subjects found: Basic Science, Civic Education, Basic Science, Civic Education
+[30-May-2025 01:29:00 Africa/Lagos] Invalid subjects detected: 
+[30-May-2025 01:29:00 Africa/Lagos] Error in assign-subjects.php: Invalid subjects selected: 
+[30-May-2025 01:35:23 Africa/Lagos] Error in assign-subjects.php: Invalid subjects selected: 
+[30-May-2025 01:39:19 Africa/Lagos] Error in assign-subjects.php: Invalid subjects selected: 
+[30-May-2025 01:42:58 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.phone' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:64
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(64): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 64
+[30-May-2025 01:43:53 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.department' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:63
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(63): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 63
+[30-May-2025 01:46:16 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.department' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:63
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(63): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 63
+[30-May-2025 01:46:17 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.department' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:63
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(63): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 63
+[30-May-2025 01:51:29 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.department' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:63
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(63): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 63
+[30-May-2025 01:51:32 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.department' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:63
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(63): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 63
+[30-May-2025 01:51:56 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.department' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:63
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(63): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 63
+[30-May-2025 01:53:30 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.added_by' in 'where clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:64
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(64): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 64
+[30-May-2025 01:53:31 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 's.added_by' in 'where clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:64
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(64): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 64
+[30-May-2025 01:56:12 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:89
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(89): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 89
+[30-May-2025 01:58:44 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY093]: Invalid parameter number in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:90
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(90): PDOStatement->execute()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 90
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 304
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 304
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 304
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 304
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 304
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 304
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 330
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 304
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 330
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 304
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 304
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  explode(): Passing null to parameter #2 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 304
+[30-May-2025 01:59:53 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 330
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 330
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:04:09 Africa/Lagos] PHP Deprecated:  number_format(): Passing null to parameter #1 ($num) of type float is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 353
+[30-May-2025 02:06:09 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:06:09 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:06:09 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:06:09 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:06:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 330
+[30-May-2025 02:06:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 02:06:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 330
+[30-May-2025 02:06:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 02:06:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 02:06:30 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.added_by' in 'where clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php:30
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php(30): PDO->prepare('SELECT u.* FROM...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php on line 30
+[30-May-2025 02:06:35 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:06:35 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:06:35 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:06:35 Africa/Lagos] PHP Deprecated:  substr(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 319
+[30-May-2025 02:06:35 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 330
+[30-May-2025 02:06:35 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 02:06:35 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 330
+[30-May-2025 02:06:35 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 02:06:35 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 336
+[30-May-2025 02:08:39 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 337
+[30-May-2025 02:08:39 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:08:39 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 337
+[30-May-2025 02:08:39 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:08:39 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:00 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:00 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:00 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:00 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 337
+[30-May-2025 02:09:00 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:00 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:00 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:00 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:00 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:14 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 337
+[30-May-2025 02:09:14 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:14 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 337
+[30-May-2025 02:09:14 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:09:14 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 343
+[30-May-2025 02:11:16 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 02:11:16 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 02:11:16 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 02:15:08 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.added_by' in 'where clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php:30
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php(30): PDO->prepare('SELECT u.* FROM...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php on line 30
+[30-May-2025 02:15:40 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 02:15:40 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 02:15:40 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 02:15:45 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 02:15:45 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 02:15:45 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 02:19:19 Africa/Lagos] PHP Warning:  fopen(../../school_logo.png): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\fpdf_temp\fpdf.php on line 1262
+[30-May-2025 02:19:19 Africa/Lagos] PHP Fatal error:  Uncaught Exception: FPDF error: Can't open image file: ../../school_logo.png in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\fpdf_temp\fpdf.php:276
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\fpdf_temp\fpdf.php(1264): FPDF->Error('Can't open imag...')
+#1 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\fpdf_temp\fpdf.php(890): FPDF->_parsepng('../../school_lo...')
+#2 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\generate_result_pdf.php(9): FPDF->Image('../../school_lo...', 10, 6, 30)
+#3 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\fpdf_temp\fpdf.php(339): ResultPDF->Header()
+#4 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\generate_result_pdf.php(134): FPDF->AddPage()
+#5 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\fpdf_temp\fpdf.php on line 276
+[30-May-2025 02:26:17 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 02:26:17 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 02:26:17 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 02:58:59 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 02:58:59 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 02:58:59 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:00:56 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:00:56 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:00:56 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:02:46 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:02:46 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:02:46 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:10:10 Africa/Lagos] PHP Warning:  include(../includes/sidebar.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 635
+[30-May-2025 03:10:10 Africa/Lagos] PHP Warning:  include(): Failed opening '../includes/sidebar.php' for inclusion (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 635
+[30-May-2025 03:19:33 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 03:19:33 Africa/Lagos] Session student_id: Not set
+[30-May-2025 03:19:33 Africa/Lagos] No student_id in session - redirecting to login
+[30-May-2025 03:19:33 Africa/Lagos] Available classes fetched: JSS3 Pearl, P 1, P 2, P3, SS3, Test Grade 9
+[30-May-2025 03:19:41 Africa/Lagos] === Login Process Start ===
+[30-May-2025 03:19:41 Africa/Lagos] POST data received - Registration: 2425/KID/0010, Class: P3
+[30-May-2025 03:19:41 Africa/Lagos] Database connection successful
+[30-May-2025 03:19:41 Africa/Lagos] Student exists check: Yes
+[30-May-2025 03:19:41 Africa/Lagos] Student query result: Array
+(
+    [id] => 49
+    [first_name] => 
+    [last_name] => same
+    [registration_number] => 2425/KID/0010
+    [class] => P3
+    [status] => registered
+)
+
+[30-May-2025 03:19:41 Africa/Lagos] Session variables set: Array
+(
+    [student_id] => 49
+    [student_name] =>  same
+    [registration_number] => 2425/KID/0010
+    [class] => P3
+    [last_activity] => 1748571581
+)
+
+[30-May-2025 03:19:41 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 03:19:41 Africa/Lagos] Session student_id: 49
+[30-May-2025 03:19:41 Africa/Lagos] Student lookup result: Found
+[30-May-2025 03:20:41 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:20:41 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:20:41 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:20:46 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:20:46 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:20:46 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:22:45 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:22:45 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:22:45 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:23:33 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:23:33 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:23:33 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:24:19 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:24:19 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:24:19 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:25:16 Africa/Lagos] Successfully loaded exam ID 3 with 0 questions
+[30-May-2025 03:25:29 Africa/Lagos] Successfully loaded exam ID 3 with 1 questions
+[30-May-2025 03:25:45 Africa/Lagos] Successfully loaded exam ID 3 with 2 questions
+[30-May-2025 03:25:48 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 03:25:48 Africa/Lagos] Session student_id: Not set
+[30-May-2025 03:25:48 Africa/Lagos] No student_id in session - redirecting to login
+[30-May-2025 03:25:48 Africa/Lagos] Available classes fetched: JSS3 Pearl, P 1, P 2, P3, SS3, Test Grade 9
+[30-May-2025 03:25:54 Africa/Lagos] === Login Process Start ===
+[30-May-2025 03:25:54 Africa/Lagos] POST data received - Registration: 2425/KID/0010, Class: P3
+[30-May-2025 03:25:54 Africa/Lagos] Database connection successful
+[30-May-2025 03:25:54 Africa/Lagos] Student exists check: Yes
+[30-May-2025 03:25:54 Africa/Lagos] Student query result: Array
+(
+    [id] => 49
+    [first_name] => 
+    [last_name] => same
+    [registration_number] => 2425/KID/0010
+    [class] => P3
+    [status] => registered
+)
+
+[30-May-2025 03:25:54 Africa/Lagos] Session variables set: Array
+(
+    [student_id] => 49
+    [student_name] =>  same
+    [registration_number] => 2425/KID/0010
+    [class] => P3
+    [last_activity] => 1748571954
+)
+
+[30-May-2025 03:25:54 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 03:25:54 Africa/Lagos] Session student_id: 49
+[30-May-2025 03:25:54 Africa/Lagos] Student lookup result: Found
+[30-May-2025 03:25:57 Africa/Lagos] === Exam Start Attempt ===
+[30-May-2025 03:25:57 Africa/Lagos] Session student_id: 49
+[30-May-2025 03:26:10 Africa/Lagos] === Dashboard Access Attempt ===
+[30-May-2025 03:26:10 Africa/Lagos] Session student_id: 49
+[30-May-2025 03:26:10 Africa/Lagos] Student lookup result: Found
+[30-May-2025 03:26:54 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:26:54 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:26:54 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:27:05 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:27:05 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:27:05 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:28:24 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:28:24 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:28:24 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:33:15 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:33:15 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:33:15 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:35:54 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 249
+[30-May-2025 03:35:54 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 250
+[30-May-2025 03:35:54 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 260
+[30-May-2025 03:43:00 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'e.total_questions' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:85
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(85): PDO->prepare('SELECT DISTINCT...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 85
+[30-May-2025 03:43:07 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'e.total_questions' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php:67
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php(67): PDO->prepare('SELECT \r\n      ...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 67
+[30-May-2025 03:43:18 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'e.total_questions' in 'field list' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php:85
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php(85): PDO->prepare('SELECT DISTINCT...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 85
+[30-May-2025 03:44:32 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 251
+[30-May-2025 03:44:32 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 252
+[30-May-2025 03:44:32 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 262
+[30-May-2025 03:44:43 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 251
+[30-May-2025 03:44:43 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 252
+[30-May-2025 03:44:43 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 262
+[30-May-2025 03:47:21 Africa/Lagos] PHP Warning:  Undefined variable $available_classes in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 251
+[30-May-2025 03:47:21 Africa/Lagos] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 251
+[30-May-2025 03:47:21 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 266
+[30-May-2025 03:47:36 Africa/Lagos] PHP Warning:  Undefined variable $available_classes in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 251
+[30-May-2025 03:47:36 Africa/Lagos] PHP Warning:  foreach() argument must be of type array|object, null given in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 251
+[30-May-2025 03:47:36 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 266
+[30-May-2025 03:49:23 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 274
+[30-May-2025 03:49:35 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 274
+[30-May-2025 03:49:42 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 274
+[30-May-2025 03:49:55 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 274
+[31-May-2025 00:04:34 Africa/Lagos] === Dashboard Access Attempt ===
+[31-May-2025 00:04:34 Africa/Lagos] Session student_id: Not set
+[31-May-2025 00:04:34 Africa/Lagos] No student_id in session - redirecting to login
+[31-May-2025 00:04:42 Africa/Lagos] Database connection error: SQLSTATE[HY000] [2002] No connection could be made because the target machine actively refused it
+[31-May-2025 00:50:18 Africa/Lagos] === Dashboard Access Attempt ===
+[31-May-2025 00:50:18 Africa/Lagos] Session student_id: 50
+[31-May-2025 00:50:18 Africa/Lagos] Student lookup result: Found
+[31-May-2025 00:50:51 Africa/Lagos] === Dashboard Access Attempt ===
+[31-May-2025 00:50:51 Africa/Lagos] Session student_id: 50
+[31-May-2025 00:50:51 Africa/Lagos] Student lookup result: Found
+[31-May-2025 01:00:03 Africa/Lagos] === Dashboard Access Attempt ===
+[31-May-2025 01:00:03 Africa/Lagos] Session student_id: 50
+[31-May-2025 01:00:03 Africa/Lagos] Student lookup result: Found

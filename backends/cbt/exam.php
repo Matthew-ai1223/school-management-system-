@@ -4,24 +4,21 @@ require_once 'includes/Database.php';
 
 session_start();
 
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['exam_attempt'])) {
+if (!isset($_SESSION['student_id']) || !isset($_SESSION['exam_attempt'])) {
     header('Location: dashboard.php');
     exit();
 }
 
 $db = Database::getInstance()->getConnection();
 
-// Verify user's active status
-$table = $_SESSION['user_table'];
-$stmt = $db->prepare("SELECT * FROM $table WHERE id = :user_id");
-$stmt->execute([':user_id' => $_SESSION['user_id']]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+// Verify student exists
+$stmt = $db->prepare("SELECT * FROM ace_school_system.students WHERE id = :student_id");
+$stmt->execute([':student_id' => $_SESSION['student_id']]);
+$student = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Check if account is still active and not expired
-$is_expired = strtotime($user['expiration_date']) < strtotime('today');
-if (!$user['is_active'] || $is_expired) {
+if (!$student) {
     session_destroy();
-    header('Location: login.php?error=expired');
+    header('Location: login.php?error=not_found');
     exit();
 }
 
@@ -418,7 +415,8 @@ if ($current_time > $end_time) {
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
                         type: 'tab_switch',
-                        attempt_id: '<?php echo $attempt['attempt_id']; ?>'
+                        attempt_id: '<?php echo $attempt['attempt_id']; ?>',
+                        student_id: '<?php echo $_SESSION['student_id']; ?>'
                     })
                 });
             }

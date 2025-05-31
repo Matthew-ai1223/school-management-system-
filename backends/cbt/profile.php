@@ -4,7 +4,7 @@ require_once 'includes/Database.php';
 
 session_start();
 
-if (!isset($_SESSION['user_id'])) {
+if (!isset($_SESSION['student_id'])) {
     header('Location: login.php');
     exit();
 }
@@ -12,27 +12,18 @@ if (!isset($_SESSION['user_id'])) {
 $db = Database::getInstance()->getConnection();
 $message = '';
 
-// Get user details from the appropriate table
-$table = $_SESSION['user_table'];
-$stmt = $db->prepare("SELECT * FROM $table WHERE id = :user_id");
-$stmt->execute([':user_id' => $_SESSION['user_id']]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+// Get student details
+$stmt = $db->prepare("SELECT * FROM ace_school_system.students WHERE id = :student_id");
+$stmt->execute([':student_id' => $_SESSION['student_id']]);
+$student = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user) {
+if (!$student) {
     session_destroy();
     header('Location: login.php');
     exit();
 }
 
-// Check if account is still active and not expired
-$is_expired = strtotime($user['expiration_date']) < strtotime('today');
-if (!$user['is_active'] || $is_expired) {
-    session_destroy();
-    header('Location: login.php?error=expired');
-    exit();
-}
-
-// Get user's exam history
+// Get student's exam history
 $exam_history_query = "
     SELECT 
         ea.id as attempt_id,
@@ -42,13 +33,13 @@ $exam_history_query = "
         e.title as exam_title,
         e.passing_score,
         e.duration as total_questions
-                  FROM exam_attempts ea
-                  JOIN exams e ON ea.exam_id = e.id
-                  WHERE ea.user_id = :user_id
+    FROM ace_school_system.exam_attempts ea 
+    JOIN ace_school_system.exams e ON ea.exam_id = e.id 
+    WHERE ea.student_id = :student_id
     ORDER BY ea.start_time DESC";
 
 $stmt = $db->prepare($exam_history_query);
-$stmt->execute([':user_id' => $_SESSION['user_id']]);
+$stmt->execute([':student_id' => $_SESSION['student_id']]);
 $exam_history = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get detailed answers for each attempt
@@ -57,12 +48,12 @@ function getAttemptAnswers($db, $attempt_id) {
         SELECT 
             q.question_text,
             q.correct_answer,
-            ur.selected_answer,
+            sr.selected_answer,
             q.explanation
-        FROM user_responses ur
-        JOIN questions q ON ur.question_id = q.id
-        WHERE ur.attempt_id = :attempt_id
-        ORDER BY ur.id";
+        FROM ace_school_system.student_responses sr
+        JOIN ace_school_system.questions q ON sr.question_id = q.id
+        WHERE sr.attempt_id = :attempt_id
+        ORDER BY sr.id";
     
     $stmt = $db->prepare($answers_query);
     $stmt->execute([':attempt_id' => $attempt_id]);
@@ -73,12 +64,17 @@ function getAttemptAnswers($db, $attempt_id) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $updates = [];
-        $params = [':user_id' => $_SESSION['user_id']];
+        $params = [':student_id' => $_SESSION['student_id']];
 
         // Only update fields that are provided and not empty
-        if (!empty($_POST['fullname'])) {
-            $updates[] = "fullname = :fullname";
-            $params[':fullname'] = $_POST['fullname'];
+        if (!empty($_POST['first_name'])) {
+            $updates[] = "first_name = :first_name";
+            $params[':first_name'] = $_POST['first_name'];
+        }
+
+        if (!empty($_POST['last_name'])) {
+            $updates[] = "last_name = :last_name";
+            $params[':last_name'] = $_POST['last_name'];
         }
 
         if (!empty($_POST['phone'])) {
@@ -86,9 +82,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $params[':phone'] = $_POST['phone'];
         }
 
-        if (!empty($_POST['department'])) {
-            $updates[] = "department = :department";
-            $params[':department'] = $_POST['department'];
+        if (!empty($_POST['class'])) {
+            $updates[] = "class = :class";
+            $params[':class'] = $_POST['class'];
         }
 
         // Only process password if both fields are filled and match
@@ -102,14 +98,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (!empty($updates)) {
-            $sql = "UPDATE $table SET " . implode(", ", $updates) . " WHERE id = :user_id";
+            $sql = "UPDATE ace_school_system.students SET " . implode(", ", $updates) . " WHERE id = :student_id";
             $stmt = $db->prepare($sql);
             if ($stmt->execute($params)) {
                 $message = '<div class="alert alert-success">Profile updated successfully!</div>';
-                // Refresh user data
-                $stmt = $db->prepare("SELECT * FROM $table WHERE id = :user_id");
-                $stmt->execute([':user_id' => $_SESSION['user_id']]);
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                // Refresh student data
+                $stmt = $db->prepare("SELECT * FROM ace_school_system.students WHERE id = :student_id");
+                $stmt->execute([':student_id' => $_SESSION['student_id']]);
+                $student = $stmt->fetch(PDO::FETCH_ASSOC);
             }
         }
     } catch (Exception $e) {
@@ -313,12 +309,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="#"><?php echo SITE_NAME; ?></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
-                        </button>
+            </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
@@ -333,170 +329,143 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <a class="nav-link" href="logout.php">Logout</a>
                     </li>
                 </ul>
-                    </div>
-                </div>
+            </div>
+        </div>
     </nav>
 
-    <div class="exam-history-container">
-        <h3 class="mb-4"><i class='bx bx-history'></i> Exam History</h3>
-        
-        <?php if (empty($exam_history)): ?>
-            <div class="alert alert-info">
-                You haven't taken any exams yet.
+    <div class="container">
+        <div class="profile-container">
+            <div class="text-center mb-4">
+                <i class='bx bxs-user-circle' style="font-size: 64px; color: var(--primary-blue);"></i>
+                <h2 class="mt-3">My Results</h2>
             </div>
-        <?php else: ?>
-            <?php foreach ($exam_history as $attempt): ?>
-                <div class="exam-card">
-                    <div class="exam-card-header">
-                        <h5 class="mb-0"><?php echo htmlspecialchars($attempt['exam_title']); ?></h5>
+
+            <!-- <?php echo $message; ?>
+
+            <form method="POST" action="">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control" name="first_name" 
+                               value="<?php echo htmlspecialchars($student['first_name'] ?? ''); ?>">
                     </div>
-                    <div class="exam-card-body">
-                        <div class="exam-stats">
-                            <div class="stat-item">
-                                <div class="stat-label">Score</div>
-                                <div class="stat-value">
-                                    <?php 
-                                    $raw_score = $attempt['score'];
-                                    $percentage = ($attempt['score'] / $attempt['total_questions']) * 100;
-                                    echo $raw_score . '/' . $attempt['total_questions'];
-                                    echo ' (' . number_format($percentage, 1) . '%)';
-                                    ?>
-                        </div>
-                    </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Status</div>
-                                <div class="stat-value">
-                                    <?php 
-                                    $average_score = 50; // 50% is typically considered average
-                                    if ($percentage >= $average_score) {
-                                        echo '<span class="text-success">Passed</span>';
-                                    } else {
-                                        echo '<span class="text-danger">Failed</span>';
-                                    }
-                                    ?>
-                </div>
-            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Required Score</div>
-                                <div class="stat-value"><?php echo $average_score; ?>% and above</div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label">Date</div>
-                                <div class="stat-value">
-                                    <?php echo date('M d, Y', strtotime($attempt['start_time'])); ?>
-                                </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control" name="last_name" 
+                               value="<?php echo htmlspecialchars($student['last_name'] ?? ''); ?>">
                     </div>
                 </div>
 
-                        <?php
-                        // Get detailed answers for this attempt
-                        $answers = getAttemptAnswers($db, $attempt['attempt_id']);
-                        ?>
-
-                        <div class="answer-details" id="answers-<?php echo $attempt['attempt_id']; ?>" style="display: none;">
-                            <h6 class="mt-3 mb-3">Detailed Answers</h6>
-                            <div class="answer-list">
-                                <?php foreach ($answers as $index => $answer): ?>
-                                    <div class="answer-item <?php echo ($answer['selected_answer'] === $answer['correct_answer']) ? 'correct' : 'incorrect'; ?>">
-                                        <div class="answer-header">
-                                            <strong>Question <?php echo $index + 1; ?></strong>
-                                            <span class="answer-status <?php echo ($answer['selected_answer'] === $answer['correct_answer']) ? 'correct' : 'incorrect'; ?>">
-                                                <?php echo ($answer['selected_answer'] === $answer['correct_answer']) ? 'Correct' : 'Incorrect'; ?>
-                                            </span>
-                                        </div>
-                                        <p><?php echo htmlspecialchars($answer['question_text']); ?></p>
-                                        <div class="d-flex gap-3">
-                                            <div>Your Answer: <strong><?php echo htmlspecialchars($answer['selected_answer']); ?></strong></div>
-                                            <div>Correct Answer: <strong><?php echo htmlspecialchars($answer['correct_answer']); ?></strong></div>
-                                        </div>
-                                        <?php if ($answer['selected_answer'] !== $answer['correct_answer'] && !empty($answer['explanation'])): ?>
-                                            <div class="explanation">
-                                                <strong>Explanation:</strong> <?php echo htmlspecialchars($answer['explanation']); ?>
-                    </div>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                        
-                        <button class="view-details-btn mt-3" 
-                                onclick="toggleAnswers('answers-<?php echo $attempt['attempt_id']; ?>', this)">
-                            View Details
-                        </button>
-                    </div>
+                <div class="mb-3">
+                    <label class="form-label">Registration Number</label>
+                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($student['registration_number'] ?? ''); ?>" disabled>
                 </div>
-            <?php endforeach; ?>
-                <?php endif; ?>
-            </div>
 
-    <div class="profile-container">
-        <div class="profile-header">
-            <i class='bx bxs-user-circle'></i>
-            <h2 class="mt-3">My Profile</h2>
+                <div class="mb-3">
+                    <label class="form-label">Class</label>
+                    <input type="text" class="form-control" name="class" 
+                           value="<?php echo htmlspecialchars($student['class'] ?? ''); ?>">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" name="phone" 
+                           value="<?php echo htmlspecialchars($student['phone'] ?? ''); ?>">
+                </div>
+
+                <hr class="my-4">
+
+                <h4>Change Password</h4>
+                <div class="mb-3">
+                    <label class="form-label">New Password</label>
+                    <input type="password" class="form-control" name="new_password">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Confirm New Password</label>
+                    <input type="password" class="form-control" name="confirm_password">
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary">Update Profile</button>
+                </div>
+            </form> -->
         </div>
 
-        <?php echo $message; ?>
-
-                    <form method="POST" action="">
-                        <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="email" value="<?php echo htmlspecialchars($user['email']); ?>" disabled>
-                <small class="text-muted">Email cannot be changed</small>
-            </div>
-            <div class="mb-3">
-                <label for="fullname" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="fullname" name="fullname" 
-                       value="<?php echo htmlspecialchars($user['fullname'] ?? ''); ?>">
+        <!-- Exam History Section -->
+        <div class="exam-history-container">
+            <h3 class="mb-4"><i class='bx bx-history'></i> Exam History</h3>
+            
+            <?php if (empty($exam_history)): ?>
+                <div class="alert alert-info">
+                    You haven't taken any exams yet.
+                </div>
+            <?php else: ?>
+                <?php foreach ($exam_history as $attempt): 
+                    $percentage = ($attempt['score'] / $attempt['total_questions']) * 100;
+                    $status = $percentage >= $attempt['passing_score'] ? 'Passed' : 'Failed';
+                    $status_class = $status === 'Passed' ? 'success' : 'danger';
+                ?>
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><?php echo htmlspecialchars($attempt['exam_title']); ?></h5>
                         </div>
-                        <div class="mb-3">
-                <label for="phone" class="form-label">Phone Number</label>
-                <input type="tel" class="form-control" id="phone" name="phone" 
-                       value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>">
-                        </div>
-                        <div class="mb-3">
-                            <label for="department" class="form-label">Department</label>
-                            <input type="text" class="form-control" id="department" name="department" 
-                       value="<?php echo htmlspecialchars($user['department'] ?? ''); ?>">
-                        </div>
-                        <div class="mb-3">
-                <label for="session" class="form-label">Session</label>
-                <input type="text" class="form-control" value="<?php echo ucfirst($table === 'morning_students' ? 'Morning' : 'Afternoon'); ?>" disabled>
-                        </div>
-                        <div class="mb-3">
-                <label for="expiration_date" class="form-label">Account Expiration Date</label>
-                <input type="text" class="form-control" value="<?php echo date('F d, Y', strtotime($user['expiration_date'])); ?>" disabled>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <strong>Score:</strong> <?php echo $attempt['score']; ?>/<?php echo $attempt['total_questions']; ?>
                                 </div>
-
-            <hr class="my-4">
-
-            <h4>Change Password</h4>
-            <div class="mb-3">
-                <label for="new_password" class="form-label">New Password</label>
-                <input type="password" class="form-control" id="new_password" name="new_password">
+                                <div class="col-md-3">
+                                    <strong>Percentage:</strong> <?php echo number_format($percentage, 1); ?>%
                                 </div>
-            <div class="mb-3">
-                <label for="confirm_password" class="form-label">Confirm New Password</label>
-                <input type="password" class="form-control" id="confirm_password" name="confirm_password">
+                                <div class="col-md-3">
+                                    <strong>Status:</strong> 
+                                    <span class="badge bg-<?php echo $status_class; ?>"><?php echo $status; ?></span>
                                 </div>
+                                <div class="col-md-3">
+                                    <strong>Date:</strong> <?php echo date('M d, Y', strtotime($attempt['start_time'])); ?>
+                                </div>
+                            </div>
 
-            <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary">Update Profile</button>
-            </div>
-        </form>
+                            <?php
+                            $answers = getAttemptAnswers($db, $attempt['attempt_id']);
+                            if (!empty($answers)):
+                            ?>
+                                <div class="mt-3">
+                                    <button class="btn btn-sm btn-outline-primary" type="button" 
+                                            data-bs-toggle="collapse" 
+                                            data-bs-target="#answers-<?php echo $attempt['attempt_id']; ?>">
+                                        View Details
+                                    </button>
+                                    <div class="collapse mt-3" id="answers-<?php echo $attempt['attempt_id']; ?>">
+                                        <?php foreach ($answers as $answer): ?>
+                                            <div class="card mb-2">
+                                                <div class="card-body">
+                                                    <p><strong>Question:</strong> <?php echo htmlspecialchars($answer['question_text']); ?></p>
+                                                    <p>
+                                                        <strong>Your Answer:</strong> 
+                                                        <span class="<?php echo $answer['selected_answer'] === $answer['correct_answer'] ? 'text-success' : 'text-danger'; ?>">
+                                                            <?php echo htmlspecialchars($answer['selected_answer']); ?>
+                                                        </span>
+                                                    </p>
+                                                    <p><strong>Correct Answer:</strong> <?php echo htmlspecialchars($answer['correct_answer']); ?></p>
+                                                    <?php if ($answer['selected_answer'] !== $answer['correct_answer'] && !empty($answer['explanation'])): ?>
+                                                        <div class="alert alert-info">
+                                                            <strong>Explanation:</strong> <?php echo htmlspecialchars($answer['explanation']); ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function toggleAnswers(answersId, button) {
-            const answersDiv = document.getElementById(answersId);
-            if (answersDiv.style.display === 'none') {
-                answersDiv.style.display = 'block';
-                button.textContent = 'Hide Details';
-            } else {
-                answersDiv.style.display = 'none';
-                button.textContent = 'View Details';
-            }
-        }
-    </script>
 </body>
 </html> 
