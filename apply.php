@@ -448,7 +448,7 @@
                     <div class="col-xs-2">
                         <div id="fh5co-logo" style="display: flex; align-items: center; gap: 10px;">
                             <a href="index.php"><img src="images/logo.png" alt="ACE College Logo" style="width: 100px; height: 70px;"></a>
-                            <a href="index.php"><img src="images/logo_2.jpg" alt="ACE Kiddies Logo" style="width: 70px; height: 70px; border-radius: 50%;"></a>
+                            <!-- <a href="index.php"><img src="images/logo_2.jpg" alt="ACE Kiddies Logo" style="width: 70px; height: 70px; border-radius: 50%;"></a> -->
                         </div>
                     </div>
                     <div class="col-xs-10 text-right menu-1">
@@ -521,7 +521,7 @@
                         <li><i class="fas fa-check-circle"></i> Subject Specialization</li>
                         <li><i class="fas fa-check-circle"></i> Morning Classes</li>
                     </ul>
-                    <a href="#" class="enroll-btn btn-tutorial">Contact for Tutorials</a>
+                    <a href="backends/lesson/student/reg.php" class="enroll-btn btn-tutorial">Register for Tutorials</a>
                 </div>
             </div>
         </div>

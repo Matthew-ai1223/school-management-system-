@@ -376,15 +376,15 @@ include '../admin/include/header.php';
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <a href="../cbt/results.php" class="btn btn-block btn-secondary elevation-1">
+                                    <a href="../cbt/students_results.php" class="btn btn-block btn-secondary elevation-1">
                                         <i class="fas fa-poll mr-2"></i> View Exam Results
                                     </a>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <!-- <div class="col-md-6 mb-3">
                                     <a href="activate_results.php" class="btn btn-block btn-success elevation-1">
                                         <i class="fas fa-check-circle mr-2"></i> Activate Exam Results
                                     </a>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -410,7 +410,7 @@ include '../admin/include/header.php';
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body p-0">
+                        <!-- <div class="card-body p-0">
                             <?php if (count($students) > 0): ?>
                             <div class="table-responsive">
                                 <div class="p-3 d-flex justify-content-between">
@@ -523,7 +523,7 @@ include '../admin/include/header.php';
                                 <i class="icon fas fa-info-circle"></i> No students found for class <?php echo $className; ?>
                             </div>
                             <?php endif; ?>
-                        </div>
+                        </div> -->
                         <div class="card-footer">
                             <a href="students.php" class="btn btn-primary">
                                 <i class="fas fa-users mr-2"></i> Manage All Students
@@ -1123,31 +1123,61 @@ include '../admin/include/header.php';
 
 /* Enhanced Mobile Responsiveness */
 @media (max-width: 768px) {
-    /* Container adjustments */
+    /* Container and spacing adjustments */
     .container-fluid {
         padding: 10px;
+    }
+    
+    .content {
+        padding: 10px;
+    }
+
+    /* Header adjustments */
+    .content-header h1 {
+        font-size: 1.25rem;
+        margin-bottom: 10px;
+    }
+
+    .breadcrumb {
+        font-size: 0.85rem;
     }
 
     /* Card adjustments */
     .card {
         margin-bottom: 15px;
+        border-radius: 8px;
     }
 
     .card-body {
-        padding: 15px;
+        padding: 12px;
+    }
+
+    .card-header {
+        padding: 12px;
+    }
+
+    .card-header h3 {
+        font-size: 1.1rem;
     }
 
     /* Stats boxes */
     .small-box {
         margin-bottom: 15px;
+        border-radius: 8px;
     }
 
     .small-box h3 {
         font-size: 1.5rem;
+        margin-bottom: 5px;
     }
 
     .small-box p {
         font-size: 0.9rem;
+    }
+
+    .small-box .icon {
+        font-size: 40px;
+        right: 10px;
     }
 
     /* Quick nav menu repositioning */
@@ -1157,47 +1187,53 @@ include '../admin/include/header.php';
         right: 20px;
         top: auto;
         transform: none;
-        flex-direction: row;
+        flex-direction: column;
         z-index: 1050;
+    }
+
+    .quick-nav-toggle {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
     }
 
     .quick-nav-items {
         display: none;
         position: absolute;
-        bottom: 60px;
+        bottom: 55px;
         right: 0;
         background: white;
         border-radius: 10px;
         box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        padding: 10px;
-        flex-direction: column;
-    }
-
-    .quick-nav-items.show {
-        display: flex;
+        padding: 8px;
     }
 
     .quick-nav-item {
-        margin: 5px;
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+        margin: 4px 0;
     }
 
     /* Dashboard toolbar */
     .dashboard-toolbar {
         flex-direction: column;
         gap: 10px;
-        padding: 10px;
+        padding: 12px;
+        margin-bottom: 15px;
     }
 
     .dashboard-toolbar .btn-group {
         width: 100%;
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 5px;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
     }
 
     .dashboard-toolbar .btn {
-        margin: 0;
         width: 100%;
+        padding: 8px;
+        font-size: 0.9rem;
     }
 
     .toolbar-search {
@@ -1206,52 +1242,92 @@ include '../admin/include/header.php';
 
     /* Table responsiveness */
     .table-responsive {
-        margin-bottom: 15px;
+        margin: 0 -12px;
+        padding: 0 12px;
         border: 0;
     }
 
     .table {
-        min-width: 650px;
+        font-size: 0.9rem;
     }
 
-    /* Card header adjustments */
-    .card-header {
-        padding: 12px 15px;
+    .table td, .table th {
+        padding: 8px;
     }
 
-    .card-header h3 {
-        font-size: 1.1rem;
+    /* Action buttons in table */
+    .btn-group .btn {
+        padding: 4px 8px;
+        font-size: 0.85rem;
     }
 
-    /* Button adjustments */
-    .btn {
-        padding: 0.375rem 0.75rem;
+    .dropdown-menu {
         font-size: 0.9rem;
     }
 
     /* Pagination adjustments */
     .pagination {
         justify-content: center;
-        flex-wrap: wrap;
+        margin: 15px 0;
     }
 
     .pagination .page-link {
-        padding: 0.4rem 0.6rem;
+        padding: 6px 12px;
+        font-size: 0.9rem;
+    }
+
+    /* Form controls */
+    .form-control {
+        font-size: 0.9rem;
+        height: calc(1.5em + 0.75rem + 2px);
+    }
+
+    /* Modal adjustments */
+    .modal-dialog {
+        margin: 10px;
+    }
+
+    .modal-content {
+        border-radius: 10px;
+    }
+
+    .modal-header {
+        padding: 15px;
+    }
+
+    .modal-body {
+        padding: 15px;
+    }
+
+    .modal-footer {
+        padding: 15px;
     }
 }
 
 /* Extra small devices */
 @media (max-width: 576px) {
-    /* Header adjustments */
+    /* Header further adjustments */
+    .content-header {
+        margin-bottom: 15px;
+    }
+
     .content-header h1 {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
+        text-align: center;
     }
 
     .breadcrumb {
-        display: none;
+        justify-content: center;
+        margin-top: 10px;
     }
 
-    /* Table adjustments for mobile */
+    /* Stats boxes full width */
+    .col-lg-3.col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Table adjustments for better mobile view */
     .table-responsive table {
         display: block;
     }
@@ -1265,80 +1341,97 @@ include '../admin/include/header.php';
         margin-bottom: 1rem;
         border: 1px solid #dee2e6;
         border-radius: 8px;
+        padding: 8px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
     .table-responsive td {
         display: block;
         text-align: left;
-        padding: 0.75rem;
+        padding: 8px;
         position: relative;
-        padding-left: 50%;
+        padding-left: 45%;
+        border: none;
+        border-bottom: 1px solid #eee;
+    }
+
+    .table-responsive td:last-child {
+        border-bottom: none;
     }
 
     .table-responsive td::before {
         content: attr(data-label);
         position: absolute;
-        left: 0.75rem;
-        width: 45%;
+        left: 8px;
+        width: 40%;
         font-weight: bold;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        color: #666;
     }
 
-    /* Action buttons in table */
+    /* Action buttons in mobile table */
     .table-responsive .btn-group {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
         gap: 5px;
+        width: 100%;
     }
 
     .table-responsive .btn-group .btn {
-        width: 100%;
+        flex: 1;
+        min-width: calc(50% - 5px);
         margin: 0;
-    }
-
-    /* Stats boxes full width */
-    .col-lg-3.col-6 {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
-
-    /* Modal adjustments */
-    .modal-dialog {
-        margin: 0.5rem;
-    }
-
-    .modal-content {
-        border-radius: 10px;
-    }
-
-    /* Help modal adjustments */
-    #helpModal .row {
-        flex-direction: column;
-    }
-
-    #helpModal .col-md-6 {
-        margin-bottom: 1rem;
     }
 
     /* Filter buttons */
     .btn-filter {
-        font-size: 0.8rem;
-        padding: 0.3rem 0.6rem;
+        font-size: 0.85rem;
+        padding: 6px 12px;
     }
 
-    /* Entries per page selector */
+    /* Entries per page and print button */
+    .d-flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+
     #entriesPerPage {
         width: 100%;
-        margin-bottom: 10px;
     }
 
-    /* Print button */
     #printStudentList {
         width: 100%;
     }
+
+    /* Quick Actions grid */
+    .card-body .row .col-md-6,
+    .card-body .row .col-md-4 {
+        padding: 5px;
+    }
+
+    .btn-lg {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    /* Help modal adjustments */
+    #helpModal .row {
+        margin: 0;
+    }
+
+    #helpModal .col-md-6 {
+        padding: 5px;
+    }
+
+    /* Search box enhancement */
+    #studentSearch {
+        margin-bottom: 10px;
+    }
 }
 
-/* Landscape orientation adjustments */
+/* Landscape mode optimizations */
 @media (max-height: 500px) and (orientation: landscape) {
     .quick-nav-menu {
         display: none;
@@ -1351,21 +1444,29 @@ include '../admin/include/header.php';
     .small-box {
         margin-bottom: 10px;
     }
+
+    .row {
+        margin: 0 -5px;
+    }
+
+    .col-lg-3, .col-md-6, .col-md-4 {
+        padding: 0 5px;
+    }
 }
 
-/* Dark mode support for OLED screens */
+/* Dark mode support */
 @media (prefers-color-scheme: dark) {
     .table-responsive tbody tr {
-        background:rgb(255, 255, 255);
-        border-color: #rgb(255, 255, 255);;
+        background: #fff;
+        border-color: #dee2e6;
     }
 
     .card {
-        background: #rgb(255, 255, 255);;
+        background: #fff;
     }
 
     .modal-content {
-        background: #rgb(255, 255, 255);;
+        background: #fff;
     }
 }
 
@@ -1386,6 +1487,485 @@ include '../admin/include/header.php';
         overflow: visible !important;
     }
 }
+
+/* Enhanced Section Responsiveness */
+@media (max-width: 768px) {
+    /* Section Containers */
+    .content > .container-fluid > .row {
+        margin: 0 -10px;
+    }
+
+    .content > .container-fluid > .row > [class*='col-'] {
+        padding: 0 10px;
+    }
+
+    /* Teacher Info Section */
+    #teacherInfo .card-body .row {
+        flex-direction: column;
+    }
+
+    #teacherInfo .card-body .col-md-6 {
+        margin-bottom: 10px;
+    }
+
+    #teacherInfo .card-body p {
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    /* Stats Section */
+    #statsSection {
+        margin: 0 -5px;
+    }
+
+    #statsSection > [class*='col-'] {
+        padding: 0 5px;
+        margin-bottom: 10px;
+    }
+
+    #statsSection .small-box {
+        min-height: auto;
+        padding: 10px;
+    }
+
+    #statsSection .small-box .inner {
+        padding: 15px 10px;
+    }
+
+    #statsSection .small-box .icon {
+        right: 5px;
+        top: 5px;
+    }
+
+    /* Activities Section */
+    #activitiesSection .card {
+        height: auto !important;
+        margin-bottom: 15px;
+    }
+
+    #activitiesSection .list-group-item {
+        padding: 12px;
+    }
+
+    #activitiesSection .list-group-item h5 {
+        font-size: 1rem;
+        margin-bottom: 5px;
+    }
+
+    #activitiesSection .list-group-item p {
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+
+    /* Quick Actions Section */
+    #actionsSection .card-body {
+        padding: 10px;
+    }
+
+    #actionsSection .row {
+        margin: 0 -5px;
+    }
+
+    #actionsSection [class*='col-'] {
+        padding: 5px;
+    }
+
+    #actionsSection .btn {
+        padding: 8px;
+        font-size: 0.9rem;
+        white-space: normal;
+        height: auto;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+
+    #actionsSection .btn i {
+        margin-right: 8px;
+        font-size: 1.1rem;
+    }
+
+    /* Students Section */
+    #studentsSection .card-header {
+        flex-direction: column;
+    }
+
+    #studentsSection .card-tools {
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    #studentsSection .input-group {
+        width: 100% !important;
+    }
+
+    #studentsSection .table-responsive {
+        margin: 0;
+        padding: 0;
+    }
+
+    #studentsSection .btn-group {
+        margin-bottom: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    #studentsSection .btn-filter {
+        flex: 1;
+        min-width: calc(33.333% - 4px);
+        white-space: nowrap;
+    }
+
+    #studentsSection .pagination-container {
+        overflow-x: auto;
+        padding: 5px 0;
+    }
+}
+
+/* Extra Small Devices */
+@media (max-width: 576px) {
+    /* Teacher Info Section */
+    #teacherInfo .card-body {
+        padding: 10px;
+    }
+
+    #teacherInfo .card-body p {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+    }
+
+    #teacherInfo .card-body p strong {
+        margin-bottom: 3px;
+    }
+
+    /* Stats Section */
+    #statsSection [class*='col-'] {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Activities Section */
+    #activitiesSection .col-md-6 {
+        margin-bottom: 15px;
+    }
+
+    #activitiesSection .list-group-item {
+        margin-bottom: 8px;
+        border-radius: 8px;
+    }
+
+    #activitiesSection .list-group-item .d-flex {
+        flex-direction: column;
+    }
+
+    #activitiesSection .list-group-item small {
+        margin-top: 5px;
+    }
+
+    /* Quick Actions Section */
+    #actionsSection [class*='col-'] {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    #actionsSection .btn-lg {
+        font-size: 0.85rem;
+        padding: 8px;
+    }
+
+    /* Students Section */
+    #studentsSection .card-header .d-flex {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    #studentsSection .btn-group {
+        width: 100%;
+    }
+
+    #studentsSection .btn-filter {
+        flex: 1;
+        min-width: calc(50% - 4px);
+    }
+
+    #studentsSection .table-responsive td {
+        padding-left: 40%;
+    }
+
+    #studentsSection .table-responsive .btn-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    #studentsSection .table-responsive .btn-group .btn {
+        flex: 1;
+        min-width: calc(50% - 4px);
+        margin: 2px;
+    }
+
+    #studentsSection .card-footer {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #studentsSection .card-footer .btn {
+        width: 100%;
+        margin: 5px 0;
+    }
+}
+
+/* Landscape Mode */
+@media (max-height: 500px) and (orientation: landscape) {
+    #teacherInfo, #statsSection, #activitiesSection, #actionsSection {
+        margin-bottom: 10px;
+    }
+
+    .card-body {
+        padding: 10px;
+    }
+
+    .row {
+        margin: 0 -5px;
+    }
+
+    [class*='col-'] {
+        padding: 0 5px;
+    }
+
+    #statsSection .small-box {
+        margin-bottom: 10px;
+    }
+
+    #actionsSection .btn {
+        padding: 6px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Enhanced Mobile Table Styles */
+@media (max-width: 768px) {
+    .table-responsive {
+        border: none;
+        margin-bottom: 0;
+    }
+
+    .table {
+        min-width: 100%;
+        border: none;
+    }
+
+    .table th {
+        display: none; /* Hide table headers on mobile */
+    }
+
+    .table td {
+        display: block;
+        width: 100%;
+        position: relative;
+        padding: 12px 15px;
+        padding-left: 45%;
+        text-align: right;
+        border: none;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        width: 40%;
+        padding-right: 10px;
+        text-align: left;
+        font-weight: 600;
+        color: #495057;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .table tr {
+        display: block;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #e9ecef;
+    }
+
+    .table tbody tr:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Action Buttons in Table */
+    .table .btn-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        justify-content: flex-end;
+    }
+
+    .table .btn-group .btn {
+        flex: 0 0 calc(50% - 5px);
+        margin: 0;
+        padding: 8px;
+        font-size: 0.85rem;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .table .btn-group .dropdown-toggle {
+        flex: 0 0 100%;
+        margin-top: 5px;
+    }
+
+    /* Gender Badge Styling */
+    .table .badge {
+        float: right;
+        margin-left: 10px;
+    }
+
+    /* Table Controls */
+    .table-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .table-controls .btn-group {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 5px;
+    }
+
+    .table-controls .d-flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .table-controls select,
+    .table-controls .btn {
+        width: 100%;
+    }
+
+    /* Search Input */
+    #studentSearch {
+        width: 100%;
+        margin-bottom: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .pagination .page-item {
+        margin: 2px;
+    }
+
+    .pagination .page-link {
+        min-width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 0.9rem;
+    }
+}
+
+/* Extra Small Devices */
+@media (max-width: 576px) {
+    .table td {
+        padding: 10px 12px;
+        padding-left: 42%;
+        font-size: 0.9rem;
+    }
+
+    .table td:before {
+        font-size: 0.85rem;
+    }
+
+    .table .btn-group {
+        flex-direction: column;
+    }
+
+    .table .btn-group .btn {
+        flex: 0 0 100%;
+    }
+
+    .table-controls .btn-group {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Enhanced Dropdown Menu */
+    .dropdown-menu {
+        width: 100%;
+        padding: 8px;
+    }
+
+    .dropdown-item {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+
+    .dropdown-item i {
+        width: 20px;
+    }
+
+    /* Pagination Adjustments */
+    .pagination .page-link {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+    }
+
+    /* Table Row Spacing */
+    .table tr {
+        margin-bottom: 12px;
+    }
+
+    /* Status and Badge Adjustments */
+    .table .badge {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Add data-label attributes to table cells */
+document.addEventListener('DOMContentLoaded', function() {
+    const table = document.querySelector('#studentTable');
+    if (table) {
+        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
+        const rows = table.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            cells.forEach((cell, index) => {
+                if (headers[index]) {
+                    cell.setAttribute('data-label', headers[index]);
+                }
+            });
+        });
+    }
+});
 </style>
 
 <script>

@@ -122,7 +122,7 @@ class ResultPDF extends FPDF {
         $x = $this->GetX();
         $y = $this->GetY();
         
-        $this->RoundedRect($x, $y, $col_width - 5, 40, 3.5, 'DF');
+        $this->RoundedRect($x, $y, $col_width - 5, 55, 3.5, 'DF');
         $this->SetXY($x + 5, $y + 5);
         
         $this->SetFont('Arial', 'B', 10);
@@ -141,17 +141,17 @@ class ResultPDF extends FPDF {
         $this->Cell(60, 7, 'Highest Score:', 0);
         $this->SetFont('Arial', '', 10);
         $this->Cell(30, 7, number_format($stats['highest_score'], 1) . '%', 0, 1);
-
-        // Right column
-        $this->SetXY($x + $col_width, $y);
-        $this->RoundedRect($x + $col_width, $y, $col_width - 5, 40, 3.5, 'DF');
-        $this->SetXY($x + $col_width + 5, $y + 5);
+        $this->SetX($x + 5);
 
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(60, 7, 'Lowest Score:', 0);
         $this->SetFont('Arial', '', 10);
         $this->Cell(30, 7, number_format($stats['lowest_score'], 1) . '%', 0, 1);
-        $this->SetX($x + $col_width + 5);
+
+        // Right column
+        $this->SetXY($x + $col_width, $y);
+        $this->RoundedRect($x + $col_width, $y, $col_width - 5, 55, 3.5, 'DF');
+        $this->SetXY($x + $col_width + 5, $y + 5);
 
         $this->SetFont('Arial', 'B', 10);
         $this->Cell(60, 7, 'Passed Exams:', 0);
@@ -163,6 +163,18 @@ class ResultPDF extends FPDF {
         $this->Cell(60, 7, 'Failed Exams:', 0);
         $this->SetFont('Arial', '', 10);
         $this->Cell(30, 7, $stats['failed_exams'], 0, 1);
+        $this->SetX($x + $col_width + 5);
+
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(60, 7, 'Distinctions (≥70%):', 0);
+        $this->SetFont('Arial', '', 10);
+        $this->Cell(30, 7, $stats['distinctions'], 0, 1);
+        $this->SetX($x + $col_width + 5);
+
+        $this->SetFont('Arial', 'B', 10);
+        $this->Cell(60, 7, 'Credits (50-69%):', 0);
+        $this->SetFont('Arial', '', 10);
+        $this->Cell(30, 7, $stats['credits'], 0, 1);
     }
 
     function RoundedRect($x, $y, $w, $h, $r, $style = '') {
@@ -216,11 +228,14 @@ $db = Database::getInstance()->getConnection();
 // Get student information
 $stmt = $db->prepare("SELECT s.*, 
                             COUNT(DISTINCT ea.id) as total_exams,
-                            AVG(ea.score) as avg_score,
-                            MAX(ea.score) as highest_score,
-                            MIN(ea.score) as lowest_score,
-                            COUNT(DISTINCT CASE WHEN ea.score >= e.passing_score THEN ea.id END) as passed_exams,
-                            COUNT(DISTINCT CASE WHEN ea.score < e.passing_score THEN ea.id END) as failed_exams
+                            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END), 2) as avg_score,
+                            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as highest_score,
+                            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as lowest_score,
+                            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 THEN 1 ELSE 0 END) as passed_exams,
+                            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) < 50 THEN 1 ELSE 0 END) as failed_exams,
+                            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+                            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+                            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 AND (ea.score / e.duration * 100) < 70 THEN 1 ELSE 0 END) as credits
                      FROM ace_school_system.students s
                      LEFT JOIN ace_school_system.exam_attempts ea ON s.id = ea.student_id
                      LEFT JOIN ace_school_system.exams e ON ea.exam_id = e.id
@@ -233,8 +248,11 @@ if (!$student) {
     die('Student not found');
 }
 
-// Get student's exam attempts
-$stmt = $db->prepare("SELECT e.subject, ea.score, e.passing_score, ea.start_time as attempt_date
+// Get student's exam attempts with updated score calculation
+$stmt = $db->prepare("SELECT e.subject, 
+                            (ea.score / e.duration * 100) as score, 
+                            e.passing_score, 
+                            ea.start_time as attempt_date
                      FROM ace_school_system.exam_attempts ea
                      JOIN ace_school_system.exams e ON ea.exam_id = e.id
                      WHERE ea.student_id = :student_id

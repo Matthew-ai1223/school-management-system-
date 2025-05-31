@@ -1712,3 +1712,13 @@ Stack trace:
 [31-May-2025 01:00:03 Africa/Lagos] === Dashboard Access Attempt ===
 [31-May-2025 01:00:03 Africa/Lagos] Session student_id: 50
 [31-May-2025 01:00:03 Africa/Lagos] Student lookup result: Found
+[31-May-2025 01:36:04 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 274
+[31-May-2025 01:36:23 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 274
+[31-May-2025 01:36:48 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 274
+[31-May-2025 01:36:52 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 274
+[31-May-2025 01:41:41 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.added_by' in 'where clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php:30
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php(30): PDO->prepare('SELECT u.* FROM...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php on line 30
+[31-May-2025 01:41:54 Africa/Lagos] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\edit-student.php on line 14

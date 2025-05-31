@@ -367,10 +367,10 @@
 		<div class="gallery-grid">
 			<!-- Facilities -->
 			<div class="gallery-item" data-category="facilities">
-				<div class="gallery-img" style="background-image: url(https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/476762495_1341330347057362_9125970317809916044_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=127cfc&_nc_ohc=aBThtPC5XxQQ7kNvwFi5Q-T&_nc_oc=AdkVwLjXhoKD9gjWatp9l8nFKLj5CGgg4DLaIKknxlEGNY13EypAQIIQXBdmeqM_0Ac&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=wsLz4p6WPUh3oDDm1bPxNw&oh=00_AfIWDRv20kVor0nmeGKCtw9djFmsDYG3kYmGozUcptDznQ&oe=6828409D);">
+				<div class="gallery-img" style="background-image: url(images/cccc.jpg);">
 					<span class="gallery-category">ACE COLLEGE</span>
 					<div class="gallery-overlay">
-						<a href="https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/476762495_1341330347057362_9125970317809916044_n.jpg?_nc_cat=102&ccb=1-7&_nc_sid=127cfc&_nc_ohc=aBThtPC5XxQQ7kNvwFi5Q-T&_nc_oc=AdkVwLjXhoKD9gjWatp9l8nFKLj5CGgg4DLaIKknxlEGNY13EypAQIIQXBdmeqM_0Ac&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=wsLz4p6WPUh3oDDm1bPxNw&oh=00_AfIWDRv20kVor0nmeGKCtw9djFmsDYG3kYmGozUcptDznQ&oe=6828409D" class="zoom-icon" data-lightbox="gallery">
+						<a href="images/cccc.jpg" class="zoom-icon" data-lightbox="gallery">
 							<i class="fas fa-search-plus"></i>
 						</a>
 					</div>
@@ -382,10 +382,10 @@
 			</div>
 			
 			<div class="gallery-item" data-category="facilities">
-				<div class="gallery-img" style="background-image: url(https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/485752270_643731778404713_4212696403484352701_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_ohc=rgwazHO5V3kQ7kNvwGYeL4p&_nc_oc=AdktCZfZMVWlnXd5YQQak0KRpHNlrP_LX80Id1zfG8A_TuzlL-lh5RVlJieoQgpsBgc&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=YMKuacILXbZbEO_msQKZdg&oh=00_AfKO_zsi_fhSKdhJXdemwzEobONFkyxOBy8tiU_nSO3q8g&oe=682823D5);">
+				<div class="gallery-img" style="background-image: url(images/BBB.jpg);">
 					<span class="gallery-category">ACE KIDDIES</span>
 					<div class="gallery-overlay">
-						<a href="https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/485752270_643731778404713_4212696403484352701_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_ohc=rgwazHO5V3kQ7kNvwGYeL4p&_nc_oc=AdktCZfZMVWlnXd5YQQak0KRpHNlrP_LX80Id1zfG8A_TuzlL-lh5RVlJieoQgpsBgc&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=YMKuacILXbZbEO_msQKZdg&oh=00_AfKO_zsi_fhSKdhJXdemwzEobONFkyxOBy8tiU_nSO3q8g&oe=682823D5" class="zoom-icon" data-lightbox="gallery">
+						<a href="images/BBB.jpg" class="zoom-icon" data-lightbox="gallery">
 							<i class="fas fa-search-plus"></i>
 						</a>
 					</div>
@@ -427,10 +427,10 @@
 			</div>
 
 			<div class="gallery-item" data-category="campus">
-				<div class="gallery-img" style="background-image: url(https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/476907257_1342652780258452_6520814941669534970_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=833d8c&_nc_ohc=QnY0A9HraJIQ7kNvwFNTnZ1&_nc_oc=AdnlgaTAhmwB9-Q3LfWG83UdYAI9CnFzS0n-2I2EbCaTmYyA59YK5Dp8rIFoXQCu5eo&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=yVtFvyTYic9Y6-IFXAJySQ&oh=00_AfIenEASr5J0eOPfI4c_Cw1U_l2M6WBg6V7pv9mLhslk8w&oe=68283FB0);">
+				<div class="gallery-img" style="background-image: url(images/class_2024_2.jpg);">
 					<span class="gallery-category">ACE COLLEGE (Class of 2024)</span>
 					<div class="gallery-overlay">
-						<a href="https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/476907257_1342652780258452_6520814941669534970_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=833d8c&_nc_ohc=QnY0A9HraJIQ7kNvwFNTnZ1&_nc_oc=AdnlgaTAhmwB9-Q3LfWG83UdYAI9CnFzS0n-2I2EbCaTmYyA59YK5Dp8rIFoXQCu5eo&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=yVtFvyTYic9Y6-IFXAJySQ&oh=00_AfIenEASr5J0eOPfI4c_Cw1U_l2M6WBg6V7pv9mLhslk8w&oe=68283FB0" class="zoom-icon" data-lightbox="gallery">
+						<a href="images/class_2024_2.jpg" class="zoom-icon" data-lightbox="gallery">
 							<i class="fas fa-search-plus"></i>
 						</a>
 					</div>
@@ -441,10 +441,10 @@
 				</div> -->
 			</div>
 			<div class="gallery-item" data-category="campus">
-				<div class="gallery-img" style="background-image: url(https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/477575308_1342651273591936_7747553309246295392_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=833d8c&_nc_ohc=HMTUY8uSE4sQ7kNvwFHw6T-&_nc_oc=Admafzagk-XEAJ5-3bwPgZ4fJK2oHYxAKt43czbxTphrnYhB61plRPN2GX-LfzvOR5U&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=8K_qM1cWXPxsMnhlo440iw&oh=00_AfLnRK32ypE2RjGDFmGGf6zPOsZmX-q8WQ-Lii0BK6RrUg&oe=68283A03);">
+				<div class="gallery-img" style="background-image: url(images/class_2024.jpg);">
 					<span class="gallery-category">ACE COLLEGE (Class of 2024)</span>
 					<div class="gallery-overlay">
-						<a href="https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/477575308_1342651273591936_7747553309246295392_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=833d8c&_nc_ohc=HMTUY8uSE4sQ7kNvwFHw6T-&_nc_oc=Admafzagk-XEAJ5-3bwPgZ4fJK2oHYxAKt43czbxTphrnYhB61plRPN2GX-LfzvOR5U&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=8K_qM1cWXPxsMnhlo440iw&oh=00_AfLnRK32ypE2RjGDFmGGf6zPOsZmX-q8WQ-Lii0BK6RrUg&oe=68283A03" class="zoom-icon" data-lightbox="gallery">
+						<a href="images/class_2024.jpg" class="zoom-icon" data-lightbox="gallery">
 							<i class="fas fa-search-plus"></i>
 						</a>
 					</div>
@@ -457,10 +457,10 @@
 
 			<!-- Events -->
 			<div class="gallery-item" data-category="events">
-				<div class="gallery-img" style="background-image: url(https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/476926911_1342251870298543_344197197467528733_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=833d8c&_nc_ohc=R2N_Y-DnClAQ7kNvwGKVFK8&_nc_oc=Adn5BzaU_B9FYHVE6OmBhvBXQCSjBZgTWJlDrHsSr5cAI5VBS8zNSheVwbPASov_6aU&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=2sSHZKvm8uE8NuruFoVckA&oh=00_AfKFu2JmMb2wekPCfMRdwAC0Vs6iVJ60wXiSGWw-j6c4iw&oe=68284C23);">
+				<div class="gallery-img" style="background-image: url(images/mon.jpg);">
 					<span class="gallery-category">MORNING TUTORIAL SESSION</span>
 					<div class="gallery-overlay">
-						<a href="https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/476926911_1342251870298543_344197197467528733_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=833d8c&_nc_ohc=R2N_Y-DnClAQ7kNvwGKVFK8&_nc_oc=Adn5BzaU_B9FYHVE6OmBhvBXQCSjBZgTWJlDrHsSr5cAI5VBS8zNSheVwbPASov_6aU&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=2sSHZKvm8uE8NuruFoVckA&oh=00_AfKFu2JmMb2wekPCfMRdwAC0Vs6iVJ60wXiSGWw-j6c4iw&oe=68284C23" class="zoom-icon" data-lightbox="gallery">
+						<a href="images/mon.jpg" class="zoom-icon" data-lightbox="gallery">
 							<i class="fas fa-search-plus"></i>
 						</a>
 					</div>
@@ -551,10 +551,10 @@
 			</div>
 
 			<div class="gallery-item" data-category="campus">
-				<div class="gallery-img" style="background-image: url(https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/477413039_1342356666954730_7688480889877591657_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_ohc=f06cJ0vDyPkQ7kNvwHJ9K2G&_nc_oc=AdmN1s326956pa8vR7WHVX0WMAdCoiIwMwKoqgHW47uqnq2p0Ai3Jt0uq9AfJiF5dV8&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=x26jVh3I1N-y8T4yM1qQVQ&oh=00_AfIeRrdBV-ztfegxbZ3O8j8cGpkX8FSgN4X4vvPTEP7nig&oe=682832AC);">
+				<div class="gallery-img" style="background-image: url(images/AAAA.jpg);">
 					<span class="gallery-category">ACE COLLEGE @ 1st POSITION</span>
 					<div class="gallery-overlay">
-						<a href="https://scontent-los2-1.xx.fbcdn.net/v/t39.30808-6/477413039_1342356666954730_7688480889877591657_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=833d8c&_nc_ohc=f06cJ0vDyPkQ7kNvwHJ9K2G&_nc_oc=AdmN1s326956pa8vR7WHVX0WMAdCoiIwMwKoqgHW47uqnq2p0Ai3Jt0uq9AfJiF5dV8&_nc_zt=23&_nc_ht=scontent-los2-1.xx&_nc_gid=x26jVh3I1N-y8T4yM1qQVQ&oh=00_AfIeRrdBV-ztfegxbZ3O8j8cGpkX8FSgN4X4vvPTEP7nig&oe=682832AC" class="zoom-icon" data-lightbox="gallery">
+						<a href="images/AAAA.jpg" class="zoom-icon" data-lightbox="gallery">
 							<i class="fas fa-search-plus"></i>
 						</a>
 					</div>

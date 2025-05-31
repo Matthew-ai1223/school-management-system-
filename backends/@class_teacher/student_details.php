@@ -111,7 +111,7 @@ if (isset($_GET['pdf'])) {
     // School motto
     $pdf->SetFont('Arial', '', 8);
     $pdf->SetXY(30, 15);
-    $pdf->Cell(150, 5, 'School of Excellence - Creating Leaders and Empowering Dreams', 0, 1);
+    $pdf->Cell(150, 5, 'Excellence with Integrity', 0, 1);
     
     $pdf->SetY(30); // Start content after header
     
