@@ -125,6 +125,12 @@
 	<!-- Add Font Awesome -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+	<!-- Add SweetAlert2 CSS -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+
+	<!-- Add Font Awesome for the loading spinner -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
 	</head>
 	<body>
 		
@@ -211,42 +217,51 @@
 				</div>
 				<div class="col-md-6 animate-box">
 					<h3>Get In Touch</h3>
-					<form action="#">
+					<?php if (isset($_SESSION['message'])): ?>
+						<div class="alert alert-<?php echo $_SESSION['message_type']; ?> alert-dismissible fade show">
+							<?php 
+								echo $_SESSION['message'];
+								unset($_SESSION['message']);
+								unset($_SESSION['message_type']);
+							?>
+							<button type="button" class="close" data-dismiss="alert">&times;</button>
+						</div>
+					<?php endif; ?>
+					<form id="contactForm" method="POST" onsubmit="return handleSubmit(event)">
 						<div class="row form-group">
 							<div class="col-md-6">
-								<!-- <label for="fname">First Name</label> -->
-								<input type="text" id="fname" class="form-control" placeholder="Your firstname">
+								<input type="text" id="fname" name="fname" class="form-control" placeholder="Your firstname" required>
 							</div>
 							<div class="col-md-6">
-								<!-- <label for="lname">Last Name</label> -->
-								<input type="text" id="lname" class="form-control" placeholder="Your lastname">
+								<input type="text" id="lname" name="lname" class="form-control" placeholder="Your lastname" required>
 							</div>
 						</div>
 
 						<div class="row form-group">
 							<div class="col-md-12">
-								<!-- <label for="email">Email</label> -->
-								<input type="text" id="email" class="form-control" placeholder="Your email address">
+								<input type="email" id="email" name="email" class="form-control" placeholder="Your email address" required>
 							</div>
 						</div>
 
 						<div class="row form-group">
 							<div class="col-md-12">
-								<!-- <label for="subject">Subject</label> -->
-								<input type="text" id="subject" class="form-control" placeholder="Your subject of this message">
+								<input type="text" id="subject" name="subject" class="form-control" placeholder="Your subject of this message" required>
 							</div>
 						</div>
 
 						<div class="row form-group">
 							<div class="col-md-12">
-								<!-- <label for="message">Message</label> -->
-								<textarea name="message" id="message" cols="30" rows="10" class="form-control" placeholder="Say something about us"></textarea>
+								<textarea name="message" id="message" cols="30" rows="10" class="form-control" placeholder="Say something about us" required></textarea>
 							</div>
 						</div>
 						<div class="form-group">
-							<input type="submit" value="Send Message" class="btn btn-primary">
+							<button type="submit" class="btn btn-primary">
+								<span class="submit-text">Send Message</span>
+								<span class="loading-text" style="display: none;">
+									<i class="fa fa-spinner fa-spin"></i> Sending...
+								</span>
+							</button>
 						</div>
-
 					</form>		
 				</div>
 			</div>
@@ -377,6 +392,80 @@
         day: d.getDate(),
         enableUtc: false
     });
+	</script>
+
+	<!-- Add SweetAlert2 JS -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+
+	<script>
+	async function handleSubmit(event) {
+		event.preventDefault();
+		
+		const form = event.target;
+		const submitBtn = form.querySelector('button[type="submit"]');
+		const submitText = submitBtn.querySelector('.submit-text');
+		const loadingText = submitBtn.querySelector('.loading-text');
+		
+		// Show loading state
+		submitText.style.display = 'none';
+		loadingText.style.display = 'inline-block';
+		submitBtn.disabled = true;
+
+		try {
+			const formData = new FormData(form);
+			const response = await fetch('process_contact.php', {
+				method: 'POST',
+				body: formData,
+				headers: {
+					'Accept': 'application/json'
+				}
+			});
+
+			let data;
+			const contentType = response.headers.get('content-type');
+			if (contentType && contentType.includes('application/json')) {
+				data = await response.json();
+			} else {
+				// If response is not JSON, show error
+				throw new Error('Invalid response format');
+			}
+
+			// Show success/error message
+			await Swal.fire({
+				title: data.success ? 'Success!' : 'Oops...',
+				text: data.message,
+				icon: data.success ? 'success' : 'error',
+				confirmButtonColor: '#3085d6',
+				confirmButtonText: 'OK',
+				allowOutsideClick: false
+			});
+
+			// Reset form if successful
+			if (data.success) {
+				form.reset();
+			}
+		} catch (error) {
+			console.error('Error:', error);
+			await Swal.fire({
+				title: 'Error!',
+				text: 'Something went wrong. Please try again later.',
+				icon: 'error',
+				confirmButtonColor: '#3085d6',
+				confirmButtonText: 'OK',
+				allowOutsideClick: false
+			});
+		} finally {
+			// Reset loading state
+			submitText.style.display = 'inline-block';
+			loadingText.style.display = 'none';
+			submitBtn.disabled = false;
+		}
+	}
+
+	// Initialize any other scripts after DOM is loaded
+	document.addEventListener('DOMContentLoaded', function() {
+		// Your existing DOMContentLoaded code here
+	});
 	</script>
 	</body>
 </html>

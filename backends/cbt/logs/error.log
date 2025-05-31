@@ -1722,3 +1722,65 @@ Stack trace:
 #1 {main}
   thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php on line 30
 [31-May-2025 01:41:54 Africa/Lagos] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\edit-student.php on line 14
+[31-May-2025 22:04:16 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 16
+[31-May-2025 22:04:16 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 17
+[31-May-2025 22:04:16 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 18
+[31-May-2025 22:04:16 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 19
+[31-May-2025 22:04:16 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 20
+[31-May-2025 21:04:16 Africa/Lagos] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\process_contact.php on line 9
+[31-May-2025 21:04:16 Africa/Lagos] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\process_contact.php on line 10
+[31-May-2025 21:04:16 Africa/Lagos] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\process_contact.php on line 12
+[31-May-2025 21:04:16 Africa/Lagos] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\process_contact.php on line 13
+[31-May-2025 22:14:03 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 16
+[31-May-2025 22:14:03 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 17
+[31-May-2025 22:14:03 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 18
+[31-May-2025 22:14:03 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 19
+[31-May-2025 22:14:03 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 20
+[31-May-2025 21:14:03 Africa/Lagos] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\process_contact.php on line 19
+[31-May-2025 21:14:03 Africa/Lagos] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\process_contact.php on line 20
+[31-May-2025 21:14:03 Africa/Lagos] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\process_contact.php on line 22
+[31-May-2025 21:14:03 Africa/Lagos] PHP Deprecated:  Constant FILTER_SANITIZE_STRING is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\process_contact.php on line 23
+[31-May-2025 22:16:48 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 16
+[31-May-2025 22:16:48 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 17
+[31-May-2025 22:16:48 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 18
+[31-May-2025 22:16:48 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 19
+[31-May-2025 22:16:48 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 20
+[31-May-2025 22:16:54 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 16
+[31-May-2025 22:16:54 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 17
+[31-May-2025 22:16:54 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 18
+[31-May-2025 22:16:54 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 19
+[31-May-2025 22:16:54 Europe/Berlin] PHP Warning:  ini_set(): Session ini settings cannot be changed when a session is active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 20
+[31-May-2025 21:30:32 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 6
+[31-May-2025 21:31:12 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 6
+[31-May-2025 21:31:20 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 6
+[31-May-2025 21:31:24 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 6
+[31-May-2025 21:31:29 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 6
+[31-May-2025 21:31:31 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\exams.php on line 6
+[31-May-2025 21:31:56 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 6
+[31-May-2025 21:44:24 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 6
+[31-May-2025 21:47:57 Africa/Lagos] PHP Warning:  Constant DB_HOST already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 32
+[31-May-2025 21:47:57 Africa/Lagos] PHP Warning:  Constant DB_NAME already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 33
+[31-May-2025 21:47:57 Africa/Lagos] PHP Warning:  Constant DB_USER already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 34
+[31-May-2025 21:47:57 Africa/Lagos] PHP Warning:  Constant DB_PASS already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 35
+[31-May-2025 21:47:57 Africa/Lagos] PHP Warning:  Undefined array key "first_name" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\admin\dashboard.php on line 428
+[31-May-2025 21:47:57 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\admin\dashboard.php on line 428
+[31-May-2025 21:47:58 Africa/Lagos] PHP Fatal error:  Uncaught Error: Class "Database" not found in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\check_messages.php:8
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\check_messages.php on line 8
+[31-May-2025 21:48:00 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 6
+[31-May-2025 21:48:00 Africa/Lagos] PHP Fatal error:  Uncaught Error: Class "Database" not found in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php:15
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 15
+[31-May-2025 21:48:08 Africa/Lagos] PHP Warning:  Constant DB_HOST already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 32
+[31-May-2025 21:48:08 Africa/Lagos] PHP Warning:  Constant DB_NAME already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 33
+[31-May-2025 21:48:08 Africa/Lagos] PHP Warning:  Constant DB_USER already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 34
+[31-May-2025 21:48:08 Africa/Lagos] PHP Warning:  Constant DB_PASS already defined in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\config\config.php on line 35
+[31-May-2025 21:48:08 Africa/Lagos] PHP Warning:  Undefined array key "first_name" in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\admin\dashboard.php on line 428
+[31-May-2025 21:48:08 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\admin\dashboard.php on line 428
+[31-May-2025 21:48:08 Africa/Lagos] PHP Fatal error:  Uncaught Error: Class "Database" not found in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\check_messages.php:8
+Stack trace:
+#0 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\check_messages.php on line 8
+[31-May-2025 21:48:37 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 6

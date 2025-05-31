@@ -213,6 +213,27 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                     <li><a href="setup_admin.php" class="<?php echo $currentPage === 'setup_admin.php' ? 'active' : ''; ?>">Setup Admin</a></li>
                 </ul>
             </li>
+
+            <!-- Messages -->
+            <li class="nav-item <?php echo in_array($currentPage, ['send_message.php']) ? 'active' : ''; ?>">
+                <a href="../cbt/admin/send_message.php" class="nav-link">
+                    <i class="bi bi-envelope"></i>
+                    <span>Messages</span>
+                    <?php
+                    try {
+                        require_once __DIR__ . '/../../cbt/includes/Database.php';
+                        $db = Database::getInstance()->getConnection();
+                        $stmt = $db->query("SELECT COUNT(*) FROM contact_messages WHERE is_read = 0");
+                        $unread_count = $stmt->fetchColumn();
+                        if ($unread_count > 0) {
+                            echo '<span class="badge bg-danger rounded-pill ms-2 message-badge">' . $unread_count . '</span>';
+                        }
+                    } catch (PDOException $e) {
+                        error_log("Error counting unread messages: " . $e->getMessage());
+                    }
+                    ?>
+                </a>
+            </li>
             
             <!-- Logout -->
             <li class="nav-item mt-4">
@@ -224,6 +245,18 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </ul>
     </nav>
 </div>
+
+<style>
+    /* Add these styles to your existing sidebar styles */
+    .message-badge {
+        font-size: 0.75rem !important;
+        padding: 0.25rem 0.5rem !important;
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+</style>
 
 <script>
 /**
@@ -335,5 +368,33 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }, 300);
     }
+
+    // Function to check for new messages
+    function checkNewMessages() {
+        fetch('../cbt/admin/check_messages.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const messageLink = document.querySelector('a[href="../cbt/admin/send_message.php"]');
+                    let badge = messageLink.querySelector('.message-badge');
+                    
+                    if (data.unread_count > 0) {
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'badge bg-danger rounded-pill ms-2 message-badge';
+                            messageLink.appendChild(badge);
+                        }
+                        badge.textContent = data.unread_count;
+                    } else if (badge) {
+                        badge.remove();
+                    }
+                }
+            })
+            .catch(error => console.error('Error checking messages:', error));
+    }
+
+    // Check for new messages every 30 seconds
+    checkNewMessages();
+    setInterval(checkNewMessages, 30000);
 });
 </script> 

@@ -12,12 +12,17 @@ if (!file_exists($logDir)) {
 }
 ini_set('error_log', $logDir . '/error.log');
 
-// Session Configuration
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
-ini_set('session.gc_maxlifetime', 1800); // 30 minutes
-ini_set('session.cookie_lifetime', 1800);
+// Only set session settings if no session is active
+if (session_status() === PHP_SESSION_NONE) {
+    // Set session parameters
+    ini_set('session.cookie_lifetime', 0);
+    ini_set('session.use_cookies', 1);
+    ini_set('session.use_only_cookies', 1);
+    ini_set('session.use_strict_mode', 1);
+    ini_set('session.cookie_httponly', 1);
+    
+    session_start();
+}
 
 // Site Configuration
 define('SITE_NAME', 'ACE MODEL COLLEGE CBT');

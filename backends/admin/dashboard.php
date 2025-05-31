@@ -436,7 +436,9 @@ if (count($recent_students) > 0) {
                         </a>
                     </div>
                 </div>
-                
+                <a href="../cbt/admin/send_message.php" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-envelope"></i> Contact Us
+                </a>
                 <!-- Stats Row -->
                 <div class="row animate__animated animate__fadeIn">
                     <div class="col-md-3">
