@@ -2,115 +2,161 @@
 require_once 'config/config.php';
 require_once 'includes/Database.php';
 
-session_start();
-
 if (!isset($_SESSION['student_id'])) {
     header('Location: login.php');
     exit();
 }
 
-$db = Database::getInstance()->getConnection();
-$message = '';
+try {
+    $db = Database::getInstance()->getConnection();
+    $message = '';
 
-// Get student details
-$stmt = $db->prepare("SELECT * FROM ace_school_system.students WHERE id = :student_id");
-$stmt->execute([':student_id' => $_SESSION['student_id']]);
-$student = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Get student details
+    $stmt = $db->prepare("SELECT * FROM students WHERE id = :student_id");
+    if (!$stmt->execute([':student_id' => $_SESSION['student_id']])) {
+        error_log("Error fetching student details: " . print_r($stmt->errorInfo(), true));
+        throw new Exception("Error loading profile");
+    }
+    $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$student) {
-    session_destroy();
-    header('Location: login.php');
-    exit();
-}
+    if (!$student) {
+        error_log("Student not found: " . $_SESSION['student_id']);
+        session_destroy();
+        header('Location: login.php');
+        exit();
+    }
 
-// Get student's exam history
-$exam_history_query = "
-    SELECT 
-        ea.id as attempt_id,
-        ea.exam_id,
-        ea.score,
-        ea.start_time,
-        e.title as exam_title,
-        e.passing_score,
-        e.duration as total_questions
-    FROM ace_school_system.exam_attempts ea 
-    JOIN ace_school_system.exams e ON ea.exam_id = e.id 
-    WHERE ea.student_id = :student_id
-    ORDER BY ea.start_time DESC";
-
-$stmt = $db->prepare($exam_history_query);
-$stmt->execute([':student_id' => $_SESSION['student_id']]);
-$exam_history = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Get detailed answers for each attempt
-function getAttemptAnswers($db, $attempt_id) {
-    $answers_query = "
+    // Get student's exam history
+    $exam_history_query = "
         SELECT 
-            q.question_text,
-            q.correct_answer,
-            sr.selected_answer,
-            q.explanation
-        FROM ace_school_system.student_responses sr
-        JOIN ace_school_system.questions q ON sr.question_id = q.id
-        WHERE sr.attempt_id = :attempt_id
-        ORDER BY sr.id";
-    
-    $stmt = $db->prepare($answers_query);
-    $stmt->execute([':attempt_id' => $attempt_id]);
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+            ea.id as attempt_id,
+            ea.exam_id,
+            ea.score,
+            ea.start_time,
+            e.title as exam_title,
+            e.passing_score,
+            e.duration as total_questions
+        FROM exam_attempts ea 
+        JOIN exams e ON ea.exam_id = e.id 
+        WHERE ea.student_id = :student_id
+        ORDER BY ea.start_time DESC";
 
-// Handle profile update
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        $updates = [];
-        $params = [':student_id' => $_SESSION['student_id']];
+    $stmt = $db->prepare($exam_history_query);
+    if (!$stmt->execute([':student_id' => $_SESSION['student_id']])) {
+        error_log("Error fetching exam history: " . print_r($stmt->errorInfo(), true));
+        throw new Exception("Error loading exam history");
+    }
+    $exam_history = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Only update fields that are provided and not empty
-        if (!empty($_POST['first_name'])) {
-            $updates[] = "first_name = :first_name";
-            $params[':first_name'] = $_POST['first_name'];
+    // Get detailed answers for each attempt
+    function getAttemptAnswers($db, $attempt_id) {
+        // First get the exam_id for this attempt
+        $attempt_query = "SELECT exam_id FROM exam_attempts WHERE id = :attempt_id";
+        $stmt = $db->prepare($attempt_query);
+        if (!$stmt->execute([':attempt_id' => $attempt_id])) {
+            error_log("Error fetching attempt details: " . print_r($stmt->errorInfo(), true));
+            throw new Exception("Error loading attempt details");
+        }
+        $attempt = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$attempt) {
+            error_log("No attempt found with ID: " . $attempt_id);
+            return [];
         }
 
-        if (!empty($_POST['last_name'])) {
-            $updates[] = "last_name = :last_name";
-            $params[':last_name'] = $_POST['last_name'];
+        // Get all questions for this exam with student responses (if any)
+        $answers_query = "
+            SELECT 
+                q.id,
+                q.question_text,
+                q.correct_answer,
+                q.explanation,
+                sr.selected_answer
+            FROM questions q
+            LEFT JOIN student_responses sr ON sr.question_id = q.id AND sr.attempt_id = :attempt_id
+            WHERE q.exam_id = (SELECT exam_id FROM exam_attempts WHERE id = :attempt_id2)
+            ORDER BY q.id";
+        
+        $stmt = $db->prepare($answers_query);
+        if (!$stmt->execute([
+            ':attempt_id' => $attempt_id,
+            ':attempt_id2' => $attempt_id
+        ])) {
+            error_log("Error fetching questions and answers: " . print_r($stmt->errorInfo(), true));
+            throw new Exception("Error loading questions and answers");
         }
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-        if (!empty($_POST['phone'])) {
-            $updates[] = "phone = :phone";
-            $params[':phone'] = $_POST['phone'];
-        }
+    // Handle profile update
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        try {
+            $updates = [];
+            $params = [':student_id' => $_SESSION['student_id']];
 
-        if (!empty($_POST['class'])) {
-            $updates[] = "class = :class";
-            $params[':class'] = $_POST['class'];
-        }
-
-        // Only process password if both fields are filled and match
-        if (!empty($_POST['new_password']) && !empty($_POST['confirm_password'])) {
-            if ($_POST['new_password'] === $_POST['confirm_password']) {
-                $updates[] = "password = :password";
-                $params[':password'] = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
-            } else {
-                throw new Exception("New passwords do not match");
+            // Only update fields that are provided and not empty
+            if (!empty($_POST['first_name'])) {
+                $updates[] = "first_name = :first_name";
+                $params[':first_name'] = trim($_POST['first_name']);
             }
-        }
 
-        if (!empty($updates)) {
-            $sql = "UPDATE ace_school_system.students SET " . implode(", ", $updates) . " WHERE id = :student_id";
-            $stmt = $db->prepare($sql);
-            if ($stmt->execute($params)) {
+            if (!empty($_POST['last_name'])) {
+                $updates[] = "last_name = :last_name";
+                $params[':last_name'] = trim($_POST['last_name']);
+            }
+
+            if (!empty($_POST['phone'])) {
+                $updates[] = "phone = :phone";
+                $params[':phone'] = trim($_POST['phone']);
+            }
+
+            if (!empty($_POST['class'])) {
+                $updates[] = "class = :class";
+                $params[':class'] = trim($_POST['class']);
+            }
+
+            // Only process password if both fields are filled and match
+            if (!empty($_POST['new_password']) && !empty($_POST['confirm_password'])) {
+                if ($_POST['new_password'] === $_POST['confirm_password']) {
+                    $updates[] = "password = :password";
+                    $params[':password'] = password_hash($_POST['new_password'], PASSWORD_DEFAULT);
+                } else {
+                    throw new Exception("New passwords do not match");
+                }
+            }
+
+            if (!empty($updates)) {
+                $sql = "UPDATE students SET " . implode(", ", $updates) . " WHERE id = :student_id";
+                $stmt = $db->prepare($sql);
+                if (!$stmt->execute($params)) {
+                    error_log("Error updating profile: " . print_r($stmt->errorInfo(), true));
+                    throw new Exception("Error updating profile");
+                }
+                
                 $message = '<div class="alert alert-success">Profile updated successfully!</div>';
+                
                 // Refresh student data
-                $stmt = $db->prepare("SELECT * FROM ace_school_system.students WHERE id = :student_id");
-                $stmt->execute([':student_id' => $_SESSION['student_id']]);
+                $stmt = $db->prepare("SELECT * FROM students WHERE id = :student_id");
+                if (!$stmt->execute([':student_id' => $_SESSION['student_id']])) {
+                    error_log("Error refreshing student data: " . print_r($stmt->errorInfo(), true));
+                    throw new Exception("Error refreshing profile data");
+                }
                 $student = $stmt->fetch(PDO::FETCH_ASSOC);
             }
+        } catch (Exception $e) {
+            error_log("Profile update error: " . $e->getMessage());
+            $message = '<div class="alert alert-danger">Error updating profile: ' . $e->getMessage() . '</div>';
         }
-    } catch (Exception $e) {
-        $message = '<div class="alert alert-danger">Error updating profile: ' . $e->getMessage() . '</div>';
     }
+} catch (PDOException $e) {
+    error_log("Database error in profile.php: " . $e->getMessage());
+    error_log("Error code: " . $e->getCode());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    $message = '<div class="alert alert-danger">A database error occurred. Please try again later.</div>';
+} catch (Exception $e) {
+    error_log("General error in profile.php: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    $message = '<div class="alert alert-danger">' . $e->getMessage() . '</div>';
 }
 ?>
 
@@ -437,18 +483,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         View Details
                                     </button>
                                     <div class="collapse mt-3" id="answers-<?php echo $attempt['attempt_id']; ?>">
-                                        <?php foreach ($answers as $answer): ?>
-                                            <div class="card mb-2">
+                                        <?php foreach ($answers as $answer): 
+                                            $is_attempted = !is_null($answer['selected_answer']);
+                                            $is_correct = $is_attempted && ($answer['selected_answer'] === $answer['correct_answer']);
+                                        ?>
+                                            <div class="card mb-2 <?php echo $is_attempted ? ($is_correct ? 'border-success' : 'border-danger') : 'border-warning'; ?>">
                                                 <div class="card-body">
                                                     <p><strong>Question:</strong> <?php echo htmlspecialchars($answer['question_text']); ?></p>
-                                                    <p>
-                                                        <strong>Your Answer:</strong> 
-                                                        <span class="<?php echo $answer['selected_answer'] === $answer['correct_answer'] ? 'text-success' : 'text-danger'; ?>">
-                                                            <?php echo htmlspecialchars($answer['selected_answer']); ?>
-                                                        </span>
-                                                    </p>
+                                                    <?php if ($is_attempted): ?>
+                                                        <p>
+                                                            <strong>Your Answer:</strong> 
+                                                            <span class="<?php echo $is_correct ? 'text-success' : 'text-danger'; ?>">
+                                                                <?php echo htmlspecialchars($answer['selected_answer']); ?>
+                                                            </span>
+                                                        </p>
+                                                    <?php else: ?>
+                                                        <p class="text-warning">
+                                                            <strong>Your Answer:</strong> 
+                                                            <span>Not attempted</span>
+                                                        </p>
+                                                    <?php endif; ?>
                                                     <p><strong>Correct Answer:</strong> <?php echo htmlspecialchars($answer['correct_answer']); ?></p>
-                                                    <?php if ($answer['selected_answer'] !== $answer['correct_answer'] && !empty($answer['explanation'])): ?>
+                                                    <?php if (!$is_correct && !empty($answer['explanation'])): ?>
                                                         <div class="alert alert-info">
                                                             <strong>Explanation:</strong> <?php echo htmlspecialchars($answer['explanation']); ?>
                                                         </div>

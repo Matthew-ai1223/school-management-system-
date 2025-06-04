@@ -3,7 +3,9 @@ require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $auth = new Auth();
 
@@ -12,6 +14,10 @@ if (!isset($_SESSION['teacher_id']) || !isset($_SESSION['role']) || $_SESSION['r
     header('Location: login.php');
     exit();
 }
+
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 $db = Database::getInstance()->getConnection();
 
@@ -22,12 +28,22 @@ $per_page = 10;
 $offset = ($page - 1) * $per_page;
 
 // Get teacher's subjects
-$stmt = $db->prepare("SELECT DISTINCT subject FROM teacher_subjects WHERE teacher_id = :teacher_id ORDER BY subject");
-$stmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
-$teacher_subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+try {
+    $stmt = $db->prepare("SELECT DISTINCT subject FROM teacher_subjects WHERE teacher_id = :teacher_id ORDER BY subject");
+    $stmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
+    $teacher_subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("Error fetching teacher subjects: " . $e->getMessage());
+    $teacher_subjects = [];
+}
 
-// Get selected subject
-$selected_subject = isset($_GET['subject']) ? htmlspecialchars(trim($_GET['subject']), ENT_QUOTES, 'UTF-8') : ($teacher_subjects[0]['subject'] ?? 'All Subjects');
+// Get selected subject with proper default handling
+$selected_subject = 'All Subjects';
+if (isset($_GET['subject']) && !empty($_GET['subject'])) {
+    $selected_subject = htmlspecialchars(trim($_GET['subject']), ENT_QUOTES, 'UTF-8');
+} elseif (!empty($teacher_subjects)) {
+    $selected_subject = $teacher_subjects[0]['subject'];
+}
 
 // Build query for students
 $query = "SELECT DISTINCT
@@ -47,79 +63,94 @@ $query = "SELECT DISTINCT
             GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
             SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
             SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 AND (ea.score / e.duration * 100) < 70 THEN 1 ELSE 0 END) as credits
-          FROM ace_school_system.students s
-          INNER JOIN ace_school_system.exam_attempts ea ON s.id = ea.student_id
-          INNER JOIN ace_school_system.exams e ON ea.exam_id = e.id
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
           WHERE EXISTS (
               SELECT 1 
-              FROM ace_school_system.teacher_subjects ts 
-              WHERE ts.teacher_id = :main_teacher_id
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
           )
           AND ea.status = 'completed'";
+
+// Initialize params array
+$params = [':teacher_id' => $_SESSION['teacher_id']];
 
 // Add class filter if provided
 if (isset($_GET['class']) && !empty($_GET['class'])) {
     $query .= " AND s.class = :class";
+    $params[':class'] = $_GET['class'];
 }
 
+// Add subject filter if not "All Subjects"
 if ($selected_subject !== 'All Subjects') {
     $query .= " AND EXISTS (
         SELECT 1 
-        FROM ace_school_system.teacher_subjects ts2 
-        WHERE ts2.subject = :selected_subject
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
         AND ts2.teacher_id = :subject_teacher_id
     )";
+    $params[':subject'] = $selected_subject;
+    $params[':subject_teacher_id'] = $_SESSION['teacher_id'];
 }
 
+// Add search conditions if search term provided
 if ($search) {
     $query .= " AND (s.first_name LIKE :search 
                      OR s.last_name LIKE :search 
                      OR s.parent_phone LIKE :search 
                      OR s.registration_number LIKE :search)";
+    $params[':search'] = "%$search%";
 }
 
 $query .= " GROUP BY s.id
            ORDER BY s.class, s.first_name, s.last_name
            LIMIT :limit OFFSET :offset";
 
-$stmt = $db->prepare($query);
+// Add pagination params
+$params[':limit'] = $per_page;
+$params[':offset'] = $offset;
 
-// Bind parameters
-$stmt->bindValue(':main_teacher_id', $_SESSION['teacher_id'], PDO::PARAM_INT);
-
-if (isset($_GET['class']) && !empty($_GET['class'])) {
-    $stmt->bindValue(':class', $_GET['class']);
+try {
+    error_log("Debug - Query: " . $query);
+    error_log("Debug - Params: " . print_r($params, true));
+    
+    $stmt = $db->prepare($query);
+    
+    // Bind all parameters
+    foreach ($params as $key => $value) {
+        if ($key === ':teacher_id' || $key === ':subject_teacher_id' || $key === ':limit' || $key === ':offset') {
+            $stmt->bindValue($key, $value, PDO::PARAM_INT);
+        } else {
+            $stmt->bindValue($key, $value, PDO::PARAM_STR);
+        }
+    }
+    
+    $stmt->execute();
+    $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("Error executing main query: " . $e->getMessage());
+    error_log("SQL State: " . $e->getCode());
+    $students = [];
 }
 
-if ($selected_subject !== 'All Subjects') {
-    $stmt->bindValue(':selected_subject', $selected_subject);
-    $stmt->bindValue(':subject_teacher_id', $_SESSION['teacher_id'], PDO::PARAM_INT);
-}
-
-if ($search) {
-    $stmt->bindValue(':search', "%$search%");
-}
-
-// Bind LIMIT and OFFSET parameters
-$stmt->bindValue(':limit', $per_page, PDO::PARAM_INT);
-$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-
-$stmt->execute();
-$students = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Get total count for pagination
+// Build count query
 $count_query = "SELECT COUNT(DISTINCT s.id) 
-                FROM ace_school_system.students s
-                INNER JOIN ace_school_system.exam_attempts ea ON s.id = ea.student_id
-                INNER JOIN ace_school_system.exams e ON ea.exam_id = e.id
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
                 WHERE EXISTS (
                     SELECT 1 
-                    FROM ace_school_system.teacher_subjects ts 
-                    WHERE ts.teacher_id = :main_teacher_id
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
                 )
                 AND ea.status = 'completed'";
 
-// Add class filter if provided
+// Reuse the same conditions but without LIMIT and OFFSET
+$count_params = $params;
+unset($count_params[':limit']);
+unset($count_params[':offset']);
+
 if (isset($_GET['class']) && !empty($_GET['class'])) {
     $count_query .= " AND s.class = :class";
 }
@@ -127,35 +158,43 @@ if (isset($_GET['class']) && !empty($_GET['class'])) {
 if ($selected_subject !== 'All Subjects') {
     $count_query .= " AND EXISTS (
         SELECT 1 
-        FROM ace_school_system.teacher_subjects ts2 
-        WHERE ts2.subject = :selected_subject
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
         AND ts2.teacher_id = :subject_teacher_id
     )";
 }
 
 if ($search) {
-    $count_query .= " AND (s.first_name LIKE :search OR s.last_name LIKE :search OR s.email LIKE :search OR s.registration_number LIKE :search)";
+    $count_query .= " AND (s.first_name LIKE :search 
+                          OR s.last_name LIKE :search 
+                          OR s.parent_phone LIKE :search 
+                          OR s.registration_number LIKE :search)";
 }
 
-$stmt = $db->prepare($count_query);
-$stmt->bindValue(':main_teacher_id', $_SESSION['teacher_id'], PDO::PARAM_INT);
-
-if (isset($_GET['class']) && !empty($_GET['class'])) {
-    $stmt->bindValue(':class', $_GET['class']);
+try {
+    error_log("Debug - Count Query: " . $count_query);
+    error_log("Debug - Count Params: " . print_r($count_params, true));
+    
+    $stmt = $db->prepare($count_query);
+    
+    // Bind count parameters
+    foreach ($count_params as $key => $value) {
+        if ($key === ':teacher_id' || $key === ':subject_teacher_id') {
+            $stmt->bindValue($key, $value, PDO::PARAM_INT);
+        } else {
+            $stmt->bindValue($key, $value, PDO::PARAM_STR);
+        }
+    }
+    
+    $stmt->execute();
+    $total_students = $stmt->fetchColumn();
+    $total_pages = ceil($total_students / $per_page);
+} catch (PDOException $e) {
+    error_log("Error executing count query: " . $e->getMessage());
+    error_log("SQL State: " . $e->getCode());
+    $total_students = 0;
+    $total_pages = 1;
 }
-
-if ($selected_subject !== 'All Subjects') {
-    $stmt->bindValue(':selected_subject', $selected_subject);
-    $stmt->bindValue(':subject_teacher_id', $_SESSION['teacher_id'], PDO::PARAM_INT);
-}
-
-if ($search) {
-    $stmt->bindValue(':search', "%$search%");
-}
-
-$stmt->execute();
-$total_students = $stmt->fetchColumn();
-$total_pages = ceil($total_students / $per_page);
 
 $message = '';
 if (isset($_SESSION['message'])) {
@@ -165,12 +204,12 @@ if (isset($_SESSION['message'])) {
 
 // Get available classes for the filter
 $classes_query = "SELECT DISTINCT s.class 
-                 FROM ace_school_system.students s
-                 INNER JOIN ace_school_system.exam_attempts ea ON s.id = ea.student_id
-                 INNER JOIN ace_school_system.exams e ON ea.exam_id = e.id
+                 FROM students s
+                 INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                 INNER JOIN exams e ON ea.exam_id = e.id
                  WHERE EXISTS (
                      SELECT 1 
-                     FROM ace_school_system.teacher_subjects ts 
+                     FROM teacher_subjects ts 
                      WHERE ts.teacher_id = :teacher_id
                  )
                  AND ea.status = 'completed'

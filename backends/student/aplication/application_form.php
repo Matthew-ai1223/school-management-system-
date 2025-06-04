@@ -1,4 +1,13 @@
 <?php
+// Session configuration
+ini_set('session.cookie_lifetime', 3600); // 1 hour
+ini_set('session.gc_maxlifetime', 3600); // 1 hour
+ini_set('session.use_strict_mode', 1);
+ini_set('session.use_cookies', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cache_limiter', 'nocache');
+session_name('ACE_APPLICATION');
+
 require_once '../../config.php';
 require_once '../../database.php';
 require_once '../../auth.php';
@@ -31,54 +40,75 @@ try {
     $reference = isset($_SESSION['payment_reference']) ? $_SESSION['payment_reference'] : 
                 (isset($_GET['reference']) ? $_GET['reference'] : '');
 
-    error_log("Checking payment verification for reference: " . $reference);
-    error_log("Session payment_verified: " . (isset($_SESSION['payment_verified']) ? 'true' : 'false'));
-    error_log("Application type: " . $applicationType);
+    error_log("Payment Verification Debug - Reference: " . $reference);
+    error_log("Payment Verification Debug - Session Data: " . print_r($_SESSION, true));
 
     if (empty($reference)) {
         throw new Exception("No payment reference found. Please complete payment first.");
     }
 
-    // Verify payment status
-    $sql = "SELECT * FROM application_payments WHERE reference = ? AND status = ? AND application_type = ?";
+    // Verify payment status with more detailed error logging
+    $sql = "SELECT * FROM application_payments WHERE reference = ?";
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
+        error_log("Database prepare failed: " . $conn->error);
         throw new Exception("Database prepare failed: " . $conn->error);
     }
 
-    $completed_status = PAYMENT_STATUS_COMPLETED;
-    $stmt->bind_param("sss", $reference, $completed_status, $applicationType);
+    $stmt->bind_param("s", $reference);
     
     if (!$stmt->execute()) {
+        error_log("Database execute failed: " . $stmt->error);
         throw new Exception("Database query failed: " . $stmt->error);
     }
     
     $result = $stmt->get_result();
     $payment = $result->fetch_assoc();
 
-    error_log("Payment verification query result: " . ($payment ? "Payment found" : "Payment not found"));
+    error_log("Payment Verification Debug - Payment Data: " . print_r($payment, true));
 
     if (!$payment) {
-        throw new Exception("Invalid payment reference or payment not completed. Please complete payment first.");
+        throw new Exception("Payment record not found. Please complete payment first.");
+    }
+
+    // Check payment status
+    if ($payment['status'] !== PAYMENT_STATUS_COMPLETED) {
+        error_log("Payment status not completed: " . $payment['status']);
+        throw new Exception("Payment not completed. Current status: " . $payment['status']);
+    }
+
+    // Verify application type matches if specified
+    if (!empty($applicationType) && $payment['application_type'] !== $applicationType) {
+        error_log("Application type mismatch: Expected {$applicationType}, got {$payment['application_type']}");
+        throw new Exception("Invalid application type for this payment.");
     }
 
     $payment_verified = true;
     $_SESSION['payment_verified'] = true;
     $_SESSION['payment_reference'] = $reference;
-    $_SESSION['application_type'] = $applicationType;
+    $_SESSION['application_type'] = $payment['application_type'];
 
-    error_log("Payment verification successful. Session variables set.");
+    error_log("Payment verification successful - Session updated");
 
 } catch (Exception $e) {
     $payment_error = $e->getMessage();
     error_log("Payment verification error: " . $payment_error);
+    error_log("Debug backtrace: " . print_r(debug_backtrace(), true));
 }
 
-// If payment is not verified, redirect to payment page
+// If payment is not verified, redirect to payment page with detailed error
 if (!$payment_verified) {
-    error_log("Redirecting to payment page due to unverified payment. Error: " . $payment_error);
+    error_log("Redirecting to payment page - Error: " . $payment_error);
     $_SESSION['error_message'] = $payment_error;
-    header("Location: payment.php?type=" . urlencode($applicationType) . "&error=" . urlencode($payment_error));
+    
+    // Add more detailed error information to the URL
+    $redirect_url = "payment.php?type=" . urlencode($applicationType) . 
+                   "&error=" . urlencode($payment_error) . 
+                   "&debug=1" . 
+                   (isset($_SESSION['payment_reference']) ? "&session_ref=" . urlencode($_SESSION['payment_reference']) : "") .
+                   (isset($_GET['reference']) ? "&url_ref=" . urlencode($_GET['reference']) : "");
+                   
+    header("Location: " . $redirect_url);
     exit();
 }
 
@@ -252,6 +282,9 @@ if (isset($_POST['submit_application'])) {
         $stmt = $conn->prepare($sql);
         $json_data = json_encode($application_data);
         $stmt->bind_param("ss", $json_data, $applicationType);
+        
+        error_log("Attempting to save application - Data: " . print_r($application_data, true));
+        
         if ($stmt->execute()) {
             // Get the applicant's name from the form data
             $applicantName = $_POST['field_full_name'] ?? '';
@@ -260,15 +293,33 @@ if (isset($_POST['submit_application'])) {
             $_SESSION['application_submitted'] = true;
             $_SESSION['application_reference'] = uniqid('APP_', true);
             $_SESSION['applicant_name'] = $applicantName;
+            $_SESSION['application_type'] = $applicationType;
+            
+            error_log("Application saved successfully - Session data: " . print_r($_SESSION, true));
             
             // Clear payment session data after successful submission
             unset($_SESSION['payment_verified']);
             unset($_SESSION['payment_amount']);
             
-            // Redirect to success page
-            header("Location: application_successful.php");
-            exit();
+            // Ensure headers haven't been sent yet
+            if (!headers_sent()) {
+                // Redirect to success page with parameters
+                $redirect_url = "application_successful.php?" . http_build_query([
+                    'type' => $applicationType,
+                    'ref' => $_SESSION['application_reference'],
+                    'timestamp' => time()
+                ]);
+                
+                error_log("Redirecting to: " . $redirect_url);
+                header("Location: " . $redirect_url);
+                exit();
+            } else {
+                error_log("Headers already sent - Cannot redirect");
+                echo "<script>window.location.href = 'application_successful.php';</script>";
+                exit();
+            }
         } else {
+            error_log("Failed to save application - Error: " . $stmt->error);
             $error_message = "Failed to submit application. Please try again.";
         }
     }

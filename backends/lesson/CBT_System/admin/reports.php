@@ -12,6 +12,52 @@ session_start();
 
 $db = Database::getInstance()->getConnection();
 
+// Get summary statistics
+$stats_query = "SELECT 
+    COUNT(DISTINCT CASE WHEN ea.status = 'completed' THEN ea.user_id END) as total_students,
+    COUNT(DISTINCT CASE WHEN ea.status = 'completed' THEN ea.exam_id END) as total_exams,
+    ROUND(AVG(CASE WHEN ea.status = 'completed' THEN ea.score END), 1) as avg_score,
+    COUNT(DISTINCT CASE WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN ea.id END) as passed_exams,
+    COUNT(DISTINCT CASE WHEN ea.status = 'completed' AND ea.score < e.passing_score THEN ea.id END) as failed_exams,
+    MAX(CASE WHEN ea.status = 'completed' THEN ea.score END) as highest_score,
+    MIN(CASE WHEN ea.status = 'completed' THEN ea.score END) as lowest_score
+FROM exam_attempts ea
+JOIN exams e ON ea.exam_id = e.id
+WHERE 1=1";
+
+// Apply filters to statistics
+$stats_params = [];
+if ($exam_id) {
+    $stats_query .= " AND e.id = :exam_id";
+    $stats_params[':exam_id'] = $exam_id;
+}
+if ($department) {
+    $stats_query .= " AND (
+        EXISTS (SELECT 1 FROM morning_students ms WHERE ms.id = ea.user_id AND ms.department = :dept_m)
+        OR 
+        EXISTS (SELECT 1 FROM afternoon_students afs WHERE afs.id = ea.user_id AND afs.department = :dept_a)
+    )";
+    $stats_params[':dept_m'] = $department;
+    $stats_params[':dept_a'] = $department;
+}
+if ($session === 'morning') {
+    $stats_query .= " AND EXISTS (SELECT 1 FROM morning_students ms WHERE ms.id = ea.user_id)";
+} elseif ($session === 'afternoon') {
+    $stats_query .= " AND EXISTS (SELECT 1 FROM afternoon_students afs WHERE afs.id = ea.user_id)";
+}
+if ($date_from) {
+    $stats_query .= " AND DATE(ea.start_time) >= :date_from";
+    $stats_params[':date_from'] = $date_from;
+}
+if ($date_to) {
+    $stats_query .= " AND DATE(ea.start_time) <= :date_to";
+    $stats_params[':date_to'] = $date_to;
+}
+
+$stats_stmt = $db->prepare($stats_query);
+$stats_stmt->execute($stats_params);
+$statistics = $stats_stmt->fetch(PDO::FETCH_ASSOC);
+
 // Get filter parameters
 $exam_id = isset($_GET['exam_id']) ? (int)$_GET['exam_id'] : null;
 $department = isset($_GET['department']) ? $_GET['department'] : null;
@@ -52,15 +98,20 @@ if ($session === 'morning') {
                 ms.department,
                 'Morning' as session,
                 e.title as exam_title,
-                ea.score,
+                ea.score as score,
                 ea.start_time,
                 ea.end_time,
                 e.passing_score,
-                CASE WHEN ea.score >= e.passing_score THEN 'Pass' ELSE 'Fail' END as status
+                CASE 
+                    WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN 'Pass'
+                    WHEN ea.status = 'completed' AND ea.score < e.passing_score THEN 'Fail'
+                    ELSE ea.status
+                END as status,
+                TIMESTAMPDIFF(SECOND, ea.start_time, COALESCE(ea.end_time, NOW())) as duration_seconds
               FROM morning_students ms
               JOIN exam_attempts ea ON ms.id = ea.user_id
               JOIN exams e ON ea.exam_id = e.id
-              WHERE ea.status = 'completed'" . $where_clause . "
+              WHERE 1=1" . $where_clause . "
               ORDER BY ea.start_time DESC";
 } elseif ($session === 'afternoon') {
     $query = "SELECT 
@@ -69,15 +120,20 @@ if ($session === 'morning') {
                 afs.department,
                 'Afternoon' as session,
                 e.title as exam_title,
-                ea.score,
+                ea.score as score,
                 ea.start_time,
                 ea.end_time,
                 e.passing_score,
-                CASE WHEN ea.score >= e.passing_score THEN 'Pass' ELSE 'Fail' END as status
+                CASE 
+                    WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN 'Pass'
+                    WHEN ea.status = 'completed' AND ea.score < e.passing_score THEN 'Fail'
+                    ELSE ea.status
+                END as status,
+                TIMESTAMPDIFF(SECOND, ea.start_time, COALESCE(ea.end_time, NOW())) as duration_seconds
               FROM afternoon_students afs
               JOIN exam_attempts ea ON afs.id = ea.user_id
               JOIN exams e ON ea.exam_id = e.id
-              WHERE ea.status = 'completed'" . $where_clause . "
+              WHERE 1=1" . $where_clause . "
               ORDER BY ea.start_time DESC";
 } else {
     $query = "(SELECT 
@@ -86,15 +142,20 @@ if ($session === 'morning') {
                 ms.department,
                 'Morning' as session,
                 e.title as exam_title,
-                ea.score,
+                ea.score as score,
                 ea.start_time,
                 ea.end_time,
                 e.passing_score,
-                CASE WHEN ea.score >= e.passing_score THEN 'Pass' ELSE 'Fail' END as status
+                CASE 
+                    WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN 'Pass'
+                    WHEN ea.status = 'completed' AND ea.score < e.passing_score THEN 'Fail'
+                    ELSE ea.status
+                END as status,
+                TIMESTAMPDIFF(SECOND, ea.start_time, COALESCE(ea.end_time, NOW())) as duration_seconds
               FROM morning_students ms
               JOIN exam_attempts ea ON ms.id = ea.user_id
               JOIN exams e ON ea.exam_id = e.id
-              WHERE ea.status = 'completed'" . $where_clause . ")
+              WHERE 1=1" . $where_clause . ")
               UNION ALL
               (SELECT 
                 afs.id as student_id,
@@ -102,15 +163,20 @@ if ($session === 'morning') {
                 afs.department,
                 'Afternoon' as session,
                 e.title as exam_title,
-                ea.score,
+                ea.score as score,
                 ea.start_time,
                 ea.end_time,
                 e.passing_score,
-                CASE WHEN ea.score >= e.passing_score THEN 'Pass' ELSE 'Fail' END as status
+                CASE 
+                    WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN 'Pass'
+                    WHEN ea.status = 'completed' AND ea.score < e.passing_score THEN 'Fail'
+                    ELSE ea.status
+                END as status,
+                TIMESTAMPDIFF(SECOND, ea.start_time, COALESCE(ea.end_time, NOW())) as duration_seconds
               FROM afternoon_students afs
               JOIN exam_attempts ea ON afs.id = ea.user_id
               JOIN exams e ON ea.exam_id = e.id
-              WHERE ea.status = 'completed'" . $where_clause . ")
+              WHERE 1=1" . $where_clause . ")
               ORDER BY start_time DESC";
 }
 
@@ -312,6 +378,69 @@ if (isset($_GET['export'])) {
                     </div>
                 </div>
 
+                <!-- Statistics Summary -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body">
+                                <h6 class="card-title">Total Students</h6>
+                                <h2 class="mb-0"><?php echo $statistics['total_students']; ?></h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body">
+                                <h6 class="card-title">Total Exams Taken</h6>
+                                <h2 class="mb-0"><?php echo $statistics['total_exams']; ?></h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body">
+                                <h6 class="card-title">Passed Exams</h6>
+                                <h2 class="mb-0"><?php echo $statistics['passed_exams']; ?></h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body">
+                                <h6 class="card-title">Failed Exams</h6>
+                                <h2 class="mb-0"><?php echo $statistics['failed_exams']; ?></h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted">Average Score</h6>
+                                <h2 class="mb-0"><?php echo $statistics['avg_score']; ?>%</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted">Highest Score</h6>
+                                <h2 class="mb-0"><?php echo $statistics['highest_score']; ?>%</h2>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title text-muted">Lowest Score</h6>
+                                <h2 class="mb-0"><?php echo $statistics['lowest_score']; ?>%</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Reports Table -->
                 <div class="card">
                     <div class="card-body">
@@ -347,18 +476,18 @@ if (isset($_GET['export'])) {
                                                     </span>
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-<?php echo $report['status'] === 'Pass' ? 'success' : 'danger'; ?>">
+                                                    <span class="badge bg-<?php echo $report['status'] === 'Pass' ? 'success' : ($report['status'] === 'Fail' ? 'danger' : 'warning'); ?>">
                                                         <?php echo $report['status']; ?>
                                                     </span>
                                                 </td>
                                                 <td><?php echo date('M d, Y H:i', strtotime($report['start_time'])); ?></td>
                                                 <td>
                                                     <?php
-                                                    if ($report['end_time']) {
-                                                        $start = new DateTime($report['start_time']);
-                                                        $end = new DateTime($report['end_time']);
-                                                        $duration = $start->diff($end);
-                                                        echo $duration->format('%H:%I:%S');
+                                                    if ($report['duration_seconds'] !== null) {
+                                                        $hours = floor($report['duration_seconds'] / 3600);
+                                                        $minutes = floor(($report['duration_seconds'] % 3600) / 60);
+                                                        $seconds = $report['duration_seconds'] % 60;
+                                                        printf('%02d:%02d:%02d', $hours, $minutes, $seconds);
                                                     }
                                                     ?>
                                                 </td>

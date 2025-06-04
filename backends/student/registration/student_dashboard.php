@@ -1262,7 +1262,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#exams" data-toggle="tab" role="tab" aria-controls="exams" aria-selected="false">
-                            <i class="fas fa-file-alt"></i> Exams & Results
+                            <i class="fas fa-money-bill-wave"></i> Payments
                         </a>
                     </li>
                     <li class="nav-item">
@@ -1271,9 +1271,9 @@ while ($row = $announcementsResult->fetch_assoc()) {
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#payments" data-toggle="tab" role="tab" aria-controls="payments" aria-selected="false">
+                        <!-- <a class="nav-link" href="#payments" data-toggle="tab" role="tab" aria-controls="payments" aria-selected="false">
                             <i class="fas fa-money-bill-wave"></i> Payments
-                        </a>
+                        </a> -->
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#calendar" data-toggle="tab" role="tab" aria-controls="calendar" aria-selected="false">
@@ -1963,31 +1963,34 @@ while ($row = $announcementsResult->fetch_assoc()) {
                     
                     <!-- Exams Tab -->
                     <div class="tab-pane fade" id="exams" role="tabpanel" aria-labelledby="exams-tab">
-                        <div class="dashboard-card mb-4">
-                            <h4><i class="fas fa-file-alt"></i> Exams & Results</h4>
+                        <!-- <div class="dashboard-card mb-4">
+                            <h4><i class="fas fa-file-alt"></i> PAYMENT</h4> -->
                             
                             <!-- CBT Exams Section -->
-                            <div class="row mb-4">
+                             <div class="row mb-4">
                                 <div class="col-md-12">
                                     <div class="card shadow-sm border-0">
                                         <div class="card-header bg-gradient-primary text-white py-3">
                                             <div class="d-flex align-items-center">
-                                                <i class="fas fa-laptop-code fa-2x mr-3"></i>
-                                                <h5 class="mb-0 font-weight-bold">Computer Based Tests (CBT)</h5>
+                                                <i class="fas fa-money-bill-wave fa-2x mr-3"></i>
+                                                <h5 class="mb-0 font-weight-bold">PAYMENT</h5>
                                             </div>
                                         </div>
                                         <div class="card-body p-4">
-                                            <p>Welcome to the Computer Based Tests (CBT) section. Here you can view and take available CBT exams.</p>
+                                            <p>Welcome to the Payment section. Here you can view and take available Payment.</p>
                                             <div class="text-end mb-3">
-                                                <a href="../../../backends/cbt/dashboard.php" class="btn btn-primary">
-                                                    <i class="fas fa-external-link-alt me-2"></i> Open CBT Dashboard
+                                                <a href="payment.php" class="btn btn-primary">
+                                                    <i class="fas fa-external-link-alt me-2"></i> Open Payment Dashboard
                                                 </a>
+                                                <!-- <a href="../../../backends/cbt/dashboard.php" class="btn btn-primary">
+                                                    <i class="fas fa-external-link-alt me-2"></i> Make Payment
+                                                </a> -->
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </div> 
+                        <!-- </div> -->
                     </div>
                     
                     <!-- Announcements Tab -->
@@ -2051,7 +2054,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                             <div class="card-body p-4">
                                 <p>Welcome to the Computer Based Tests (CBT) section. Here you can view and take available CBT exams.</p>
                                 <div class="text-end mb-3">
-                                    <a href="../../../backends/cbt/dashboard.php" class="btn btn-primary">
+                                    <a href="payment.php" class="btn btn-primary">
                                         <i class="fas fa-external-link-alt me-2"></i> Open CBT Dashboard
                                     </a>
                                 </div>
@@ -2065,9 +2068,12 @@ while ($row = $announcementsResult->fetch_assoc()) {
                             
                             <?php
                             // Get payment history for this student
-                            $payments_query = "SELECT * FROM payments 
-                                             WHERE student_id = ? 
-                                             ORDER BY payment_date DESC, created_at DESC";
+                            $payments_query = "SELECT p.*, 
+                                DATE_FORMAT(p.payment_date, '%M %d, %Y') as formatted_date,
+                                DATE_FORMAT(p.created_at, '%M %d, %Y %h:%i %p') as created_date
+                         FROM payments p
+                         WHERE p.student_id = ? 
+                         ORDER BY p.payment_date DESC, p.created_at DESC";
                             
                             $stmt = $conn->prepare($payments_query);
                             $stmt->bind_param("i", $student_id);
@@ -2077,7 +2083,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                             if ($payments_result->num_rows > 0): ?>
                                 <div class="table-responsive">
                                     <table class="table table-striped table-hover">
-                                        <thead>
+                                        <thead class="table-light">
                                             <tr>
                                                 <th>Date</th>
                                                 <th>Payment Type</th>
@@ -2085,25 +2091,34 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                                 <th>Method</th>
                                                 <th>Reference</th>
                                                 <th>Status</th>
+                                                <th>Notes</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <?php 
                                             $total_paid = 0;
+                                            $total_pending = 0;
                                             while ($payment = $payments_result->fetch_assoc()): 
                                                 if ($payment['status'] === 'completed') {
                                                     $total_paid += $payment['amount'];
+                                                } elseif ($payment['status'] === 'pending') {
+                                                    $total_pending += $payment['amount'];
                                                 }
                                             ?>
                                                 <tr>
-                                                    <td><?php echo date('M d, Y', strtotime($payment['payment_date'])); ?></td>
+                                                    <td>
+                                                        <?php echo $payment['formatted_date']; ?>
+                                                        <small class="d-block text-muted">
+                                                            Created: <?php echo $payment['created_date']; ?>
+                                                        </small>
+                                                    </td>
                                                     <td>
                                                         <?php 
                                                         $payment_type = str_replace('_', ' ', $payment['payment_type']);
                                                         echo ucwords($payment_type); 
                                                         ?>
                                                     </td>
-                                                    <td>₦<?php echo number_format($payment['amount'], 2); ?></td>
+                                                    <td class="text-end">₦<?php echo number_format($payment['amount'], 2); ?></td>
                                                     <td>
                                                         <?php 
                                                         $method = str_replace('_', ' ', $payment['payment_method']);
@@ -2111,7 +2126,11 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                                         ?>
                                                     </td>
                                                     <td>
-                                                        <?php echo $payment['reference_number'] ? $payment['reference_number'] : '<span class="text-muted">-</span>'; ?>
+                                                        <?php if ($payment['reference_number']): ?>
+                                                            <span class="text-primary"><?php echo $payment['reference_number']; ?></span>
+                                                        <?php else: ?>
+                                                            <span class="text-muted">-</span>
+                                                        <?php endif; ?>
                                                     </td>
                                                     <td>
                                                         <?php
@@ -2130,17 +2149,24 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                                                 $status_class = 'secondary';
                                                         }
                                                         ?>
-                                                        <span class="badge badge-<?php echo $status_class; ?>">
+                                                        <span class="badge bg-<?php echo $status_class; ?>">
                                                             <?php echo ucfirst($payment['status']); ?>
                                                         </span>
+                                                    </td>
+                                                    <td>
+                                                        <?php if ($payment['notes']): ?>
+                                                            <span class="text-muted"><?php echo htmlspecialchars($payment['notes']); ?></span>
+                                                        <?php else: ?>
+                                                            <span class="text-muted">-</span>
+                                                        <?php endif; ?>
                                                     </td>
                                                 </tr>
                                             <?php endwhile; ?>
                                         </tbody>
                                         <tfoot>
-                                            <tr class="bg-light">
+                                            <tr class="table-light">
                                                 <td colspan="2"><strong>Total Paid:</strong></td>
-                                                <td colspan="4"><strong>₦<?php echo number_format($total_paid, 2); ?></strong></td>
+                                                <td class="text-end" colspan="5"><strong>₦<?php echo number_format($total_paid, 2); ?></strong></td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -2157,22 +2183,11 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                         </div>
                                     </div>
                                     
-                                    <?php
-                                    // Get pending payments
-                                    $pending_query = "SELECT SUM(amount) as pending_amount FROM payments 
-                                                    WHERE student_id = ? AND status = 'pending'";
-                                    $stmt = $conn->prepare($pending_query);
-                                    $stmt->bind_param("i", $student_id);
-                                    $stmt->execute();
-                                    $pending_result = $stmt->get_result()->fetch_assoc();
-                                    $pending_amount = $pending_result['pending_amount'] ?? 0;
-                                    ?>
-                                    
                                     <div class="col-md-4">
                                         <div class="card bg-warning text-dark">
                                             <div class="card-body">
                                                 <h5 class="card-title">Pending Payments</h5>
-                                                <h3 class="mb-0">₦<?php echo number_format($pending_amount, 2); ?></h3>
+                                                <h3 class="mb-0">₦<?php echo number_format($total_pending, 2); ?></h3>
                                             </div>
                                         </div>
                                     </div>
@@ -2188,7 +2203,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                                 ?>
                                                     <p class="mb-0">
                                                         ₦<?php echo number_format($last_payment['amount'], 2); ?><br>
-                                                        <small><?php echo date('M d, Y', strtotime($last_payment['payment_date'])); ?></small>
+                                                        <small><?php echo $last_payment['formatted_date']; ?></small>
                                                     </p>
                                                 <?php else: ?>
                                                     <p class="mb-0">No payments yet</p>
@@ -2200,7 +2215,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                 
                             <?php else: ?>
                                 <div class="alert alert-info">
-                                    <p><i class="fas fa-info-circle mr-2"></i> No payment records found.</p>
+                                    <p class="mb-0"><i class="fas fa-info-circle me-2"></i> No payment records found.</p>
                                 </div>
                             <?php endif; ?>
                         </div>

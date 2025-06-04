@@ -1784,3 +1784,117 @@ Stack trace:
 #0 {main}
   thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\check_messages.php on line 8
 [31-May-2025 21:48:37 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 6
+[31-May-2025 21:50:29 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 6
+[31-May-2025 21:50:29 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\login.php on line 6
+[31-May-2025 21:50:35 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\login.php on line 6
+[31-May-2025 21:50:37 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\login.php on line 6
+[31-May-2025 21:50:37 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 6
+[31-May-2025 21:50:46 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 6
+[31-May-2025 21:50:56 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 6
+[01-Jun-2025 16:58:32 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\send_message.php on line 6
+[01-Jun-2025 17:38:32 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 6
+[01-Jun-2025 17:38:32 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\login.php on line 6
+[01-Jun-2025 17:38:44 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\login.php on line 6
+[01-Jun-2025 17:38:44 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 6
+[03-Jun-2025 13:32:20 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\login.php on line 6
+[03-Jun-2025 13:39:06 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\login.php on line 6
+[03-Jun-2025 13:39:11 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\login.php on line 6
+[03-Jun-2025 13:39:11 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 6
+[03-Jun-2025 13:50:43 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 6
+[03-Jun-2025 13:51:05 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\login.php on line 6
+[03-Jun-2025 13:58:21 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\login.php on line 6
+[03-Jun-2025 14:00:20 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\dashboard.php on line 6
+[03-Jun-2025 14:01:16 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\students.php on line 6
+[03-Jun-2025 14:01:19 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\exams.php on line 6
+[03-Jun-2025 14:01:21 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 5
+[03-Jun-2025 14:01:21 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 274
+[04-Jun-2025 02:48:22 Africa/Lagos] === Dashboard Access Attempt ===
+[04-Jun-2025 02:48:22 Africa/Lagos] Session student_id: 50
+[04-Jun-2025 02:48:22 Africa/Lagos] Student lookup result: Found
+[04-Jun-2025 03:01:20 Africa/Lagos] === Dashboard Access Attempt ===
+[04-Jun-2025 03:01:20 Africa/Lagos] Session student_id: 50
+[04-Jun-2025 03:01:20 Africa/Lagos] Student lookup result: Found
+[04-Jun-2025 10:53:17 Africa/Lagos] No assigned subjects found for teacher_id: 13
+[04-Jun-2025 10:53:17 Africa/Lagos] No subjects found for teacher_id: 13
+[04-Jun-2025 10:53:25 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) < 50 THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 AND (ea.score / e.duration * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[04-Jun-2025 10:53:25 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 13
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[04-Jun-2025 10:53:25 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed'
+[04-Jun-2025 10:53:25 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 13
+)
+
+[04-Jun-2025 10:53:27 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[04-Jun-2025 10:53:27 Africa/Lagos] Debug - Teacher ID: 13
+[04-Jun-2025 10:53:27 Africa/Lagos] Debug - Found 0 exams
+[04-Jun-2025 10:53:27 Africa/Lagos] Debug - Exams data: Array
+(
+)
+
+[04-Jun-2025 10:53:34 Africa/Lagos] No assigned subjects found for teacher_id: 13
+[04-Jun-2025 10:53:34 Africa/Lagos] No subjects found for teacher_id: 13
+[04-Jun-2025 10:53:35 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[04-Jun-2025 10:53:35 Africa/Lagos] Debug - Teacher ID: 13
+[04-Jun-2025 10:53:35 Africa/Lagos] Debug - Found 0 exams
+[04-Jun-2025 10:53:35 Africa/Lagos] Debug - Exams data: Array
+(
+)
+
+[04-Jun-2025 10:53:37 Africa/Lagos] Successfully fetched 4 reports
+[04-Jun-2025 10:53:37 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
+[04-Jun-2025 10:54:32 Africa/Lagos] Successfully fetched 3 reports
+[04-Jun-2025 10:54:32 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326

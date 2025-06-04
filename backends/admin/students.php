@@ -352,26 +352,26 @@ if ($result && $result->num_rows > 0) {
                                                     $profile_image = $default_image_path;
                                                     
                                                     // Only try to find a profile image if the student ID exists
-                                                    if (!empty($student['id'])) {
-                                                        if (!empty($student['file_path'])) {
-                                                            $profile_image = str_replace('../../', $base_url . '/backends/', $student['file_path']);
-                                                        } 
-                                                        elseif (!empty($student['file'])) {
-                                                            $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['file'];
-                                                        }
-                                                        elseif (!empty($student['passport'])) {
-                                                            $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['passport'];
-                                                        }
-                                                        elseif (!empty($student['profile_picture'])) {
-                                                            $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['profile_picture'];
-                                                        }
-                                                        elseif (!empty($student['photo'])) {
-                                                            $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['photo'];
-                                                        }
-                                                        elseif (!empty($student['student_photo'])) {
-                                                            $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['student_photo'];
-                                                        }
-                                                    }
+                                                    // if (!empty($student['id'])) {
+                                                    //     if (!empty($student['file_path'])) {
+                                                    //         $profile_image = str_replace('../../', $base_url . '/backends/', $student['file_path']);
+                                                    //     } 
+                                                    //     elseif (!empty($student['file'])) {
+                                                    //         $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['file'];
+                                                    //     }
+                                                    //     elseif (!empty($student['passport'])) {
+                                                    //         $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['passport'];
+                                                    //     }
+                                                    //     elseif (!empty($student['profile_picture'])) {
+                                                    //         $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['profile_picture'];
+                                                    //     }
+                                                    //     elseif (!empty($student['photo'])) {
+                                                    //         $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['photo'];
+                                                    //     }
+                                                    //     elseif (!empty($student['student_photo'])) {
+                                                    //         $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['student_photo'];
+                                                    //     }
+                                                    // }
                                                     
                                                     // Try alternative paths if the main path doesn't work
                                                     $alternative_paths = [

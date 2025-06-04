@@ -25,7 +25,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Site Configuration
-define('SITE_NAME', 'ACE MODEL COLLEGE CBT');
+define('SITE_NAME', 'ACE COLLEGE CBT');
 define('SITE_URL', 'http://localhost/ACE%20MODEL%20COLLEGE/backends/cbt');
 
 // Database Configuration

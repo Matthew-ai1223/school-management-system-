@@ -2,13 +2,15 @@
 require_once '../config/config.php';
 require_once '../includes/Database.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Check admin authentication
-// if (!isset($_SESSION['admin_id'])) {
-//     header('Location: login.php');
-//     exit();
-// }
+if (!isset($_SESSION['teacher_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'teacher') {
+    header('Location: login.php');
+    exit();
+}
 
 $db = Database::getInstance()->getConnection();
 
@@ -44,49 +46,45 @@ if ($date_to) {
 
 $where_clause = !empty($base_conditions) ? " AND " . implode(" AND ", $base_conditions) : "";
 
-// Single query for all students
-$query = "SELECT 
-            s.id as student_id,
-            CONCAT(s.first_name, ' ', s.last_name) as student_name,
-            s.application_type,
-            s.class,
-            e.title as exam_title,
-            e.duration as total_questions,
-            ea.score as raw_score,
-            ROUND((ea.score / e.duration * 100), 2) as score,
-            ea.start_time,
-            ea.end_time,
-            e.passing_score,
-            CASE WHEN (ea.score / e.duration * 100) >= 50 THEN 'Pass' ELSE 'Fail' END as status
-          FROM students s
-          JOIN exam_attempts ea ON s.id = ea.student_id
-          JOIN exams e ON ea.exam_id = e.id
-          WHERE ea.status = 'completed'" . $where_clause . "
-          ORDER BY ea.start_time DESC";
-
-$stmt = $db->prepare($query);
-$stmt->execute($params);
-$reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 // Get all exams for filter
-$exams_query = "SELECT id, title FROM exams ORDER BY title";
-$exams_stmt = $db->query($exams_query);
-$exams = $exams_stmt->fetchAll(PDO::FETCH_ASSOC);
+try {
+    $exams_query = "SELECT id, title FROM exams ORDER BY title";
+    $stmt = $db->prepare($exams_query);
+    $stmt->execute();
+    $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    error_log("Error fetching exams: " . $e->getMessage());
+    $exams = [];
+}
 
 // Get all application types for filter
-$app_types_query = "SELECT DISTINCT application_type FROM students ORDER BY application_type";
-$app_types_stmt = $db->query($app_types_query);
-$application_types = $app_types_stmt->fetchAll(PDO::FETCH_COLUMN);
+try {
+    $app_types_query = "SELECT DISTINCT application_type FROM students ORDER BY application_type";
+    $stmt = $db->prepare($app_types_query);
+    $stmt->execute();
+    $application_types = $stmt->fetchAll(PDO::FETCH_COLUMN);
+} catch (PDOException $e) {
+    error_log("Error fetching application types: " . $e->getMessage());
+    $application_types = [];
+}
 
 // Get available classes for the filter
 $classes_query = "SELECT DISTINCT class 
-                 FROM ace_school_system.students 
+                 FROM students 
                  WHERE class IS NOT NULL 
                  ORDER BY class";
-$stmt = $db->query($classes_query);
-$available_classes = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-// Get statistics
+try {
+    // Use prepared statement instead of direct query
+    $stmt = $db->prepare($classes_query);
+    $stmt->execute();
+    $available_classes = $stmt->fetchAll(PDO::FETCH_COLUMN);
+} catch (PDOException $e) {
+    error_log("Error fetching classes: " . $e->getMessage());
+    $available_classes = [];
+}
+
+// Get statistics with proper error handling
 $stats_query = "SELECT 
     MIN(ROUND((ea.score / e.duration * 100), 2)) as lowest_score,
     MAX(ROUND((ea.score / e.duration * 100), 2)) as highest_score,
@@ -98,14 +96,68 @@ JOIN exams e ON ea.exam_id = e.id
 JOIN students s ON ea.student_id = s.id
 WHERE ea.status = 'completed'" . $where_clause;
 
-$stmt = $db->prepare($stats_query);
-$stmt->execute($params);
-$stats = $stmt->fetch(PDO::FETCH_ASSOC);
+try {
+    $stmt = $db->prepare($stats_query);
+    $stmt->execute($params);
+    $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Calculate pass percentage
-$pass_percentage = $stats['total_attempts'] > 0 
-    ? round(($stats['passed_count'] / $stats['total_attempts']) * 100, 1)
-    : 0;
+    // Calculate pass percentage
+    $pass_percentage = $stats['total_attempts'] > 0 
+        ? round(($stats['passed_count'] / $stats['total_attempts']) * 100, 1)
+        : 0;
+} catch (PDOException $e) {
+    error_log("Error fetching statistics: " . $e->getMessage());
+    $stats = [
+        'lowest_score' => 0,
+        'highest_score' => 0,
+        'average_score' => 0,
+        'total_attempts' => 0,
+        'passed_count' => 0
+    ];
+    $pass_percentage = 0;
+}
+
+// Single query for all students with proper error handling
+try {
+    $query = "SELECT 
+                s.id as student_id,
+                CONCAT(s.first_name, ' ', s.last_name) as student_name,
+                s.application_type,
+                s.class,
+                e.title as exam_title,
+                e.duration as total_questions,
+                ea.score as raw_score,
+                ROUND((ea.score / e.duration * 100), 2) as score,
+                ea.start_time,
+                ea.end_time,
+                e.passing_score,
+                CASE WHEN (ea.score / e.duration * 100) >= 50 THEN 'Pass' ELSE 'Fail' END as status
+              FROM students s
+              JOIN exam_attempts ea ON s.id = ea.student_id
+              JOIN exams e ON ea.exam_id = e.id
+              WHERE ea.status = 'completed'" . $where_clause . "
+              ORDER BY ea.start_time DESC";
+
+    $stmt = $db->prepare($query);
+    $stmt->execute($params);
+    $reports = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    error_log("Successfully fetched " . count($reports) . " reports");
+} catch (PDOException $e) {
+    error_log("Error fetching reports: " . $e->getMessage());
+    error_log("SQL State: " . $e->getCode());
+    error_log("Error Details: " . print_r($e->errorInfo, true));
+    $reports = [];
+    
+    // Display error message on page
+    echo "<div class='alert alert-danger'>";
+    echo "<h4>Database Error:</h4>";
+    echo "<pre>";
+    echo "Error: " . htmlspecialchars($e->getMessage()) . "\n";
+    echo "SQL State: " . htmlspecialchars($e->getCode()) . "\n";
+    echo "</pre>";
+    echo "</div>";
+}
 
 // Handle export requests
 if (isset($_GET['export'])) {

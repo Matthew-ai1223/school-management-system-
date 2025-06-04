@@ -887,3 +887,59 @@ function ensureStudentNumberColumns($conn) {
         $conn->query("UPDATE `students` SET `admission_number` = `registration_number`");
     }
 }
+
+class Utils {
+    public static function getBasePath() {
+        return rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/';
+    }
+
+    public static function getBaseUrl() {
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+        return $protocol . $_SERVER['HTTP_HOST'] . '/';
+    }
+
+    public static function fileExists($path) {
+        // Convert relative path to absolute path within document root
+        $absolutePath = self::getBasePath() . ltrim($path, '/');
+        
+        // Normalize the path to remove any ../ references
+        $normalizedPath = realpath($absolutePath);
+        
+        // Check if the normalized path is within allowed directories
+        if ($normalizedPath === false) {
+            error_log("Invalid path attempted: " . $absolutePath);
+            return false;
+        }
+        
+        return file_exists($normalizedPath);
+    }
+
+    public static function getLogoPath() {
+        $possiblePaths = [
+            'assets/img/logo.png',
+            'assets/images/logo.png',
+            'backends/assets/images/logo.png',
+            'images/logo.png'
+        ];
+
+        foreach ($possiblePaths as $path) {
+            if (self::fileExists($path)) {
+                return self::getBasePath() . $path;
+            }
+        }
+
+        // Return a default path if no logo is found
+        error_log("Logo not found in any of the expected locations");
+        return self::getBasePath() . 'assets/images/default-logo.png';
+    }
+
+    public static function sanitizePath($path) {
+        // Remove any parent directory references
+        $path = str_replace('..', '', $path);
+        // Remove any double slashes
+        $path = preg_replace('#/+#', '/', $path);
+        // Remove leading slash
+        $path = ltrim($path, '/');
+        return $path;
+    }
+}

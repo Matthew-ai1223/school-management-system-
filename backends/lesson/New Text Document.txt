@@ -1,0 +1,1 @@
+use the data that is stored in  colum passing_score,i table: exams as a pass mark in @reports.php. i.e if the passing_score is set to be 50% for exam and student score 2/4, the student we have 50% and if  the student scor 3/4 the student we have 75%

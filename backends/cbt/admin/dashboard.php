@@ -3,7 +3,9 @@ require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $auth = new Auth();
 
@@ -35,11 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_subjects'])) {
         $db->beginTransaction();
         
         // Delete existing subjects for this teacher
-        $deleteStmt = $db->prepare("DELETE FROM ace_school_system.teacher_subjects WHERE teacher_id = :teacher_id");
+        $deleteStmt = $db->prepare("DELETE FROM teacher_subjects WHERE teacher_id = :teacher_id");
         $deleteStmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
         
         // Insert new selected subjects
-        $insertStmt = $db->prepare("INSERT INTO ace_school_system.teacher_subjects (teacher_id, subject, created_at) VALUES (:teacher_id, :subject, NOW())");
+        $insertStmt = $db->prepare("INSERT INTO teacher_subjects (teacher_id, subject, created_at) VALUES (:teacher_id, :subject, NOW())");
         
         foreach ($selectedSubjects as $subject) {
             $insertStmt->execute([
@@ -66,8 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['select_subjects'])) {
 
 // Get all available subjects
 try {
-    $stmt = $db->query("SELECT subject_name, subject_code, category, is_compulsory FROM ace_school_system.all_subjects ORDER BY category, subject_name");
+    $stmt = $db->query("SELECT subject_name, subject_code, category, is_compulsory FROM all_subjects ORDER BY category, subject_name");
     $all_subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    if (empty($all_subjects)) {
+        error_log("No subjects found in the database");
+    }
 
     // Group subjects by category
     $subjects_by_category = [];
@@ -80,38 +86,53 @@ try {
     }
 } catch (PDOException $e) {
     error_log("Error fetching all subjects: " . $e->getMessage());
+    error_log("SQL State: " . $e->getCode());
     $subjects_by_category = [];
 }
 
 // Get teacher's currently assigned subjects
 try {
-    $stmt = $db->prepare("SELECT subject FROM ace_school_system.teacher_subjects WHERE teacher_id = :teacher_id");
+    $stmt = $db->prepare("SELECT subject FROM teacher_subjects WHERE teacher_id = :teacher_id");
     $stmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
     $assigned_subjects = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    if (empty($assigned_subjects)) {
+        error_log("No assigned subjects found for teacher_id: " . $_SESSION['teacher_id']);
+    }
 } catch (PDOException $e) {
     error_log("Error fetching assigned subjects: " . $e->getMessage());
+    error_log("SQL State: " . $e->getCode());
     $assigned_subjects = [];
 }
 
 // Get teacher details
-$stmt = $db->prepare("SELECT t.*, u.username, u.email, u.role 
-                     FROM teachers t 
-                     JOIN users u ON t.user_id = u.id 
-                     WHERE t.id = :teacher_id");
-$stmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
-$teacher = $stmt->fetch(PDO::FETCH_ASSOC);
+try {
+    $stmt = $db->prepare("SELECT t.*, u.username, u.email, u.role 
+                         FROM teachers t 
+                         JOIN users u ON t.user_id = u.id 
+                         WHERE t.id = :teacher_id");
+    $stmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
+    $teacher = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$teacher) {
+    if (!$teacher) {
+        error_log("No teacher found with ID: " . $_SESSION['teacher_id']);
+        session_destroy();
+        header('Location: login.php');
+        exit();
+    }
+} catch (PDOException $e) {
+    error_log("Error fetching teacher details: " . $e->getMessage());
+    error_log("SQL State: " . $e->getCode());
     session_destroy();
     header('Location: login.php');
     exit();
 }
 
-// Get teacher's subjects (with fallback if table doesn't exist)
+// Get teacher's subjects
 try {
     $stmt = $db->prepare("SELECT DISTINCT ts.subject, s.subject_code, s.is_compulsory 
-                         FROM ace_school_system.teacher_subjects ts
-                         LEFT JOIN ace_school_system.all_subjects s ON ts.subject = s.subject_name
+                         FROM teacher_subjects ts
+                         LEFT JOIN all_subjects s ON ts.subject = s.subject_name
                          WHERE ts.teacher_id = :teacher_id 
                          ORDER BY ts.subject
                          LIMIT 5");
@@ -120,6 +141,7 @@ try {
 
     // If no subjects are assigned, show a warning message
     if (empty($teacher_subjects)) {
+        error_log("No subjects found for teacher_id: " . $_SESSION['teacher_id']);
         $_SESSION['warning_message'] = "You haven't been assigned any subjects yet. Please visit the Assign Subjects page to set up your subjects.";
         $teacher_subjects = [
             ['subject' => 'All Subjects']
@@ -127,6 +149,7 @@ try {
     }
 } catch (PDOException $e) {
     error_log("Error fetching teacher subjects: " . $e->getMessage());
+    error_log("SQL State: " . $e->getCode());
     // If table doesn't exist or error occurs, use default subjects
     $teacher_subjects = [
         ['subject' => 'All Subjects']
@@ -151,27 +174,27 @@ $stats = [];
 // Build the statistics query with proper joins and conditions
 $statsQuery = "SELECT 
     (SELECT COUNT(*) 
-     FROM ace_school_system.exams e 
+     FROM exams e 
      WHERE e.created_by = :teacher_id1" . 
     ($selected_subject !== 'All Subjects' ? " AND e.subject = :subject1" : "") . ") as total_exams,
     
     (SELECT COUNT(*) 
-     FROM ace_school_system.exam_attempts ea 
-     JOIN ace_school_system.exams e ON ea.exam_id = e.id 
+     FROM exam_attempts ea 
+     JOIN exams e ON ea.exam_id = e.id 
      WHERE e.created_by = :teacher_id2" .
     ($selected_subject !== 'All Subjects' ? " AND e.subject = :subject2" : "") . "
      AND ea.status = 'completed') as total_attempts,
      
     (SELECT COUNT(DISTINCT ea.student_id)
-     FROM ace_school_system.exam_attempts ea
-     JOIN ace_school_system.exams e ON ea.exam_id = e.id
+     FROM exam_attempts ea
+     JOIN exams e ON ea.exam_id = e.id
      WHERE e.created_by = :teacher_id3" .
     ($selected_subject !== 'All Subjects' ? " AND e.subject = :subject3" : "") . "
      AND ea.status = 'completed') as total_students,
      
     (SELECT ROUND(AVG(ea.score), 2)
-     FROM ace_school_system.exam_attempts ea
-     JOIN ace_school_system.exams e ON ea.exam_id = e.id
+     FROM exam_attempts ea
+     JOIN exams e ON ea.exam_id = e.id
      WHERE e.created_by = :teacher_id4" .
     ($selected_subject !== 'All Subjects' ? " AND e.subject = :subject4" : "") . "
      AND ea.status = 'completed') as avg_score";
@@ -213,9 +236,9 @@ $recentAttemptsQuery = "
         e.passing_score,
         u.username as student_name,
         u.id as student_id
-    FROM ace_school_system.exam_attempts ea
-    JOIN ace_school_system.exams e ON ea.exam_id = e.id
-    JOIN ace_school_system.users u ON ea.student_id = u.id
+    FROM exam_attempts ea
+    JOIN exams e ON ea.exam_id = e.id
+    JOIN users u ON ea.student_id = u.id
     WHERE e.created_by = :teacher_id" .
     ($selected_subject !== 'All Subjects' ? " AND e.subject = :subject" : "") . "
     AND ea.status = 'completed'

@@ -372,53 +372,219 @@ $exam_results = $stmt->get_result();
 
 // Handle PDF generation
 if (isset($_GET['pdf'])) {
-    $pdf = new PDFGenerator();
-    $pdf->AliasNbPages();
+    // Start output buffering
+    ob_start();
     
-    switch ($_GET['pdf']) {
-        case 'application':
-            $pdf->generateApplicationForm($student);
-            break;
-        case 'payments':
-            foreach ($payments as $payment) {
-                $payment['student_name'] = $student['first_name'] . ' ' . $student['last_name'];
-                $pdf->generatePaymentReceipt($payment);
+    require_once '../fpdf_temp/fpdf.php';
+    require_once '../utils.php';
+
+    try {
+        // Create new PDF document
+        $pdf = new FPDF();
+        $pdf->AddPage();
+
+        // Set font
+        $pdf->SetFont('Arial', 'B', 16);
+
+        // Add logo
+        $logoPath = null;
+        $possibleLogoPaths = [
+            __DIR__ . "/../../assets/images/logo.png",
+            __DIR__ . "/../../assets/img/logo.png",
+            __DIR__ . "/../assets/images/logo.png",
+            __DIR__ . "/../assets/img/logo.png",
+            "C:/xampp/htdocs/ACE MODEL COLLEGE/assets/images/logo.png",
+            "C:/xampp/htdocs/ACE MODEL COLLEGE/images/logo.png"
+        ];
+        
+        foreach ($possibleLogoPaths as $path) {
+            if (file_exists($path)) {
+                $logoPath = $path;
+                break;
             }
-            break;
-        case 'results':
-            foreach ($exam_results as $result) {
-                $result['student_name'] = $student['first_name'] . ' ' . $student['last_name'];
-                $pdf->generateExamResult($result);
-            }
-            break;
-        case 'full_profile':
-            // Generate complete student profile with all data
-            $student['categorized_fields'] = $categorizedFields;
-            $student['payments'] = [];
-            $student['exam_results'] = [];
-            
-            // Add payment data
-            if ($payments && $payments->num_rows > 0) {
-                $payments->data_seek(0);
-                while ($payment = $payments->fetch_assoc()) {
-                    $student['payments'][] = $payment;
-                }
-            }
-            
-            // Add exam results data
-            if ($exam_results && $exam_results->num_rows > 0) {
-                $exam_results->data_seek(0);
-                while ($result = $exam_results->fetch_assoc()) {
-                    $student['exam_results'][] = $result;
-                }
-            }
-            
-            $pdf->generateStudentProfile($student);
-            break;
+        }
+        
+        if ($logoPath && file_exists($logoPath)) {
+            $pdf->Image($logoPath, 10, 10, 30);
+            $pdf->Ln(35); // Move down after logo
+        } else {
+            $pdf->Ln(10);
+        }
+
+        // School name
+        $pdf->Cell(0, 10, SCHOOL_NAME, 0, 1, 'C');
+        
+        // Different content based on PDF type
+        switch($_GET['pdf']) {
+            case 'full_profile':
+                $pdf->SetFont('Arial', 'B', 14);
+                $pdf->Cell(0, 10, 'Complete Student Profile', 0, 1, 'C');
+                generateFullProfile($pdf, $student, $categorizedFields);
+                break;
+                
+            case 'application':
+                $pdf->SetFont('Arial', 'B', 14);
+                $pdf->Cell(0, 10, 'Student Application Form', 0, 1, 'C');
+                generateApplicationForm($pdf, $student);
+                break;
+                
+            case 'payments':
+                $pdf->SetFont('Arial', 'B', 14);
+                $pdf->Cell(0, 10, 'Payment History', 0, 1, 'C');
+                generatePaymentHistory($pdf, $payments);
+                break;
+                
+            case 'results':
+                $pdf->SetFont('Arial', 'B', 14);
+                $pdf->Cell(0, 10, 'Exam Results', 0, 1, 'C');
+                generateExamResults($pdf, $exam_results);
+                break;
+                
+            default:
+                throw new Exception('Invalid PDF type requested');
+        }
+
+        // Clean output buffer
+        ob_clean();
+
+        // Output PDF with a meaningful filename
+        $filename = sprintf('%s_%s_%s.pdf', 
+            $student['registration_number'],
+            $_GET['pdf'],
+            date('Y-m-d')
+        );
+        $pdf->Output('D', $filename);
+        exit();
+    } catch (Exception $e) {
+        // Log the error
+        error_log("PDF Generation Error: " . $e->getMessage());
+        
+        // Clean output buffer
+        ob_clean();
+        
+        // Redirect back with error message
+        header("Location: student_details.php?id=" . $student['id'] . "&error=pdf_generation");
+        exit();
+    }
+}
+
+// Helper functions for PDF generation
+function generateFullProfile($pdf, $student, $categorizedFields) {
+    $pdf->SetFont('Arial', '', 12);
+    
+    // Basic Information
+    $pdf->Ln(10);
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 10, 'Basic Information', 0, 1, 'L');
+    $pdf->SetFont('Arial', '', 12);
+    
+    $basicInfo = [
+        'Registration Number' => $student['registration_number'],
+        'Full Name' => $student['first_name'] . ' ' . $student['last_name'],
+        'Email' => $student['email'],
+        'Phone' => $student['phone'],
+        'Gender' => $student['gender'],
+        'Date of Birth' => $student['date_of_birth']
+    ];
+
+    foreach ($basicInfo as $label => $value) {
+        $pdf->Cell(60, 10, $label . ':', 0);
+        $pdf->Cell(0, 10, $value ?? 'N/A', 0, 1);
     }
     
-    $pdf->Output();
-    exit;
+    // Add other sections based on categorizedFields
+    foreach ($categorizedFields as $category => $fields) {
+        if (!empty($fields)) {
+            $pdf->Ln(5);
+            $pdf->SetFont('Arial', 'B', 12);
+            $pdf->Cell(0, 10, ucwords(str_replace('_', ' ', $category)), 0, 1, 'L');
+            $pdf->SetFont('Arial', '', 12);
+            
+            foreach ($fields as $field) {
+                if (is_array($field)) {
+                    $pdf->Cell(60, 10, $field['label'] . ':', 0);
+                    $pdf->Cell(0, 10, $field['value'] ?? 'N/A', 0, 1);
+                }
+            }
+        }
+    }
+}
+
+function generateApplicationForm($pdf, $student) {
+    $pdf->SetFont('Arial', '', 12);
+    
+    // Application specific information
+    $pdf->Ln(10);
+    $pdf->Cell(0, 10, 'Application Details', 0, 1, 'L');
+    
+    $applicationInfo = [
+        'Registration Type' => $student['registration_type'] ?? $student['application_type'],
+        'Application Date' => $student['created_at'] ? date('F j, Y', strtotime($student['created_at'])) : 'N/A',
+        'Status' => ucfirst($student['status'] ?? 'N/A')
+    ];
+
+    foreach ($applicationInfo as $label => $value) {
+        $pdf->Cell(60, 10, $label . ':', 0);
+        $pdf->Cell(0, 10, $value, 0, 1);
+    }
+}
+
+function generatePaymentHistory($pdf, $payments) {
+    $pdf->SetFont('Arial', '', 12);
+    
+    // Table header
+    $pdf->Ln(10);
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(40, 10, 'Date', 1);
+    $pdf->Cell(40, 10, 'Type', 1);
+    $pdf->Cell(40, 10, 'Amount', 1);
+    $pdf->Cell(40, 10, 'Status', 1);
+    $pdf->Ln();
+    
+    // Table content
+    $pdf->SetFont('Arial', '', 10);
+    if ($payments->num_rows > 0) {
+        $payments->data_seek(0);
+        while ($payment = $payments->fetch_assoc()) {
+            $pdf->Cell(40, 10, date('Y-m-d', strtotime($payment['payment_date'])), 1);
+            $pdf->Cell(40, 10, $payment['payment_type'] ?? 'N/A', 1);
+            $pdf->Cell(40, 10, '₦' . number_format($payment['amount'], 2), 1);
+            $pdf->Cell(40, 10, ucfirst($payment['status']), 1);
+            $pdf->Ln();
+        }
+    } else {
+        $pdf->Cell(160, 10, 'No payment history found', 1, 1, 'C');
+    }
+}
+
+function generateExamResults($pdf, $exam_results) {
+    $pdf->SetFont('Arial', '', 12);
+    
+    // Table header
+    $pdf->Ln(10);
+    $pdf->SetFont('Arial', 'B', 10);
+    $pdf->Cell(40, 10, 'Date', 1);
+    $pdf->Cell(40, 10, 'Subject', 1);
+    $pdf->Cell(30, 10, 'Score', 1);
+    $pdf->Cell(30, 10, 'Grade', 1);
+    $pdf->Cell(50, 10, 'Remarks', 1);
+    $pdf->Ln();
+    
+    // Table content
+    $pdf->SetFont('Arial', '', 10);
+    if ($exam_results->num_rows > 0) {
+        $exam_results->data_seek(0);
+        while ($result = $exam_results->fetch_assoc()) {
+            $pdf->Cell(40, 10, date('Y-m-d', strtotime($result['exam_date'])), 1);
+            $pdf->Cell(40, 10, $result['subject'], 1);
+            $pdf->Cell(30, 10, $result['score'], 1);
+            $pdf->Cell(30, 10, $result['grade'], 1);
+            $pdf->Cell(50, 10, $result['remarks'], 1);
+            $pdf->Ln();
+        }
+    } else {
+        $pdf->Cell(190, 10, 'No exam results found', 1, 1, 'C');
+    }
 }
 
 // Get student class/level information

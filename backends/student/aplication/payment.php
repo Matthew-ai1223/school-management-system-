@@ -1,4 +1,13 @@
 <?php
+// Session configuration
+ini_set('session.cookie_lifetime', 3600); // 1 hour
+ini_set('session.gc_maxlifetime', 3600); // 1 hour
+ini_set('session.use_strict_mode', 1);
+ini_set('session.use_cookies', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cache_limiter', 'nocache');
+session_name('ACE_APPLICATION');
+
 require_once '../../config.php';
 require_once '../../database.php';
 require_once '../../auth.php';
@@ -33,6 +42,11 @@ $fee_amount = $applicationType === 'kiddies' ? KIDDIES_APPLICATION_FEE : COLLEGE
 // Handle payment submission
 if (isset($_POST['process_payment'])) {
     try {
+        // Start session if not already started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         // Validate required fields
         $required_fields = ['payment_method', 'email', 'phone', 'full_name', 'application_type'];
         foreach ($required_fields as $field) {
@@ -95,11 +109,15 @@ if (isset($_POST['process_payment'])) {
             throw new Exception("Failed to save payment record: " . $stmt->error);
         }
 
-        // Store in session
+        // Store in session with timestamp
         $_SESSION['payment_reference'] = $reference;
         $_SESSION['payment_amount'] = $fee_amount;
         $_SESSION['payment_email'] = $email;
         $_SESSION['application_type'] = $applicationType;
+        $_SESSION['payment_timestamp'] = time();
+        
+        // Log session data
+        error_log("Payment session data set: " . print_r($_SESSION, true));
         
         // For AJAX requests, return the reference
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
@@ -115,6 +133,7 @@ if (isset($_POST['process_payment'])) {
     } catch (Exception $e) {
         $error_message = "Payment Error: " . $e->getMessage();
         error_log($error_message);
+        error_log("Debug backtrace: " . print_r(debug_backtrace(), true));
         
         // For AJAX requests, return error
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
@@ -126,20 +145,15 @@ if (isset($_POST['process_payment'])) {
     }
 }
 
-// Handle payment status messages
-$payment_status = isset($_GET['payment_status']) ? $_GET['payment_status'] : '';
-if ($payment_status === 'failed') {
-    $error_message = "Payment failed. Please try again.";
-} elseif ($payment_status === 'cancelled') {
-    $error_message = "Payment was cancelled. Please try again.";
-} elseif ($payment_status === 'invalid') {
-    $error_message = isset($_GET['error']) ? $_GET['error'] : "Invalid payment request. Please try again.";
-}
-
-// Add this at the top of the file with other PHP code
+// Handle payment verification
 if (isset($_POST['verify_reference'])) {
     try {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $reference = trim($_POST['payment_reference']);
+        error_log("Verifying reference: " . $reference);
         
         // First check if this reference has already been used in an application
         $sql = "SELECT a.* FROM applications a 
@@ -162,20 +176,41 @@ if (isset($_POST['verify_reference'])) {
         $result = $stmt->get_result();
         $payment = $result->fetch_assoc();
         
+        error_log("Payment verification result: " . print_r($payment, true));
+        
         if ($payment) {
             // Store in session and redirect to application form
             $_SESSION['payment_verified'] = true;
             $_SESSION['payment_reference'] = $payment['reference'];
             $_SESSION['application_type'] = $payment['application_type'];
+            $_SESSION['payment_timestamp'] = time();
             
-            header("Location: application_form.php?type=" . $payment['application_type'] . "&reference=" . $reference);
+            error_log("Payment verified successfully. Session data: " . print_r($_SESSION, true));
+            
+            $redirect_url = "application_form.php?type=" . urlencode($payment['application_type']) . 
+                          "&reference=" . urlencode($reference) . 
+                          "&timestamp=" . time();
+            
+            header("Location: " . $redirect_url);
             exit();
         } else {
             throw new Exception("Invalid reference code or payment not completed. Please check your reference code and try again.");
         }
     } catch (Exception $e) {
         $error_message = $e->getMessage();
+        error_log("Payment verification error: " . $error_message);
+        error_log("Debug backtrace: " . print_r(debug_backtrace(), true));
     }
+}
+
+// Handle payment status messages
+$payment_status = isset($_GET['payment_status']) ? $_GET['payment_status'] : '';
+if ($payment_status === 'failed') {
+    $error_message = "Payment failed. Please try again.";
+} elseif ($payment_status === 'cancelled') {
+    $error_message = "Payment was cancelled. Please try again.";
+} elseif ($payment_status === 'invalid') {
+    $error_message = isset($_GET['error']) ? $_GET['error'] : "Invalid payment request. Please try again.";
 }
 
 // Add this function to check if reference is already used

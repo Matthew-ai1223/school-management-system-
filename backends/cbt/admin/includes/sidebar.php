@@ -104,18 +104,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
         font-size: 0.95rem;
     }
 
-    .sidebar .nav-link span.badge {
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
-    }
-
-    .sidebar .nav-link .message-badge {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-    }
-
     /* Mobile Toggle Button */
     .sidebar-toggle {
         display: none;
@@ -265,22 +253,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <i class='bx bxs-user'></i>
                 <span>Admins</span>
             </a>
-            <a class="nav-link <?php echo $current_page === 'send_message.php' ? 'active' : ''; ?>" href="send_message.php">
-                <i class='bx bxs-message-dots'></i>
-                <span>Messages</span>
-                <?php
-                try {
-                    $db = Database::getInstance()->getConnection();
-                    $stmt = $db->query("SELECT COUNT(*) FROM contact_messages WHERE is_read = 0");
-                    $unread_count = $stmt->fetchColumn();
-                    if ($unread_count > 0) {
-                        echo '<span class="badge bg-danger rounded-pill ms-2">' . $unread_count . '</span>';
-                    }
-                } catch (PDOException $e) {
-                    error_log("Error counting unread messages: " . $e->getMessage());
-                }
-                ?>
-            </a>
             <a class="nav-link text-danger" href="logout.php">
                 <i class='bx bxs-log-out'></i>
                 <span>Logout</span>
@@ -327,33 +299,5 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
-
-    // Check for new messages every 30 seconds
-    function checkNewMessages() {
-        fetch('check_messages.php')
-            .then(response => response.json())
-            .then(data => {
-                const badge = document.querySelector('.message-badge');
-                if (data.unread_count > 0) {
-                    if (badge) {
-                        badge.textContent = data.unread_count;
-                    } else {
-                        const messageLink = document.querySelector('a[href="send_message.php"] span:first-child');
-                        const newBadge = document.createElement('span');
-                        newBadge.className = 'badge bg-danger rounded-pill ms-2 message-badge';
-                        newBadge.textContent = data.unread_count;
-                        messageLink.parentNode.appendChild(newBadge);
-                    }
-                } else if (badge) {
-                    badge.remove();
-                }
-            })
-            .catch(error => console.error('Error checking messages:', error));
-    }
-
-    // Initial check and set interval
-    checkNewMessages();
-    setInterval(checkNewMessages, 30000);
 });
 </script>
-

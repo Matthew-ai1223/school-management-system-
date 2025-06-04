@@ -3,7 +3,9 @@ require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 $auth = new Auth();
 
@@ -19,19 +21,29 @@ $db = Database::getInstance()->getConnection();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Debug information
+echo "<!-- Debug Info: Loading exams for teacher ID: {$_SESSION['teacher_id']} -->\n";
+
 // Get all exams with creator info and statistics
 $query = "SELECT e.*, 
-          (SELECT COUNT(*) FROM ace_school_system.questions q WHERE q.exam_id = e.id) as question_count,
-          (SELECT COUNT(*) FROM ace_school_system.exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
-          (SELECT COALESCE(AVG(score), 0) FROM ace_school_system.exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
-          FROM ace_school_system.exams e
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
           WHERE e.created_by = :teacher_id
           ORDER BY e.created_at DESC";
 
 try {
+    // Debug query
+    error_log("Debug - Exams Query: " . $query);
+    error_log("Debug - Teacher ID: {$_SESSION['teacher_id']}");
+    
     $stmt = $db->prepare($query);
     $stmt->execute([':teacher_id' => $_SESSION['teacher_id']]);
     $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    error_log("Debug - Found " . count($exams) . " exams");
+    error_log("Debug - Exams data: " . print_r($exams, true));
 
     // Verify each exam ID
     foreach ($exams as $key => $exam) {
@@ -43,9 +55,15 @@ try {
 
 } catch (PDOException $e) {
     error_log("Error fetching exams: " . $e->getMessage());
+    error_log("SQL State: " . $e->getCode());
+    error_log("Error Details: " . print_r($e->errorInfo, true));
     $exams = [];
-    $_SESSION['error_message'] = "Error loading exams. Please try again.";
+    $_SESSION['error_message'] = "Database error while loading exams: " . $e->getMessage() . 
+                                "\nSQL State: " . $e->getCode();
 }
+
+// Debug information
+echo "<!-- Debug Info: Total exams loaded: " . count($exams) . " -->\n";
 
 // Store current exam ID in session if provided
 if (isset($_GET['exam_id'])) {
@@ -148,13 +166,18 @@ if (isset($_SESSION['success_message'])) {
                                 <tbody>
                                     <?php foreach ($exams as $exam): 
                                         $isActive = isset($_SESSION['current_exam_id']) && $_SESSION['current_exam_id'] == $exam['id'];
+                                        // Debug output for exam IDs
+                                        error_log("Debug - Processing exam: ID={$exam['id']}, Title=" . ($exam['title'] ?? 'N/A'));
                                     ?>
                                     <tr class="<?php echo $isActive ? 'active' : ''; ?>" 
                                         data-exam-id="<?php echo $exam['id']; ?>">
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <i class='bx bx-file me-2'></i>
-                                                <a href="manage-questions.php?exam_id=<?php echo $exam['id']; ?>" class="text-decoration-none text-dark">
+                                                <!-- Debug comment for exam ID -->
+                                                <!-- Debug: Exam ID = <?php echo $exam['id']; ?> -->
+                                                <a href="manage-questions.php?exam_id=<?php echo $exam['id']; ?>" 
+                                                   class="text-decoration-none text-dark">
                                                     <?php echo htmlspecialchars($exam['title']); ?>
                                                 </a>
                                             </div>

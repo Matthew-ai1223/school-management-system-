@@ -3,7 +3,9 @@ require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
@@ -23,7 +25,7 @@ $db = Database::getInstance()->getConnection();
 // Fetch subjects assigned to the logged-in teacher
 try {
     $subjectQuery = "SELECT DISTINCT subject 
-                     FROM ace_school_system.teacher_subjects 
+                     FROM teacher_subjects 
                      WHERE teacher_id = :teacher_id 
                      ORDER BY subject";
     $subjectStmt = $db->prepare($subjectQuery);
@@ -38,9 +40,9 @@ try {
     $message .= '<div class="alert alert-warning">Could not fetch subject list: ' . $e->getMessage() . '</div>';
 }
 
-// Fetch available classes from the ace_school_system database
+// Fetch available classes from the database
 try {
-    $classQuery = "SELECT DISTINCT class FROM ace_school_system.students WHERE class IS NOT NULL AND class != '' ORDER BY class";
+    $classQuery = "SELECT DISTINCT class FROM students WHERE class IS NOT NULL AND class != '' ORDER BY class";
     $classStmt = $db->query($classQuery);
     $classes = $classStmt->fetchAll(PDO::FETCH_COLUMN);
 } catch (PDOException $e) {
@@ -53,8 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Start transaction
         $db->beginTransaction();
 
-        // Insert into exams table with explicit database reference
-        $query = "INSERT INTO ace_school_system.exams (
+        // Insert into exams table
+        $query = "INSERT INTO exams (
                     title, 
                     subject,
                     description, 
@@ -80,8 +82,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $stmt = $db->prepare($query);
         $result = $stmt->execute([
-            ':title' => $_POST['subject'] . ' Exam', // Append 'Exam' to the subject name
-            ':subject' => $_POST['subject'], // Store the subject separately
+            ':title' => $_POST['subject'] . ' Exam',
+            ':subject' => $_POST['subject'],
             ':description' => $_POST['description'],
             ':duration' => $_POST['duration'],
             ':passing_score' => $_POST['passing_score'],
@@ -95,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $exam_id = $db->lastInsertId();
             
             // Verify the exam was created
-            $verifyQuery = "SELECT id FROM ace_school_system.exams WHERE id = :exam_id";
+            $verifyQuery = "SELECT id FROM exams WHERE id = :exam_id";
             $verifyStmt = $db->prepare($verifyQuery);
             $verifyStmt->execute([':exam_id' => $exam_id]);
             

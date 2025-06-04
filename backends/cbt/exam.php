@@ -2,34 +2,61 @@
 require_once 'config/config.php';
 require_once 'includes/Database.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+error_log("=== Exam Page Access Attempt ===");
+error_log("Session data: " . print_r($_SESSION, true));
 
 if (!isset($_SESSION['student_id']) || !isset($_SESSION['exam_attempt'])) {
+    error_log("Missing required session data - redirecting to dashboard");
     header('Location: dashboard.php');
     exit();
 }
 
-$db = Database::getInstance()->getConnection();
+try {
+    $db = Database::getInstance()->getConnection();
 
-// Verify student exists
-$stmt = $db->prepare("SELECT * FROM ace_school_system.students WHERE id = :student_id");
-$stmt->execute([':student_id' => $_SESSION['student_id']]);
-$student = $stmt->fetch(PDO::FETCH_ASSOC);
+    // Verify student exists
+    $stmt = $db->prepare("SELECT * FROM students WHERE id = :student_id AND status IN ('active', 'registered')");
+    if (!$stmt->execute([':student_id' => $_SESSION['student_id']])) {
+        error_log("Error verifying student: " . print_r($stmt->errorInfo(), true));
+        throw new Exception("Error verifying student status");
+    }
+    $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$student) {
-    session_destroy();
-    header('Location: login.php?error=not_found');
+    if (!$student) {
+        error_log("Student not found or not active - redirecting to login");
+        session_destroy();
+        header('Location: login.php?error=not_found');
+        exit();
+    }
+
+    $attempt = $_SESSION['exam_attempt'];
+    $questions = $attempt['questions'];
+    $current_time = new DateTime();
+    $end_time = new DateTime($attempt['end_time']);
+    $time_remaining = $current_time->diff($end_time);
+
+    if ($current_time > $end_time) {
+        error_log("Exam time expired for attempt ID: " . $attempt['attempt_id']);
+        header('Location: submit-exam.php?timeout=1');
+        exit();
+    }
+
+    error_log("Exam page loaded successfully for student ID: " . $_SESSION['student_id']);
+
+} catch (PDOException $e) {
+    error_log("Database error in exam.php: " . $e->getMessage());
+    error_log("Error code: " . $e->getCode());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    header('Location: dashboard.php?error=database');
     exit();
-}
-
-$attempt = $_SESSION['exam_attempt'];
-$questions = $attempt['questions'];
-$current_time = new DateTime();
-$end_time = new DateTime($attempt['end_time']);
-$time_remaining = $current_time->diff($end_time);
-
-if ($current_time > $end_time) {
-    header('Location: submit-exam.php?timeout=1');
+} catch (Exception $e) {
+    error_log("General error in exam.php: " . $e->getMessage());
+    error_log("Stack trace: " . $e->getTraceAsString());
+    header('Location: dashboard.php?error=system');
     exit();
 }
 ?>

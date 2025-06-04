@@ -3,7 +3,9 @@ require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
@@ -35,28 +37,42 @@ if ($exam_id === false || $exam_id <= 0) {
 
 $db = Database::getInstance()->getConnection();
 
+// Debug information
+echo "<!-- Debug Info: Attempting to load exam ID: {$exam_id} -->\n";
+echo "<!-- Debug Info: Teacher ID: {$_SESSION['teacher_id']} -->\n";
+
 try {
     // First verify the exam exists and belongs to the teacher
-    $verifyQuery = "SELECT id FROM ace_school_system.exams 
+    $verifyQuery = "SELECT id FROM exams 
                    WHERE id = :exam_id AND created_by = :teacher_id";
     $verifyStmt = $db->prepare($verifyQuery);
+    
+    // Debug query
+    error_log("Debug - Verify Query: " . $verifyQuery);
+    error_log("Debug - Params: exam_id={$exam_id}, teacher_id={$_SESSION['teacher_id']}");
+    
     $verifyStmt->execute([
         ':exam_id' => $exam_id,
         ':teacher_id' => $_SESSION['teacher_id']
     ]);
     
-    if (!$verifyStmt->fetch()) {
+    $verifyResult = $verifyStmt->fetch();
+    error_log("Debug - Verify Result: " . print_r($verifyResult, true));
+    
+    if (!$verifyResult) {
         error_log("Exam not found or access denied. Exam ID: {$exam_id}, Teacher ID: {$_SESSION['teacher_id']}");
-        throw new Exception('Exam not found or access denied');
+        throw new Exception('Exam not found or access denied. Please verify the exam exists and you have permission to access it.');
     }
 
     // Get exam details with question count
     $query = "SELECT e.*, COUNT(q.id) as total_questions 
-              FROM ace_school_system.exams e 
-              LEFT JOIN ace_school_system.questions q ON e.id = q.exam_id 
+              FROM exams e 
+              LEFT JOIN questions q ON e.id = q.exam_id 
               WHERE e.id = :exam_id AND e.created_by = :teacher_id 
-              GROUP BY e.id, e.title, e.description, e.duration, e.passing_score, 
-                       e.max_attempts, e.is_active, e.created_by, e.class, e.created_at";
+              GROUP BY e.id";  // Simplified GROUP BY
+              
+    // Debug query
+    error_log("Debug - Main Query: " . $query);
               
     $stmt = $db->prepare($query);
     $stmt->execute([
@@ -64,36 +80,65 @@ try {
         ':teacher_id' => $_SESSION['teacher_id']
     ]);
     $exam = $stmt->fetch(PDO::FETCH_ASSOC);
+    error_log("Debug - Exam Result: " . print_r($exam, true));
 
     if (!$exam) {
-        throw new Exception('Error loading exam details');
+        error_log("No exam details found for exam_id: {$exam_id}");
+        throw new Exception('Error loading exam details: No exam found with the specified ID.');
     }
 
     // Get questions for this exam
-    $query = "SELECT * FROM ace_school_system.questions WHERE exam_id = :exam_id ORDER BY id";
+    $query = "SELECT * FROM questions WHERE exam_id = :exam_id ORDER BY id";
     $stmt = $db->prepare($query);
     $stmt->execute([':exam_id' => $exam_id]);
     $questions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    error_log("Debug - Questions Count: " . count($questions));
 
     // Get attempt statistics
     $query = "SELECT COUNT(*) as attempt_count, COALESCE(AVG(score), 0) as avg_score 
-              FROM ace_school_system.exam_attempts 
+              FROM exam_attempts 
               WHERE exam_id = :exam_id AND status = 'completed'";
     $stmt = $db->prepare($query);
     $stmt->execute([':exam_id' => $exam_id]);
     $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+    error_log("Debug - Stats Result: " . print_r($stats, true));
 
     $exam['attempt_count'] = $stats['attempt_count'];
     $exam['avg_score'] = round($stats['avg_score'], 1);
 
     error_log("Successfully loaded exam ID {$exam_id} with " . count($questions) . " questions");
 
+} catch (PDOException $e) {
+    error_log("Database error in manage-questions.php: " . $e->getMessage());
+    error_log("SQL State: " . $e->getCode());
+    error_log("Error Details: " . print_r($e->errorInfo, true));
+    
+    // Display error directly on page for debugging
+    echo "<div class='alert alert-danger'>";
+    echo "<h4>Database Error Details:</h4>";
+    echo "<pre>";
+    echo "Error: " . htmlspecialchars($e->getMessage()) . "\n";
+    echo "SQL State: " . htmlspecialchars($e->getCode()) . "\n";
+    echo "Error Info: " . htmlspecialchars(print_r($e->errorInfo, true));
+    echo "</pre>";
+    echo "</div>";
+    exit();
+    
 } catch (Exception $e) {
     error_log("Error in manage-questions.php: " . $e->getMessage());
-    $_SESSION['error_message'] = "An error occurred while loading the exam. Please try again.";
-    header('Location: exams.php');
+    
+    // Display error directly on page for debugging
+    echo "<div class='alert alert-danger'>";
+    echo "<h4>Error Details:</h4>";
+    echo "<pre>";
+    echo htmlspecialchars($e->getMessage());
+    echo "</pre>";
+    echo "</div>";
     exit();
 }
+
+// Debug information before displaying page
+echo "<!-- Debug Info: Successfully loaded exam data -->\n";
 
 $message = '';
 if (isset($_SESSION['message'])) {

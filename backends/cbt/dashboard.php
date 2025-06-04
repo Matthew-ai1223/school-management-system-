@@ -2,7 +2,9 @@
 require_once 'config/config.php';
 require_once 'includes/Database.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 error_log("=== Dashboard Access Attempt ===");
 error_log("Session student_id: " . (isset($_SESSION['student_id']) ? $_SESSION['student_id'] : 'Not set'));
@@ -31,8 +33,8 @@ try {
 
     // Get available exams for student's class
     $query = "SELECT e.*, 
-              (SELECT COUNT(*) FROM ace_school_system.exam_attempts ea WHERE ea.exam_id = e.id AND ea.student_id = :student_id) as attempts_taken
-              FROM ace_school_system.exams e 
+              (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.student_id = :student_id) as attempts_taken
+              FROM exams e 
               WHERE e.is_active = true 
               AND (e.class = :class OR e.class = 'all')
               ORDER BY e.created_at DESC";
@@ -45,8 +47,8 @@ try {
 
     // Get student's exam history
     $history_query = "SELECT ea.*, e.title as exam_title, e.passing_score
-                     FROM ace_school_system.exam_attempts ea
-                     JOIN ace_school_system.exams e ON ea.exam_id = e.id
+                     FROM exam_attempts ea
+                     JOIN exams e ON ea.exam_id = e.id
                      WHERE ea.student_id = :student_id
                      ORDER BY ea.start_time DESC
                      LIMIT 5";

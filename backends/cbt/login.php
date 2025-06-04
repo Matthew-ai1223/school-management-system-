@@ -2,7 +2,9 @@
 require_once 'config/config.php';
 require_once 'includes/Database.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // If already logged in, redirect to dashboard
 if (isset($_SESSION['student_id'])) {
@@ -29,14 +31,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $conn = $db->getConnection();
             
             if (!$conn) {
-                throw new Exception("Database connection failed");
+                error_log("Database connection failed in login.php");
+                throw new Exception("Unable to connect to the database. Please try again later.");
             }
             
             error_log("Database connection successful");
             
             // First check if the student exists
             $check_stmt = $conn->prepare("SELECT COUNT(*) FROM students WHERE registration_number = :reg_no");
-            $check_stmt->execute([':reg_no' => $registration_number]);
+            if (!$check_stmt) {
+                error_log("Error preparing student check query: " . print_r($conn->errorInfo(), true));
+                throw new Exception("Database error occurred. Please try again later.");
+            }
+            
+            if (!$check_stmt->execute([':reg_no' => $registration_number])) {
+                error_log("Error executing student check query: " . print_r($check_stmt->errorInfo(), true));
+                throw new Exception("Error checking student credentials.");
+            }
+            
             $student_exists = $check_stmt->fetchColumn();
             error_log("Student exists check: " . ($student_exists ? 'Yes' : 'No'));
             
@@ -53,10 +65,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     AND status IN ('active', 'registered')
                 ");
                 
-                $stmt->execute([
-                    ':reg_no' => $registration_number,
-                    ':class' => $class
-                ]);
+                if (!$stmt) {
+                    error_log("Error preparing student details query: " . print_r($conn->errorInfo(), true));
+                    throw new Exception("Database error occurred. Please try again later.");
+                }
+                
+                if (!$stmt->execute([':reg_no' => $registration_number, ':class' => $class])) {
+                    error_log("Error executing student details query: " . print_r($stmt->errorInfo(), true));
+                    throw new Exception("Error verifying student credentials.");
+                }
                 
                 $student = $stmt->fetch(PDO::FETCH_ASSOC);
                 error_log("Student query result: " . print_r($student, true));
@@ -73,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['class'] = $student['class'];
                     $_SESSION['last_activity'] = time();
                     
-                    error_log("Session variables set: " . print_r($_SESSION, true));
+                    error_log("Session variables set successfully: " . print_r($_SESSION, true));
                     
                     // Ensure clean output before redirect
                     if (ob_get_length()) ob_clean();
@@ -85,10 +102,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     error_log("No matching active student found for reg_no: $registration_number and class: $class");
                 }
             }
-        } catch (Exception $e) {
-            error_log("Login error: " . $e->getMessage());
+        } catch (PDOException $e) {
+            error_log("Database error in login.php: " . $e->getMessage());
+            error_log("Error code: " . $e->getCode());
             error_log("Stack trace: " . $e->getTraceAsString());
-            $error = 'A system error occurred. Please try again later.';
+            $error = 'Database connection error. Please try again later.';
+        } catch (Exception $e) {
+            error_log("General error in login.php: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            $error = $e->getMessage();
         }
     }
 }

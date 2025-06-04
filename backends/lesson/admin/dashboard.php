@@ -287,6 +287,11 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link text-white" href="QR/qr_code.php">
+                    <i class='bx bx-laptop'></i> QR Code Generator
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link text-white" href="../logout.php">
                     <i class='bx bx-log-out'></i> Logout
                 </a>

@@ -34,14 +34,15 @@ if (!$student) {
 
 // Get overall statistics
 $stats_query = "SELECT 
-                COUNT(DISTINCT ea.id) as total_exams,
-                AVG(ea.score) as avg_score,
-                MIN(ea.score) as min_score,
-                MAX(ea.score) as max_score,
-                COUNT(DISTINCT CASE WHEN ea.score >= e.passing_score THEN ea.id END) as passed_exams
+                COUNT(DISTINCT ea.exam_id) as total_exams,
+                ROUND(AVG(CASE WHEN ea.status = 'completed' THEN ea.score ELSE NULL END), 1) as avg_score,
+                ROUND(MIN(CASE WHEN ea.status = 'completed' THEN ea.score ELSE NULL END), 1) as min_score,
+                ROUND(MAX(CASE WHEN ea.status = 'completed' THEN ea.score ELSE NULL END), 1) as max_score,
+                COUNT(DISTINCT CASE WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN ea.exam_id END) as passed_exams,
+                COUNT(DISTINCT CASE WHEN ea.status = 'completed' THEN ea.exam_id END) as completed_exams
                 FROM exam_attempts ea
                 JOIN exams e ON ea.exam_id = e.id
-                WHERE ea.user_id = :student_id AND ea.status = 'completed'";
+                WHERE ea.user_id = :student_id";
 $stmt = $db->prepare($stats_query);
 $stmt->execute([':student_id' => $student_id]);
 $stats = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -163,8 +164,8 @@ $certificates = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <div class="col-md-3">
                         <div class="stat-card">
                             <i class='bx bxs-book-content text-primary'></i>
-                            <h6 class="text-muted">Total Exams</h6>
-                            <h3><?php echo $stats['total_exams']; ?></h3>
+                            <h6 class="text-muted">Total/Completed Exams</h6>
+                            <h3><?php echo $stats['completed_exams']; ?> / <?php echo $stats['total_exams']; ?></h3>
                         </div>
                     </div>
                     <div class="col-md-3">

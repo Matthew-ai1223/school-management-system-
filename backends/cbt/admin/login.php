@@ -3,7 +3,9 @@ require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // If already logged in, redirect to dashboard
 if (isset($_SESSION['teacher_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'teacher') {

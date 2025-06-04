@@ -30,7 +30,7 @@ define('MAX_VERIFICATION_ATTEMPTS', 3);
 
 // Currency
 define('CURRENCY_CODE', 'NGN');
-define('CURRENCY_SYMBOL', '₦');
+// define('CURRENCY_SYMBOL', '₦');
 
 // API Endpoints
 define('PAYSTACK_INITIALIZE_URL', PAYSTACK_BASE_URL . '/transaction/initialize');

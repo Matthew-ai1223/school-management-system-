@@ -53,19 +53,33 @@ $exam_history = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get detailed answers for each attempt
 function getAttemptAnswers($db, $attempt_id) {
+    // First get the exam_id for this attempt
+    $get_exam_id = "SELECT exam_id FROM exam_attempts WHERE id = :attempt_id";
+    $stmt = $db->prepare($get_exam_id);
+    $stmt->execute([':attempt_id' => $attempt_id]);
+    $exam_id = $stmt->fetchColumn();
+
+    // Now get all questions for this exam, left joining with user responses
     $answers_query = "
         SELECT 
             q.question_text,
             q.correct_answer,
             ur.selected_answer,
-            q.explanation
-        FROM user_responses ur
-        JOIN questions q ON ur.question_id = q.id
-        WHERE ur.attempt_id = :attempt_id
-        ORDER BY ur.id";
+            q.explanation,
+            CASE 
+                WHEN ur.selected_answer IS NULL THEN 'Not Attempted'
+                ELSE ur.selected_answer 
+            END as selected_answer
+        FROM questions q
+        LEFT JOIN user_responses ur ON ur.question_id = q.id AND ur.attempt_id = :attempt_id
+        WHERE q.exam_id = :exam_id
+        ORDER BY q.id";
     
     $stmt = $db->prepare($answers_query);
-    $stmt->execute([':attempt_id' => $attempt_id]);
+    $stmt->execute([
+        ':attempt_id' => $attempt_id,
+        ':exam_id' => $exam_id
+    ]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -258,6 +272,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-left: 4px solid #dc3545;
         }
 
+        .answer-item.not-attempted {
+            border-left: 4px solid #ffc107;
+            background-color: #fff9e6;
+        }
+
         .answer-header {
             display: flex;
             justify-content: space-between;
@@ -279,6 +298,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .answer-status.incorrect {
             background: #f8d7da;
             color: #721c24;
+        }
+
+        .answer-status.not-attempted {
+            background: #fff3cd;
+            color: #856404;
         }
 
         .explanation {
@@ -397,11 +421,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <h6 class="mt-3 mb-3">Detailed Answers</h6>
                             <div class="answer-list">
                                 <?php foreach ($answers as $index => $answer): ?>
-                                    <div class="answer-item <?php echo ($answer['selected_answer'] === $answer['correct_answer']) ? 'correct' : 'incorrect'; ?>">
+                                    <div class="answer-item <?php echo ($answer['selected_answer'] === 'Not Attempted' ? 'not-attempted' : ($answer['selected_answer'] === $answer['correct_answer'] ? 'correct' : 'incorrect')); ?>">
                                         <div class="answer-header">
                                             <strong>Question <?php echo $index + 1; ?></strong>
-                                            <span class="answer-status <?php echo ($answer['selected_answer'] === $answer['correct_answer']) ? 'correct' : 'incorrect'; ?>">
-                                                <?php echo ($answer['selected_answer'] === $answer['correct_answer']) ? 'Correct' : 'Incorrect'; ?>
+                                            <span class="answer-status <?php echo ($answer['selected_answer'] === 'Not Attempted' ? 'not-attempted' : ($answer['selected_answer'] === $answer['correct_answer'] ? 'correct' : 'incorrect')); ?>">
+                                                <?php echo ($answer['selected_answer'] === 'Not Attempted' ? 'Not Attempted' : ($answer['selected_answer'] === $answer['correct_answer'] ? 'Correct' : 'Incorrect')); ?>
                                             </span>
                                         </div>
                                         <p><?php echo htmlspecialchars($answer['question_text']); ?></p>
@@ -412,7 +436,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <?php if ($answer['selected_answer'] !== $answer['correct_answer'] && !empty($answer['explanation'])): ?>
                                             <div class="explanation">
                                                 <strong>Explanation:</strong> <?php echo htmlspecialchars($answer['explanation']); ?>
-                    </div>
+                                            </div>
                                         <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>

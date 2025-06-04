@@ -1,4 +1,13 @@
 <?php
+// Session configuration
+ini_set('session.cookie_lifetime', 3600); // 1 hour
+ini_set('session.gc_maxlifetime', 3600); // 1 hour
+ini_set('session.use_strict_mode', 1);
+ini_set('session.use_cookies', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cache_limiter', 'nocache');
+session_name('ACE_APPLICATION');
+
 require_once '../../config.php';
 require_once '../../database.php';
 require_once '../../auth.php';
@@ -8,8 +17,14 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Debug logging
+error_log("Application Successful - SESSION Data: " . print_r($_SESSION, true));
+error_log("Application Successful - GET Data: " . print_r($_GET, true));
+error_log("Application Successful - POST Data: " . print_r($_POST, true));
+
 // Security check - redirect if not submitted through proper channel
 if (!isset($_SESSION['application_submitted']) || !$_SESSION['application_submitted']) {
+    error_log("Application Successful - Security check failed, redirecting to application form");
     header("Location: application_form.php");
     exit();
 }
@@ -614,7 +629,7 @@ $applicantFirstName = ucfirst(strtolower($firstName));
         <div class="content-wrapper">
             <div class="school-header">
                 <img src="../../../images/logo.png" alt="School Logo" class="school-logo">
-                <h1 class="mb-0"><?php echo SCHOOL_NAME; ?></h1>
+                <!-- <h1 class="mb-0"><?php echo SCHOOL_NAME; ?></h1> -->
             </div>
 
             <?php if (isset($_GET['error']) && $_GET['error'] === 'pdf_generation'): ?>
