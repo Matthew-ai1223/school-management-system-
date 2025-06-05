@@ -140,16 +140,16 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             </li>
             
             <!-- Payments -->
-            <li class="nav-item <?php echo in_array($currentPage, ['payments.php', 'payment_details.php', 'payment_verification.php', 'update_student_payment.php']) ? 'active' : ''; ?>">
-                <a href="#payments-menu" class="nav-link has-dropdown <?php echo in_array($currentPage, ['payments.php', 'payment_details.php', 'payment_verification.php', 'update_student_payment.php']) ? 'open' : ''; ?>">
+            <li class="nav-item <?php echo in_array($currentPage, ['../school_paymente/admin_payment_history.php', 'payment_details.php', 'payment_verification.php', 'update_student_payment.php']) ? 'active' : ''; ?>">
+                <a href="#payments-menu" class="nav-link has-dropdown <?php echo in_array($currentPage, ['../school_paymente/admin_payment_history.php', 'payment_details.php', 'payment_verification.php', 'update_student_payment.php']) ? 'open' : ''; ?>">
                     <i class="bi bi-cash"></i>
                     <span>Payments</span>
                     <i class="dropdown-icon bi bi-chevron-down"></i>
                 </a>
                 <ul class="dropdown-menu" id="payments-menu">
-                    <li><a href="payments.php" class="<?php echo $currentPage === 'payments.php' ? 'active' : ''; ?>">All Payments</a></li>
-                    <li><a href="payment_details.php" class="<?php echo $currentPage === 'payment_details.php' ? 'active' : ''; ?>">Payment Details</a></li>
-                    <li><a href="payment_verification.php" class="<?php echo $currentPage === 'payment_verification.php' ? 'active' : ''; ?>">Verify Payments</a></li>
+                    <li><a href="../school_paymente/admin_payment_history.php" class="<?php echo $currentPage === '../school_paymente/admin_payment_history.php' ? 'active' : ''; ?>">School Payments</a></li>
+                    <li><a href="payment_details.php" class="<?php echo $currentPage === 'payment_details.php' ? 'active' : ''; ?>">School Payment Details Update</a></li>
+                    <li><a href="payment_verification.php" class="<?php echo $currentPage === 'payment_verification.php' ? 'active' : ''; ?>">Verify Application Payments</a></li>
                     <li><a href="update_student_payment.php" class="<?php echo $currentPage === 'update_student_payment.php' ? 'active' : ''; ?>">Update Student Payment</a></li>
                 </ul>
             </li>

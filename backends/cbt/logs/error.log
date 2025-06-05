@@ -1898,3 +1898,1063 @@ Stack trace:
 [04-Jun-2025 10:53:37 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
 [04-Jun-2025 10:54:32 Africa/Lagos] Successfully fetched 3 reports
 [04-Jun-2025 10:54:32 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
+[04-Jun-2025 12:21:56 Africa/Lagos] === Dashboard Access Attempt ===
+[04-Jun-2025 12:21:56 Africa/Lagos] Session student_id: 51
+[04-Jun-2025 12:21:56 Africa/Lagos] Student lookup result: Found
+[04-Jun-2025 12:23:28 Africa/Lagos] No assigned subjects found for teacher_id: 13
+[04-Jun-2025 12:23:28 Africa/Lagos] No subjects found for teacher_id: 13
+[04-Jun-2025 12:23:44 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) < 50 THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 AND (ea.score / e.duration * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[04-Jun-2025 12:23:44 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[04-Jun-2025 12:23:44 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[04-Jun-2025 12:23:44 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+)
+
+[04-Jun-2025 12:23:48 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[04-Jun-2025 12:23:48 Africa/Lagos] Debug - Teacher ID: 13
+[04-Jun-2025 12:23:48 Africa/Lagos] Debug - Found 0 exams
+[04-Jun-2025 12:23:48 Africa/Lagos] Debug - Exams data: Array
+(
+)
+
+[04-Jun-2025 12:23:49 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) < 50 THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 AND (ea.score / e.duration * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[04-Jun-2025 12:23:49 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[04-Jun-2025 12:23:49 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[04-Jun-2025 12:23:49 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+)
+
+[04-Jun-2025 12:24:05 Africa/Lagos] Successfully fetched 4 reports
+[04-Jun-2025 12:24:05 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
+[04-Jun-2025 12:24:11 Africa/Lagos] Successfully fetched 4 reports
+[04-Jun-2025 12:24:11 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
+[04-Jun-2025 12:24:14 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[04-Jun-2025 12:24:14 Africa/Lagos] Debug - Teacher ID: 13
+[04-Jun-2025 12:24:14 Africa/Lagos] Debug - Found 0 exams
+[04-Jun-2025 12:24:14 Africa/Lagos] Debug - Exams data: Array
+(
+)
+
+[04-Jun-2025 12:24:44 Africa/Lagos] Debug - Verify Query: SELECT id FROM exams 
+                   WHERE id = :exam_id AND created_by = :teacher_id
+[04-Jun-2025 12:24:44 Africa/Lagos] Debug - Params: exam_id=4, teacher_id=13
+[04-Jun-2025 12:24:44 Africa/Lagos] Debug - Verify Result: Array
+(
+    [id] => 4
+)
+
+[04-Jun-2025 12:24:44 Africa/Lagos] Debug - Main Query: SELECT e.*, COUNT(q.id) as total_questions 
+              FROM exams e 
+              LEFT JOIN questions q ON e.id = q.exam_id 
+              WHERE e.id = :exam_id AND e.created_by = :teacher_id 
+              GROUP BY e.id
+[04-Jun-2025 12:24:44 Africa/Lagos] Debug - Exam Result: Array
+(
+    [id] => 4
+    [title] => Biology SS Exam
+    [subject] => Biology SS
+    [description] => ___
+    [duration] => 2
+    [passing_score] => 50
+    [max_attempts] => 5
+    [is_active] => 1
+    [created_by] => 13
+    [class] => SS2 Science
+    [created_at] => 2025-06-04 12:24:44
+    [total_questions] => 0
+)
+
+[04-Jun-2025 12:24:44 Africa/Lagos] Debug - Questions Count: 0
+[04-Jun-2025 12:24:44 Africa/Lagos] Debug - Stats Result: Array
+(
+    [attempt_count] => 0
+    [avg_score] => 0.000000
+)
+
+[04-Jun-2025 12:24:44 Africa/Lagos] Successfully loaded exam ID 4 with 0 questions
+[04-Jun-2025 12:24:53 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\add-question.php on line 6
+[04-Jun-2025 12:25:15 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\add-question.php on line 6
+[04-Jun-2025 12:25:15 Africa/Lagos] Debug - Verify Query: SELECT id FROM exams 
+                   WHERE id = :exam_id AND created_by = :teacher_id
+[04-Jun-2025 12:25:15 Africa/Lagos] Debug - Params: exam_id=4, teacher_id=13
+[04-Jun-2025 12:25:15 Africa/Lagos] Debug - Verify Result: Array
+(
+    [id] => 4
+)
+
+[04-Jun-2025 12:25:15 Africa/Lagos] Debug - Main Query: SELECT e.*, COUNT(q.id) as total_questions 
+              FROM exams e 
+              LEFT JOIN questions q ON e.id = q.exam_id 
+              WHERE e.id = :exam_id AND e.created_by = :teacher_id 
+              GROUP BY e.id
+[04-Jun-2025 12:25:15 Africa/Lagos] Debug - Exam Result: Array
+(
+    [id] => 4
+    [title] => Biology SS Exam
+    [subject] => Biology SS
+    [description] => ___
+    [duration] => 2
+    [passing_score] => 50
+    [max_attempts] => 5
+    [is_active] => 1
+    [created_by] => 13
+    [class] => SS2 Science
+    [created_at] => 2025-06-04 12:24:44
+    [total_questions] => 1
+)
+
+[04-Jun-2025 12:25:15 Africa/Lagos] Debug - Questions Count: 1
+[04-Jun-2025 12:25:15 Africa/Lagos] Debug - Stats Result: Array
+(
+    [attempt_count] => 0
+    [avg_score] => 0.000000
+)
+
+[04-Jun-2025 12:25:15 Africa/Lagos] Successfully loaded exam ID 4 with 1 questions
+[04-Jun-2025 12:25:20 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\add-question.php on line 6
+[04-Jun-2025 12:25:38 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\add-question.php on line 6
+[04-Jun-2025 12:25:38 Africa/Lagos] Debug - Verify Query: SELECT id FROM exams 
+                   WHERE id = :exam_id AND created_by = :teacher_id
+[04-Jun-2025 12:25:38 Africa/Lagos] Debug - Params: exam_id=4, teacher_id=13
+[04-Jun-2025 12:25:38 Africa/Lagos] Debug - Verify Result: Array
+(
+    [id] => 4
+)
+
+[04-Jun-2025 12:25:38 Africa/Lagos] Debug - Main Query: SELECT e.*, COUNT(q.id) as total_questions 
+              FROM exams e 
+              LEFT JOIN questions q ON e.id = q.exam_id 
+              WHERE e.id = :exam_id AND e.created_by = :teacher_id 
+              GROUP BY e.id
+[04-Jun-2025 12:25:38 Africa/Lagos] Debug - Exam Result: Array
+(
+    [id] => 4
+    [title] => Biology SS Exam
+    [subject] => Biology SS
+    [description] => ___
+    [duration] => 2
+    [passing_score] => 50
+    [max_attempts] => 5
+    [is_active] => 1
+    [created_by] => 13
+    [class] => SS2 Science
+    [created_at] => 2025-06-04 12:24:44
+    [total_questions] => 2
+)
+
+[04-Jun-2025 12:25:38 Africa/Lagos] Debug - Questions Count: 2
+[04-Jun-2025 12:25:38 Africa/Lagos] Debug - Stats Result: Array
+(
+    [attempt_count] => 0
+    [avg_score] => 0.000000
+)
+
+[04-Jun-2025 12:25:38 Africa/Lagos] Successfully loaded exam ID 4 with 2 questions
+[04-Jun-2025 12:25:41 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\add-question.php on line 6
+[04-Jun-2025 12:25:59 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\add-question.php on line 6
+[04-Jun-2025 12:25:59 Africa/Lagos] Debug - Verify Query: SELECT id FROM exams 
+                   WHERE id = :exam_id AND created_by = :teacher_id
+[04-Jun-2025 12:25:59 Africa/Lagos] Debug - Params: exam_id=4, teacher_id=13
+[04-Jun-2025 12:25:59 Africa/Lagos] Debug - Verify Result: Array
+(
+    [id] => 4
+)
+
+[04-Jun-2025 12:25:59 Africa/Lagos] Debug - Main Query: SELECT e.*, COUNT(q.id) as total_questions 
+              FROM exams e 
+              LEFT JOIN questions q ON e.id = q.exam_id 
+              WHERE e.id = :exam_id AND e.created_by = :teacher_id 
+              GROUP BY e.id
+[04-Jun-2025 12:25:59 Africa/Lagos] Debug - Exam Result: Array
+(
+    [id] => 4
+    [title] => Biology SS Exam
+    [subject] => Biology SS
+    [description] => ___
+    [duration] => 2
+    [passing_score] => 50
+    [max_attempts] => 5
+    [is_active] => 1
+    [created_by] => 13
+    [class] => SS2 Science
+    [created_at] => 2025-06-04 12:24:44
+    [total_questions] => 3
+)
+
+[04-Jun-2025 12:25:59 Africa/Lagos] Debug - Questions Count: 3
+[04-Jun-2025 12:25:59 Africa/Lagos] Debug - Stats Result: Array
+(
+    [attempt_count] => 0
+    [avg_score] => 0.000000
+)
+
+[04-Jun-2025 12:25:59 Africa/Lagos] Successfully loaded exam ID 4 with 3 questions
+[04-Jun-2025 12:26:01 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\add-question.php on line 6
+[04-Jun-2025 12:26:19 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\add-question.php on line 6
+[04-Jun-2025 12:26:19 Africa/Lagos] Debug - Verify Query: SELECT id FROM exams 
+                   WHERE id = :exam_id AND created_by = :teacher_id
+[04-Jun-2025 12:26:19 Africa/Lagos] Debug - Params: exam_id=4, teacher_id=13
+[04-Jun-2025 12:26:19 Africa/Lagos] Debug - Verify Result: Array
+(
+    [id] => 4
+)
+
+[04-Jun-2025 12:26:19 Africa/Lagos] Debug - Main Query: SELECT e.*, COUNT(q.id) as total_questions 
+              FROM exams e 
+              LEFT JOIN questions q ON e.id = q.exam_id 
+              WHERE e.id = :exam_id AND e.created_by = :teacher_id 
+              GROUP BY e.id
+[04-Jun-2025 12:26:19 Africa/Lagos] Debug - Exam Result: Array
+(
+    [id] => 4
+    [title] => Biology SS Exam
+    [subject] => Biology SS
+    [description] => ___
+    [duration] => 2
+    [passing_score] => 50
+    [max_attempts] => 5
+    [is_active] => 1
+    [created_by] => 13
+    [class] => SS2 Science
+    [created_at] => 2025-06-04 12:24:44
+    [total_questions] => 4
+)
+
+[04-Jun-2025 12:26:19 Africa/Lagos] Debug - Questions Count: 4
+[04-Jun-2025 12:26:19 Africa/Lagos] Debug - Stats Result: Array
+(
+    [attempt_count] => 0
+    [avg_score] => 0.000000
+)
+
+[04-Jun-2025 12:26:19 Africa/Lagos] Successfully loaded exam ID 4 with 4 questions
+[04-Jun-2025 12:26:21 Africa/Lagos] === Dashboard Access Attempt ===
+[04-Jun-2025 12:26:21 Africa/Lagos] Session student_id: 51
+[04-Jun-2025 12:26:22 Africa/Lagos] Student lookup result: Found
+[04-Jun-2025 12:26:24 Africa/Lagos] === Exam Start Attempt ===
+[04-Jun-2025 12:26:24 Africa/Lagos] Session student_id: 51
+[04-Jun-2025 12:26:24 Africa/Lagos] Created exam attempt ID: 7
+[04-Jun-2025 12:26:24 Africa/Lagos] Exam started successfully - Attempt ID: 7
+[04-Jun-2025 12:26:24 Africa/Lagos] === Exam Page Access Attempt ===
+[04-Jun-2025 12:26:24 Africa/Lagos] Session data: Array
+(
+    [user_id] => 14
+    [username] => elmo.frost
+    [role] => teacher
+    [first_name] => System
+    [last_name] => Administrator
+    [name] => Elmo Frost
+    [student_id] => 51
+    [student_name] => Lorem voluptatum Same Perspiciatis volupt
+    [registration_number] => 2425/COL/0011
+    [debug_raw_student] => Array
+        (
+            [id] => 51
+            [admission_number] => 
+            [application_type] => 
+            [registration_number] => 2425/COL/0011
+            [first_name] => Lorem voluptatum Same
+            [last_name] => Perspiciatis volupt
+            [date_of_birth] => 2013-07-02
+            [gender] => male
+            [address] => 
+            [parent_name] => 
+            [parent_phone] => 
+            [parent_email] => 
+            [application_date] => 2025-06-04 12:18:38
+            [status] => registered
+            [created_at] => 2025-06-04 12:18:38
+            [file_id] => 
+            [nationality] => Minima nobis ea duci
+            [state] => Culpa omnis consecte
+            [contact_address] => In doloribus aut rec
+            [email] => kipoxyhupu@mailinator.com
+            [class] => SS2 Science
+            [father_s_name] => Harum cillum ad est
+            [father_s_occupation] => Ex aut tempora ab se
+            [father_s_office_address] => Tempore rerum archi
+            [father_s_contact_phone_number_s_] => Adipisicing adipisci
+            [mother_s_name] => Recusandae Commodo 
+            [mother_s_occupation] => Qui pariatur Nostru
+            [mother_s_office_address] => Qui in dolor quo eli
+            [mother_s_contact_phone_number_s_] => Non eius corrupti u
+            [guardian_name] => Molestias magnam ad 
+            [guardian_occupation] => Quae do dolore nisi 
+            [guardian_office_address] => Unde et eos dolor u
+            [guardian_contact_phone_number] => Qui est ullam nulla 
+            [child_lives_with] => Both Parents, Mother, Father
+            [allergies] => Aut consectetur mol
+            [blood_group] => B+
+            [genotype] => AC
+            [photo] => 
+            [display_number] => 2425/COL/0011
+        )
+
+    [image_debug] => Photo found: No<br>Checked paths:<br>1. ../uploads/student_files/2425_COL_0011.jpg - Not found<br>2. ../uploads/student_files/2425_COL_0011.png - Not found<br>3. ../../uploads/student_files/2425_COL_0011.jpg - Not found<br>4. ../../uploads/student_files/2425_COL_0011.png - Not found<br>5. ../uploads/student_passports/2425_COL_0011.jpg - Not found<br>6. ../uploads/student_passports/2425_COL_0011.png - Not found<br>7. ../../uploads/student_passports/2425_COL_0011.jpg - Not found<br>8. ../../uploads/student_passports/2425_COL_0011.png - Not found<br>9. ../../../uploads/student_passports/2425_COL_0011.jpg - Not found<br>10. ../../../uploads/student_passports/2425_COL_0011.png - Not found<br>11. C:\xampp\htdocs\ACE MODEL COLLEGE/uploads/student_files/2425_COL_0011.jpg - Not found<br>12. C:\xampp\htdocs\ACE MODEL COLLEGE/uploads/student_files/2425_COL_0011.png - Not found<br>13. C:\xampp\htdocs\ACE MODEL COLLEGE/uploads/student_passports/2425_COL_0011.jpg - Not found<br>14. C:\xampp\htdocs\ACE MODEL COLLEGE/uploads/student_passports/2425_COL_0011.png - Not found<br>15. ../../../images/student_photos/2425_COL_0011.jpg - Not found<br>16. ../../../images/student_photos/2425_COL_0011.png - Not found<br>17. ../../../images/students/2425_COL_0011.jpg - Not found<br>18. ../../../images/students/2425_COL_0011.png - Not found
+    [student_debug] => Array
+        (
+            [id] => 51
+            [first_name] => Lorem voluptatum Same
+            [last_name] => Perspiciatis volupt
+            [registration_number] => 2425/COL/0011
+            [gender] => male
+            [date_of_birth] => 2013-07-02
+            [fetch_success] => Yes
+        )
+
+    [teacher_id] => 13
+    [email] => zeqotot@mailinator.com
+    [exam_attempt] => Array
+        (
+            [attempt_id] => 7
+            [end_time] => 2025-06-04 12:28:24
+            [questions] => Array
+                (
+                    [0] => Array
+                        (
+                            [id] => 5
+                            [exam_id] => 4
+                            [question_text] => ertyuiop
+                            [image_url] => 
+                            [option_a] => a
+                            [option_b] => scdsc
+                            [option_c] => swef
+                            [option_d] => ewfce
+                            [correct_answer] => A
+                            [explanation] => 
+                        )
+
+                    [1] => Array
+                        (
+                            [id] => 7
+                            [exam_id] => 4
+                            [question_text] => cghjkiuy
+                            [image_url] => 
+                            [option_a] => asfsd
+                            [option_b] => b
+                            [option_c] => ascasc
+                            [option_d] => ascac
+                            [correct_answer] => B
+                            [explanation] => 
+                        )
+
+                    [2] => Array
+                        (
+                            [id] => 8
+                            [exam_id] => 4
+                            [question_text] =>  bgyujm
+                            [image_url] => 
+                            [option_a] => ascsc
+                            [option_b] => b
+                            [option_c] => swef
+                            [option_d] => ewfce
+                            [correct_answer] => B
+                            [explanation] => 
+                        )
+
+                    [3] => Array
+                        (
+                            [id] => 6
+                            [exam_id] => 4
+                            [question_text] => efrga5r
+                            [image_url] => 
+                            [option_a] => a
+                            [option_b] => scdsc
+                            [option_c] => swef
+                            [option_d] => ewfce
+                            [correct_answer] => A
+                            [explanation] => 
+                        )
+
+                )
+
+        )
+
+)
+
+[04-Jun-2025 12:26:24 Africa/Lagos] Exam page loaded successfully for student ID: 51
+[04-Jun-2025 12:26:26 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\save-progress.php on line 5
+[04-Jun-2025 12:26:29 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\save-progress.php on line 5
+[04-Jun-2025 12:26:32 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\save-progress.php on line 5
+[04-Jun-2025 12:26:33 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\save-progress.php on line 5
+[04-Jun-2025 12:26:37 Africa/Lagos] === Dashboard Access Attempt ===
+[04-Jun-2025 12:26:37 Africa/Lagos] Session student_id: 51
+[04-Jun-2025 12:26:37 Africa/Lagos] Student lookup result: Found
+[04-Jun-2025 12:26:58 Africa/Lagos] Successfully fetched 5 reports
+[04-Jun-2025 12:26:58 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
+[04-Jun-2025 12:27:14 Africa/Lagos] Successfully fetched 5 reports
+[04-Jun-2025 12:27:14 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
+[04-Jun-2025 12:27:17 Africa/Lagos] Successfully fetched 5 reports
+[04-Jun-2025 12:27:17 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
+[04-Jun-2025 12:28:41 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) < 50 THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 AND (ea.score / e.duration * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[04-Jun-2025 12:28:41 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[04-Jun-2025 12:28:42 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[04-Jun-2025 12:28:42 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+)
+
+[04-Jun-2025 12:28:50 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php on line 6
+[04-Jun-2025 12:28:50 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.added_by' in 'where clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php:30
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php(30): PDO->prepare('SELECT u.* FROM...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php on line 30
+[04-Jun-2025 12:28:57 Africa/Lagos] Successfully fetched 5 reports
+[04-Jun-2025 12:28:57 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
+[04-Jun-2025 12:29:08 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) < 50 THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 AND (ea.score / e.duration * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[04-Jun-2025 12:29:08 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[04-Jun-2025 12:29:08 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[04-Jun-2025 12:29:08 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+)
+
+[04-Jun-2025 12:34:05 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[04-Jun-2025 12:34:05 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[04-Jun-2025 12:34:05 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[04-Jun-2025 12:34:05 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+)
+
+[04-Jun-2025 12:34:18 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 131
+[04-Jun-2025 12:34:18 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 156
+[04-Jun-2025 12:34:18 Africa/Lagos] Error fetching reports: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist
+[04-Jun-2025 12:34:18 Africa/Lagos] SQL State: 42S02
+[04-Jun-2025 12:34:18 Africa/Lagos] Error Details: Array
+(
+    [0] => 42S02
+    [1] => 1146
+    [2] => Table 'ace_school_system.morning_students' doesn't exist
+)
+
+[04-Jun-2025 12:34:18 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 419
+[04-Jun-2025 12:34:22 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[04-Jun-2025 12:34:22 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[04-Jun-2025 12:34:22 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[04-Jun-2025 12:34:22 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+)
+
+[04-Jun-2025 12:34:59 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 131
+[04-Jun-2025 12:34:59 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 156
+[04-Jun-2025 12:34:59 Africa/Lagos] Error fetching reports: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist
+[04-Jun-2025 12:34:59 Africa/Lagos] SQL State: 42S02
+[04-Jun-2025 12:34:59 Africa/Lagos] Error Details: Array
+(
+    [0] => 42S02
+    [1] => 1146
+    [2] => Table 'ace_school_system.morning_students' doesn't exist
+)
+
+[04-Jun-2025 12:34:59 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 419
+[04-Jun-2025 12:35:02 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 131
+[04-Jun-2025 12:35:02 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 156
+[04-Jun-2025 12:35:02 Africa/Lagos] Error fetching reports: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist
+[04-Jun-2025 12:35:02 Africa/Lagos] SQL State: 42S02
+[04-Jun-2025 12:35:02 Africa/Lagos] Error Details: Array
+(
+    [0] => 42S02
+    [1] => 1146
+    [2] => Table 'ace_school_system.morning_students' doesn't exist
+)
+
+[04-Jun-2025 12:35:02 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 419
+[04-Jun-2025 12:37:13 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[04-Jun-2025 12:37:13 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[04-Jun-2025 12:37:13 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[04-Jun-2025 12:37:13 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+)
+
+[04-Jun-2025 12:38:14 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 131
+[04-Jun-2025 12:38:14 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 156
+[04-Jun-2025 12:38:14 Africa/Lagos] Error fetching reports: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist
+[04-Jun-2025 12:38:14 Africa/Lagos] SQL State: 42S02
+[04-Jun-2025 12:38:14 Africa/Lagos] Error Details: Array
+(
+    [0] => 42S02
+    [1] => 1146
+    [2] => Table 'ace_school_system.morning_students' doesn't exist
+)
+
+[04-Jun-2025 12:38:14 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 419
+[04-Jun-2025 12:38:42 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 131
+[04-Jun-2025 12:38:42 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 156
+[04-Jun-2025 12:38:42 Africa/Lagos] Error fetching reports: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist
+[04-Jun-2025 12:38:42 Africa/Lagos] SQL State: 42S02
+[04-Jun-2025 12:38:42 Africa/Lagos] Error Details: Array
+(
+    [0] => 42S02
+    [1] => 1146
+    [2] => Table 'ace_school_system.morning_students' doesn't exist
+)
+
+[04-Jun-2025 12:38:42 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 419
+[04-Jun-2025 12:39:06 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 131
+[04-Jun-2025 12:39:06 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 156
+[04-Jun-2025 12:39:06 Africa/Lagos] Error fetching reports: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist
+[04-Jun-2025 12:39:06 Africa/Lagos] SQL State: 42S02
+[04-Jun-2025 12:39:06 Africa/Lagos] Error Details: Array
+(
+    [0] => 42S02
+    [1] => 1146
+    [2] => Table 'ace_school_system.morning_students' doesn't exist
+)
+
+[04-Jun-2025 12:39:06 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 419
+[04-Jun-2025 12:39:08 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[04-Jun-2025 12:39:08 Africa/Lagos] Debug - Teacher ID: 13
+[04-Jun-2025 12:39:08 Africa/Lagos] Debug - Found 1 exams
+[04-Jun-2025 12:39:08 Africa/Lagos] Debug - Exams data: Array
+(
+    [0] => Array
+        (
+            [id] => 4
+            [title] => Biology SS Exam
+            [subject] => Biology SS
+            [description] => ___
+            [duration] => 2
+            [passing_score] => 50
+            [max_attempts] => 5
+            [is_active] => 1
+            [created_by] => 13
+            [class] => SS2 Science
+            [created_at] => 2025-06-04 12:24:44
+            [question_count] => 4
+            [attempt_count] => 1
+            [avg_score] => 3.000000
+        )
+
+)
+
+[04-Jun-2025 12:39:08 Africa/Lagos] Debug - Processing exam: ID=4, Title=Biology SS Exam
+[04-Jun-2025 12:39:10 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 131
+[04-Jun-2025 12:39:10 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 156
+[04-Jun-2025 12:39:10 Africa/Lagos] Error fetching reports: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist
+[04-Jun-2025 12:39:10 Africa/Lagos] SQL State: 42S02
+[04-Jun-2025 12:39:10 Africa/Lagos] Error Details: Array
+(
+    [0] => 42S02
+    [1] => 1146
+    [2] => Table 'ace_school_system.morning_students' doesn't exist
+)
+
+[04-Jun-2025 12:39:10 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 419
+[04-Jun-2025 12:58:48 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 131
+[04-Jun-2025 12:58:48 Africa/Lagos] PHP Warning:  Undefined variable $session in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 156
+[04-Jun-2025 12:58:48 Africa/Lagos] Error fetching reports: SQLSTATE[42S02]: Base table or view not found: 1146 Table 'ace_school_system.morning_students' doesn't exist
+[04-Jun-2025 12:58:48 Africa/Lagos] SQL State: 42S02
+[04-Jun-2025 12:58:48 Africa/Lagos] Error Details: Array
+(
+    [0] => 42S02
+    [1] => 1146
+    [2] => Table 'ace_school_system.morning_students' doesn't exist
+)
+
+[04-Jun-2025 12:58:48 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 419
+[04-Jun-2025 13:03:42 Africa/Lagos] Successfully fetched 5 reports
+[04-Jun-2025 13:03:42 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
+[04-Jun-2025 13:04:45 Africa/Lagos] Successfully fetched 1 reports
+[04-Jun-2025 13:04:45 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 326
+[04-Jun-2025 13:08:22 Africa/Lagos] Successfully fetched 1 reports
+[04-Jun-2025 13:08:22 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
+[04-Jun-2025 13:09:35 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[04-Jun-2025 13:09:35 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[04-Jun-2025 13:09:35 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[04-Jun-2025 13:09:35 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 13
+    [:subject] => Biology SS
+    [:subject_teacher_id] => 13
+)
+

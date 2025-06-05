@@ -35,7 +35,7 @@ try {
             ea.start_time,
             e.title as exam_title,
             e.passing_score,
-            e.duration as total_questions
+            (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) as total_questions
         FROM exam_attempts ea 
         JOIN exams e ON ea.exam_id = e.id 
         WHERE ea.student_id = :student_id
@@ -447,7 +447,9 @@ try {
                 </div>
             <?php else: ?>
                 <?php foreach ($exam_history as $attempt): 
-                    $percentage = ($attempt['score'] / $attempt['total_questions']) * 100;
+                    $raw_score = $attempt['score'];
+                    $total_questions = $attempt['total_questions'];
+                    $percentage = ($raw_score / $total_questions) * 100;
                     $status = $percentage >= $attempt['passing_score'] ? 'Passed' : 'Failed';
                     $status_class = $status === 'Passed' ? 'success' : 'danger';
                 ?>
@@ -458,7 +460,7 @@ try {
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-3">
-                                    <strong>Score:</strong> <?php echo $attempt['score']; ?>/<?php echo $attempt['total_questions']; ?>
+                                    <strong>Score:</strong> <?php echo $raw_score; ?>/<?php echo $total_questions; ?>
                                 </div>
                                 <div class="col-md-3">
                                     <strong>Percentage:</strong> <?php echo number_format($percentage, 1); ?>%
@@ -466,6 +468,8 @@ try {
                                 <div class="col-md-3">
                                     <strong>Status:</strong> 
                                     <span class="badge bg-<?php echo $status_class; ?>"><?php echo $status; ?></span>
+                                    <br>
+                                    <small class="text-muted">(Pass mark: <?php echo $attempt['passing_score']; ?>%)</small>
                                 </div>
                                 <div class="col-md-3">
                                     <strong>Date:</strong> <?php echo date('M d, Y', strtotime($attempt['start_time'])); ?>

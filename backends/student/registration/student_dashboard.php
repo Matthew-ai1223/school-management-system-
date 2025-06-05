@@ -2054,7 +2054,7 @@ while ($row = $announcementsResult->fetch_assoc()) {
                             <div class="card-body p-4">
                                 <p>Welcome to the Computer Based Tests (CBT) section. Here you can view and take available CBT exams.</p>
                                 <div class="text-end mb-3">
-                                    <a href="payment.php" class="btn btn-primary">
+                                    <a href="../../../backends/cbt/dashboard.php" class="btn btn-primary">
                                         <i class="fas fa-external-link-alt me-2"></i> Open CBT Dashboard
                                     </a>
                                 </div>

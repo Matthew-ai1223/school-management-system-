@@ -12,52 +12,6 @@ session_start();
 
 $db = Database::getInstance()->getConnection();
 
-// Get summary statistics
-$stats_query = "SELECT 
-    COUNT(DISTINCT CASE WHEN ea.status = 'completed' THEN ea.user_id END) as total_students,
-    COUNT(DISTINCT CASE WHEN ea.status = 'completed' THEN ea.exam_id END) as total_exams,
-    ROUND(AVG(CASE WHEN ea.status = 'completed' THEN ea.score END), 1) as avg_score,
-    COUNT(DISTINCT CASE WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN ea.id END) as passed_exams,
-    COUNT(DISTINCT CASE WHEN ea.status = 'completed' AND ea.score < e.passing_score THEN ea.id END) as failed_exams,
-    MAX(CASE WHEN ea.status = 'completed' THEN ea.score END) as highest_score,
-    MIN(CASE WHEN ea.status = 'completed' THEN ea.score END) as lowest_score
-FROM exam_attempts ea
-JOIN exams e ON ea.exam_id = e.id
-WHERE 1=1";
-
-// Apply filters to statistics
-$stats_params = [];
-if ($exam_id) {
-    $stats_query .= " AND e.id = :exam_id";
-    $stats_params[':exam_id'] = $exam_id;
-}
-if ($department) {
-    $stats_query .= " AND (
-        EXISTS (SELECT 1 FROM morning_students ms WHERE ms.id = ea.user_id AND ms.department = :dept_m)
-        OR 
-        EXISTS (SELECT 1 FROM afternoon_students afs WHERE afs.id = ea.user_id AND afs.department = :dept_a)
-    )";
-    $stats_params[':dept_m'] = $department;
-    $stats_params[':dept_a'] = $department;
-}
-if ($session === 'morning') {
-    $stats_query .= " AND EXISTS (SELECT 1 FROM morning_students ms WHERE ms.id = ea.user_id)";
-} elseif ($session === 'afternoon') {
-    $stats_query .= " AND EXISTS (SELECT 1 FROM afternoon_students afs WHERE afs.id = ea.user_id)";
-}
-if ($date_from) {
-    $stats_query .= " AND DATE(ea.start_time) >= :date_from";
-    $stats_params[':date_from'] = $date_from;
-}
-if ($date_to) {
-    $stats_query .= " AND DATE(ea.start_time) <= :date_to";
-    $stats_params[':date_to'] = $date_to;
-}
-
-$stats_stmt = $db->prepare($stats_query);
-$stats_stmt->execute($stats_params);
-$statistics = $stats_stmt->fetch(PDO::FETCH_ASSOC);
-
 // Get filter parameters
 $exam_id = isset($_GET['exam_id']) ? (int)$_GET['exam_id'] : null;
 $department = isset($_GET['department']) ? $_GET['department'] : null;
@@ -65,7 +19,7 @@ $session = isset($_GET['session']) ? $_GET['session'] : null;
 $date_from = isset($_GET['date_from']) ? $_GET['date_from'] : null;
 $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : null;
 
-// Base query for both morning and afternoon students
+// Base query conditions
 $base_conditions = [];
 $params = [];
 
@@ -91,6 +45,7 @@ if ($date_to) {
 
 $where_clause = !empty($base_conditions) ? " AND " . implode(" AND ", $base_conditions) : "";
 
+// Get reports data
 if ($session === 'morning') {
     $query = "SELECT 
                 ms.id as student_id,
@@ -98,20 +53,22 @@ if ($session === 'morning') {
                 ms.department,
                 'Morning' as session,
                 e.title as exam_title,
-                ea.score as score,
-                ea.start_time,
-                ea.end_time,
+                ea.score as raw_score,
+                (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) as total_questions,
                 e.passing_score,
+                ROUND((ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100), 1) as percentage,
                 CASE 
-                    WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN 'Pass'
-                    WHEN ea.status = 'completed' AND ea.score < e.passing_score THEN 'Fail'
+                    WHEN ea.status = 'completed' AND (ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100) >= e.passing_score THEN 'Pass'
+                    WHEN ea.status = 'completed' AND (ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100) < e.passing_score THEN 'Fail'
                     ELSE ea.status
                 END as status,
+                ea.start_time,
+                ea.end_time,
                 TIMESTAMPDIFF(SECOND, ea.start_time, COALESCE(ea.end_time, NOW())) as duration_seconds
               FROM morning_students ms
               JOIN exam_attempts ea ON ms.id = ea.user_id
               JOIN exams e ON ea.exam_id = e.id
-              WHERE 1=1" . $where_clause . "
+              WHERE ea.status = 'completed'" . $where_clause . "
               ORDER BY ea.start_time DESC";
 } elseif ($session === 'afternoon') {
     $query = "SELECT 
@@ -120,20 +77,22 @@ if ($session === 'morning') {
                 afs.department,
                 'Afternoon' as session,
                 e.title as exam_title,
-                ea.score as score,
-                ea.start_time,
-                ea.end_time,
+                ea.score as raw_score,
+                (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) as total_questions,
                 e.passing_score,
+                ROUND((ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100), 1) as percentage,
                 CASE 
-                    WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN 'Pass'
-                    WHEN ea.status = 'completed' AND ea.score < e.passing_score THEN 'Fail'
+                    WHEN ea.status = 'completed' AND (ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100) >= e.passing_score THEN 'Pass'
+                    WHEN ea.status = 'completed' AND (ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100) < e.passing_score THEN 'Fail'
                     ELSE ea.status
                 END as status,
+                ea.start_time,
+                ea.end_time,
                 TIMESTAMPDIFF(SECOND, ea.start_time, COALESCE(ea.end_time, NOW())) as duration_seconds
               FROM afternoon_students afs
               JOIN exam_attempts ea ON afs.id = ea.user_id
               JOIN exams e ON ea.exam_id = e.id
-              WHERE 1=1" . $where_clause . "
+              WHERE ea.status = 'completed'" . $where_clause . "
               ORDER BY ea.start_time DESC";
 } else {
     $query = "(SELECT 
@@ -142,20 +101,22 @@ if ($session === 'morning') {
                 ms.department,
                 'Morning' as session,
                 e.title as exam_title,
-                ea.score as score,
-                ea.start_time,
-                ea.end_time,
+                ea.score as raw_score,
+                (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) as total_questions,
                 e.passing_score,
+                ROUND((ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100), 1) as percentage,
                 CASE 
-                    WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN 'Pass'
-                    WHEN ea.status = 'completed' AND ea.score < e.passing_score THEN 'Fail'
+                    WHEN ea.status = 'completed' AND (ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100) >= e.passing_score THEN 'Pass'
+                    WHEN ea.status = 'completed' AND (ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100) < e.passing_score THEN 'Fail'
                     ELSE ea.status
                 END as status,
+                ea.start_time,
+                ea.end_time,
                 TIMESTAMPDIFF(SECOND, ea.start_time, COALESCE(ea.end_time, NOW())) as duration_seconds
               FROM morning_students ms
               JOIN exam_attempts ea ON ms.id = ea.user_id
               JOIN exams e ON ea.exam_id = e.id
-              WHERE 1=1" . $where_clause . ")
+              WHERE ea.status = 'completed'" . $where_clause . ")
               UNION ALL
               (SELECT 
                 afs.id as student_id,
@@ -163,20 +124,22 @@ if ($session === 'morning') {
                 afs.department,
                 'Afternoon' as session,
                 e.title as exam_title,
-                ea.score as score,
-                ea.start_time,
-                ea.end_time,
+                ea.score as raw_score,
+                (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) as total_questions,
                 e.passing_score,
+                ROUND((ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100), 1) as percentage,
                 CASE 
-                    WHEN ea.status = 'completed' AND ea.score >= e.passing_score THEN 'Pass'
-                    WHEN ea.status = 'completed' AND ea.score < e.passing_score THEN 'Fail'
+                    WHEN ea.status = 'completed' AND (ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100) >= e.passing_score THEN 'Pass'
+                    WHEN ea.status = 'completed' AND (ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100) < e.passing_score THEN 'Fail'
                     ELSE ea.status
                 END as status,
+                ea.start_time,
+                ea.end_time,
                 TIMESTAMPDIFF(SECOND, ea.start_time, COALESCE(ea.end_time, NOW())) as duration_seconds
               FROM afternoon_students afs
               JOIN exam_attempts ea ON afs.id = ea.user_id
               JOIN exams e ON ea.exam_id = e.id
-              WHERE 1=1" . $where_clause . ")
+              WHERE ea.status = 'completed'" . $where_clause . ")
               ORDER BY start_time DESC";
 }
 
@@ -196,6 +159,43 @@ $dept_query = "(SELECT DISTINCT department FROM morning_students)
                ORDER BY department";
 $dept_stmt = $db->query($dept_query);
 $departments = $dept_stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// Calculate statistics
+$total_students = 0;
+$total_exams = 0;
+$total_score = 0;
+$passed_exams = 0;
+$failed_exams = 0;
+$highest_score = 0;
+$lowest_score = 100;
+
+foreach ($reports as $report) {
+    $total_students++;
+    $total_exams++;
+    $total_score += $report['percentage'];
+    
+    if ($report['status'] === 'Pass') {
+        $passed_exams++;
+    } else {
+        $failed_exams++;
+    }
+    
+    $highest_score = max($highest_score, $report['percentage']);
+    $lowest_score = min($lowest_score, $report['percentage']);
+}
+
+$avg_score = $total_exams > 0 ? round($total_score / $total_exams, 1) : 0;
+$pass_percentage = $total_exams > 0 ? round(($passed_exams / $total_exams) * 100, 1) : 0;
+
+$statistics = [
+    'total_students' => $total_students,
+    'total_exams' => $total_exams,
+    'avg_score' => $avg_score,
+    'passed_exams' => $passed_exams,
+    'failed_exams' => $failed_exams,
+    'highest_score' => $highest_score,
+    'lowest_score' => $lowest_score
+];
 
 // Handle export requests
 if (isset($_GET['export'])) {
@@ -229,7 +229,8 @@ if (isset($_GET['export'])) {
                     <th>Session</th>
                     <th>Department</th>
                     <th>Exam</th>
-                    <th>Score</th>
+                    <th>Raw Score</th>
+                    <th>Percentage</th>
                     <th>Status</th>
                     <th>Date</th>
                 </tr>';
@@ -241,7 +242,8 @@ if (isset($_GET['export'])) {
                         <td>' . htmlspecialchars($row['session']) . '</td>
                         <td>' . htmlspecialchars($row['department']) . '</td>
                         <td>' . htmlspecialchars($row['exam_title']) . '</td>
-                        <td>' . $row['score'] . '%</td>
+                        <td>' . $row['raw_score'] . '/' . $row['total_questions'] . '</td>
+                        <td>' . $row['percentage'] . '%</td>
                         <td>' . $row['status'] . '</td>
                         <td>' . date('M d, Y H:i', strtotime($row['start_time'])) . '</td>
                     </tr>';
@@ -268,7 +270,7 @@ if (isset($_GET['export'])) {
         fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
         
         // Output header row
-        fputcsv($output, ['Student Name', 'Session', 'Department', 'Exam', 'Score', 'Status', 'Date']);
+        fputcsv($output, ['Student Name', 'Session', 'Department', 'Exam', 'Raw Score', 'Percentage', 'Status', 'Date']);
         
         // Output data rows
         foreach ($reports as $row) {
@@ -277,7 +279,8 @@ if (isset($_GET['export'])) {
                 $row['session'],
                 $row['department'],
                 $row['exam_title'],
-                $row['score'] . '%',
+                $row['raw_score'] . '/' . $row['total_questions'],
+                $row['percentage'] . '%',
                 $row['status'],
                 date('M d, Y H:i', strtotime($row['start_time']))
             ]);
@@ -452,7 +455,8 @@ if (isset($_GET['export'])) {
                                         <th>Session</th>
                                         <th>Department</th>
                                         <th>Exam</th>
-                                        <th>Score</th>
+                                        <th>Raw Score</th>
+                                        <th>Percentage</th>
                                         <th>Status</th>
                                         <th>Date</th>
                                         <th>Duration</th>
@@ -461,7 +465,7 @@ if (isset($_GET['export'])) {
                                 <tbody>
                                     <?php if (empty($reports)): ?>
                                         <tr>
-                                            <td colspan="8" class="text-center">No reports found</td>
+                                            <td colspan="9" class="text-center">No reports found</td>
                                         </tr>
                                     <?php else: ?>
                                         <?php foreach ($reports as $report): ?>
@@ -470,10 +474,13 @@ if (isset($_GET['export'])) {
                                                 <td><?php echo htmlspecialchars($report['session']); ?></td>
                                                 <td><?php echo htmlspecialchars($report['department']); ?></td>
                                                 <td><?php echo htmlspecialchars($report['exam_title']); ?></td>
+                                                <td><?php echo $report['raw_score'] . '/' . $report['total_questions']; ?></td>
                                                 <td>
-                                                    <span class="badge bg-<?php echo $report['score'] >= $report['passing_score'] ? 'success' : 'danger'; ?>">
-                                                        <?php echo $report['score']; ?>%
+                                                    <span class="badge bg-<?php echo $report['percentage'] >= $report['passing_score'] ? 'success' : 'danger'; ?>">
+                                                        <?php echo $report['percentage']; ?>%
                                                     </span>
+                                                    <br>
+                                                    <small class="text-muted">Pass mark: <?php echo $report['passing_score']; ?>%</small>
                                                 </td>
                                                 <td>
                                                     <span class="badge bg-<?php echo $report['status'] === 'Pass' ? 'success' : ($report['status'] === 'Fail' ? 'danger' : 'warning'); ?>">

@@ -185,7 +185,7 @@ while ($row = $payment_types_result->fetch_assoc()) {
                     <p class="mb-0">Registration Number: <?php echo htmlspecialchars($registration_number); ?></p>
                 </div>
                 <div class="col-md-4 text-md-right">
-                    <button class="btn btn-light" data-toggle="modal" data-target="#newPaymentModal">
+                    <button class="btn btn-light" onclick="window.location.href='../../../backends/school_paymente/payment_interface.php'">
                         <i class="fas fa-plus"></i> Make New Payment
                     </button>
                 </div>

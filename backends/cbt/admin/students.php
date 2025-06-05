@@ -55,17 +55,22 @@ $query = "SELECT DISTINCT
             s.class,
             s.registration_number,
             COUNT(DISTINCT ea.id) as total_exams,
-            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END), 2) as avg_score,
-            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as highest_score,
-            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / e.duration * 100) ELSE NULL END) as lowest_score,
-            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 THEN 1 ELSE 0 END) as passed_exams,
-            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) < 50 THEN 1 ELSE 0 END) as failed_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
             GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
-            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
-            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / e.duration * 100) >= 50 AND (ea.score / e.duration * 100) < 70 THEN 1 ELSE 0 END) as credits
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
           FROM students s
           INNER JOIN exam_attempts ea ON s.id = ea.student_id
           INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
           WHERE EXISTS (
               SELECT 1 
               FROM teacher_subjects ts 

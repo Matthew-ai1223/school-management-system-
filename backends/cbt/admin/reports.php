@@ -86,11 +86,11 @@ try {
 
 // Get statistics with proper error handling
 $stats_query = "SELECT 
-    MIN(ROUND((ea.score / e.duration * 100), 2)) as lowest_score,
-    MAX(ROUND((ea.score / e.duration * 100), 2)) as highest_score,
-    AVG(ROUND((ea.score / e.duration * 100), 2)) as average_score,
+    MIN(ROUND((ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100), 2)) as lowest_score,
+    MAX(ROUND((ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100), 2)) as highest_score,
+    AVG(ROUND((ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100), 2)) as average_score,
     COUNT(*) as total_attempts,
-    SUM(CASE WHEN (ea.score / e.duration * 100) >= 50 THEN 1 ELSE 0 END) as passed_count
+    SUM(CASE WHEN (ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_count
 FROM exam_attempts ea
 JOIN exams e ON ea.exam_id = e.id
 JOIN students s ON ea.student_id = s.id
@@ -125,13 +125,17 @@ try {
                 s.application_type,
                 s.class,
                 e.title as exam_title,
-                e.duration as total_questions,
+                (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) as total_questions,
                 ea.score as raw_score,
-                ROUND((ea.score / e.duration * 100), 2) as score,
+                ROUND((ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100), 2) as percentage,
                 ea.start_time,
                 ea.end_time,
                 e.passing_score,
-                CASE WHEN (ea.score / e.duration * 100) >= 50 THEN 'Pass' ELSE 'Fail' END as status
+                CASE 
+                    WHEN (ea.score / (SELECT COUNT(*) FROM questions WHERE exam_id = e.id) * 100) >= e.passing_score 
+                    THEN 'Pass' 
+                    ELSE 'Fail' 
+                END as status
               FROM students s
               JOIN exam_attempts ea ON s.id = ea.student_id
               JOIN exams e ON ea.exam_id = e.id
@@ -203,7 +207,7 @@ if (isset($_GET['export'])) {
                         <td>' . htmlspecialchars($row['class']) . '</td>
                         <td>' . htmlspecialchars($row['application_type']) . '</td>
                         <td>' . htmlspecialchars($row['exam_title']) . '</td>
-                        <td>' . $row['score'] . '%</td>
+                        <td>' . $row['percentage'] . '%</td>
                         <td>' . $row['status'] . '</td>
                         <td>' . date('M d, Y H:i', strtotime($row['start_time'])) . '</td>
                     </tr>';
@@ -239,7 +243,7 @@ if (isset($_GET['export'])) {
                 $row['class'],
                 $row['application_type'],
                 $row['exam_title'],
-                $row['score'] . '%',
+                $row['percentage'] . '%',
                 $row['status'],
                 date('M d, Y H:i', strtotime($row['start_time']))
             ]);
@@ -437,10 +441,12 @@ if (isset($_GET['export'])) {
                                                 <td><?php echo htmlspecialchars($report['class'] ?? ''); ?></td>
                                                 <td><?php echo htmlspecialchars($report['exam_title'] ?? ''); ?></td>
                                                 <td>
-                                                    <span class="badge bg-<?php echo ($report['score'] ?? 0) >= 50 ? 'success' : 'danger'; ?>">
-                                                        <?php echo number_format($report['score'] ?? 0, 2); ?>%
+                                                    <span class="badge bg-<?php echo ($report['percentage'] ?? 0) >= $report['passing_score'] ? 'success' : 'danger'; ?>">
+                                                        <?php echo number_format($report['percentage'] ?? 0, 2); ?>%
                                                         <small>(<?php echo $report['raw_score']; ?>/<?php echo $report['total_questions']; ?>)</small>
                                                     </span>
+                                                    <br>
+                                                    <small class="text-muted">Pass mark: <?php echo $report['passing_score']; ?>%</small>
                                                 </td>
                                                 <td>
                                                     <span class="badge bg-<?php echo ($report['status'] ?? '') === 'Pass' ? 'success' : 'danger'; ?>">

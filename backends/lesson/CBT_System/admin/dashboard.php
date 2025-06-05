@@ -206,7 +206,7 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
 
                 <!-- Recent Activity -->
-                <div class="row mt-4">
+                <!-- <div class="row mt-4">
                     <div class="col-md-8">
                         <div class="card">
                             <div class="card-header d-flex justify-content-between align-items-center">
@@ -328,7 +328,7 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
