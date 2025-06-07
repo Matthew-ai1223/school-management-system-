@@ -1293,6 +1293,14 @@ while ($row = $announcementsResult->fetch_assoc()) {
                             <i class="fas fa-clipboard-check"></i> Teacher Feedback
                         </a>
                     </li>
+                    <!-- <li class="nav-item">
+                    <a class="nav-link" href="../../../report_card/student_download.php" data-toggle="tab" role="tab" aria-controls="teacher-feedback" aria-selected="false">
+                            <i class="fas fa-file-download"></i> Report Card
+                        </a>
+                    </li> -->
+                    <a href="../../report_card/student_download.php" class="btn btn-primary">
+                        <i class="fas fa-file-download"></i> Report Card
+                    </a>
                 </ul>
                 <div class="logout-container">
                     <a href="logout.php" class="btn btn-danger logout-btn">

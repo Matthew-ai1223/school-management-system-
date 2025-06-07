@@ -306,6 +306,7 @@ $pageTitle = "Login - ACE COLLEGE";
                             </button>
                         </div>
                     </form>
+                    <a href="../../index.php" class="btn btn-secondary w-100" style="margin-top: 10px;">Home Page</a>
                 </div>
                 
                 <!-- CBT Login Form -->

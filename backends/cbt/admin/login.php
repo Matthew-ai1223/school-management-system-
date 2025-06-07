@@ -108,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-sign-in-alt me-2"></i>Login
                 </button>
-                <a href="../../index.php" class="btn btn-light">
+                <a href="../../../index.php" class="btn btn-light">
                     <i class="fas fa-home me-2"></i>Back to Home
                 </a>
             </div>

@@ -249,9 +249,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 <i class='bx bxs-report'></i>
                 <span>Reports</span>
             </a>
-            <a class="nav-link <?php echo $current_page === 'admins.php' ? 'active' : ''; ?>" href="admins.php">
+            <a class="nav-link <?php echo $current_page === 'admins.php' ? 'active' : ''; ?>" href="../../report_card/view_report.php">
                 <i class='bx bxs-user'></i>
-                <span>Admins</span>
+                <span>Student Report Card</span>
             </a>
             <a class="nav-link text-danger" href="logout.php">
                 <i class='bx bxs-log-out'></i>

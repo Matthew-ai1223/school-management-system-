@@ -287,8 +287,8 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-white" href="QR/qr_code.php">
-                    <i class='bx bx-laptop'></i> QR Code Generator
+                <a class="nav-link text-white" href="print/index.php">
+                    <i class='bx bx-laptop'></i> Print Student Receipt
                 </a>
             </li>
             <li class="nav-item">

@@ -380,11 +380,11 @@ include '../admin/include/header.php';
                                         <i class="fas fa-poll mr-2"></i> View Exam Results
                                     </a>
                                 </div>
-                                <!-- <div class="col-md-6 mb-3">
-                                    <a href="activate_results.php" class="btn btn-block btn-success elevation-1">
-                                        <i class="fas fa-check-circle mr-2"></i> Activate Exam Results
+                                 <div class="col-md-6 mb-3">
+                                    <a href="../report_card/view_report.php" class="btn btn-block btn-success elevation-1">
+                                        <i class="fas fa-check-circle mr-2"></i> Print Student Receipt Card
                                     </a>
-                                </div> -->
+                                </div> 
                             </div>
                         </div>
                     </div>

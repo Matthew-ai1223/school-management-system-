@@ -307,6 +307,7 @@ if (isset($_GET['reference'])) {
                                 <i class="fas fa-search"></i> Search Student
                             </button>
                         </form>
+                        <a href="../student/registration/student_dashboard.php">Back to Student Dashboard</a>
                     </div>
                 </div>
 

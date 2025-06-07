@@ -14,8 +14,8 @@
 	<!-- Open Graph Meta Tags -->
 	<meta property="og:title" content="ACE College | Leading Secondary School in Ibadan">
 	<meta property="og:description" content="ACE College Ibadan offers world-class secondary education with a focus on academic excellence, character development, and leadership skills.">
-	<meta property="og:image" content="https://www.acecollege.com/images/logo.png">
-	<meta property="og:url" content="https://www.acecollege.com">
+	<meta property="og:image" content="https://www.acecollege.ng/images/logo.png">
+	<meta property="og:url" content="https://www.acecollege.ng">
 	<meta property="og:type" content="website">
 	<meta property="og:site_name" content="ACE College">
 	<meta property="og:locale" content="en_NG">
@@ -24,7 +24,7 @@
 	<meta name="twitter:card" content="summary_large_image">
 	<meta name="twitter:title" content="ACE College | Leading Secondary School in Ibadan">
 	<meta name="twitter:description" content="ACE College Ibadan offers world-class secondary education with a focus on academic excellence, character development, and leadership skills.">
-	<meta name="twitter:image" content="https://www.acecollege.com/images/logo.png">
+	<meta name="twitter:image" content="https://www.acecollege.ng/images/logo.png">
 	<meta name="twitter:site" content="@ace_model_college">
 
 	<!-- Structured Data -->
@@ -34,8 +34,8 @@
 	  "@type": "EducationalOrganization",
 	  "name": "ACE College",
 	  "alternateName": "Academy Center for Excellence",
-	  "url": "https://www.acecollege.com",
-	  "logo": "https://www.acecollege.com/images/logo.png",
+	  "url": "https://www.acecollege.ng",
+	  "logo": "https://www.acecollege.ng/images/logo.png",
 	  "sameAs": [
 	    "https://www.facebook.com/profile.php?id=100083036906992",
 	    "https://www.instagram.com/ace_model_college/",
@@ -84,7 +84,7 @@
 	    "@type": "ListItem",
 	    "position": 1,
 	    "name": "Home",
-	    "item": "https://www.acecollege.com"
+	    "item": "https://www.acecollege.ng"
 	  }]
 	}
 	</script>
@@ -1368,14 +1368,14 @@
 	<meta name="revisit-after" content="7 days">
 	<meta name="distribution" content="global">
 	<meta name="rating" content="general">
-	<link rel="canonical" href="https://www.acecollege.com/">
+	<link rel="canonical" href="https://www.acecollege.ng/">
 
 	<!-- Open Graph Meta Tags -->
 	<meta property="og:type" content="website">
 	<meta property="og:title" content="ACE College | Best Secondary School in Ibadan">
 	<meta property="og:description" content="ACE College is a leading secondary school in Ibadan, offering quality education and a nurturing environment for students to excel academically and personally.">
 	<meta property="og:image" content="images/logo.png">
-	<meta property="og:url" content="https://www.acecollege.com/">
+	<meta property="og:url" content="https://www.acecollege.ng/">
 	<meta property="og:site_name" content="ACE College">
 
 	<!-- Twitter Card Meta Tags -->
@@ -1392,8 +1392,8 @@
 	  "@type": "EducationalOrganization",
 	  "name": "ACE College",
 	  "alternateName": "Academy Center for Excellence",
-	  "url": "https://www.acecollege.com/",
-	  "logo": "https://www.acecollege.com/images/logo.png",
+	  "url": "https://www.acecollege.ng/",
+	  "logo": "https://www.acecollege.ng/images/logo.png",
 	  "description": "ACE College is a leading secondary school in Ibadan, Nigeria, offering quality education and a nurturing environment for students to excel academically and personally.",
 	  "address": {
 	    "@type": "PostalAddress",
@@ -1427,7 +1427,7 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-xs-12 text-right">
-						<p class="site">www.acecollege.com</p>
+						<p class="site">www.acecollege.ng</p>
 						<p class="num">Call: +234 803 465 0368</p>
 						<ul class="fh5co-social">
 							<li><a href="https://www.facebook.com/profile.php?id=100083036906992"><i class="icon-facebook2"></i></a></li>
@@ -1457,6 +1457,7 @@
 							<li class="btn-cta"><a href="backends\@class_teacher\login.php"><span>Class Teacher Login</span></a></li>
 							<li class="btn-cta"><a href="backends\lesson\student\login.php"><span>Tutorial Student Login</span></a></li>
 							<li class="btn-cta"><a href="backends\admin\login.php"><span>Admin Login</span></a></li>
+							<li class="btn-cta"><a href="backends/school_paymente/payment_interface.php" class="btn btn-primary btn-outline">Go to Payment Portal</a></li>
 						</ul>
 					</div>
 				</div>
@@ -1594,7 +1595,9 @@
 					</div>
 				</div>
 			</div>
+			<a href="apply.php" class="btn btn-primary" style="margin-top: 20px; display: block; text-align: center;">Apply Now</a>
 		</div>
+		
 	</div>
 
 	<div id="fh5co-counter" class="fh5co-counters" style="background-image: url(images/img_bg_4.png);" data-stellar-background-ratio="0.5">
@@ -2061,7 +2064,7 @@
 				<div class="col-md-6 col-sm-6 animate-box">
 					<div class="feature-center">
 						<span class="icon">
-							<i class="icon-clock"></i>
+							<i class="icon-computer"></i>
 						</span>
 						<div class="desc">
 							<h3>Real Exam Experience</h3>
@@ -2156,6 +2159,9 @@
 						<a href="https://www.youtube.com/@ace_model_college" target="_blank" class="social-icon-link" style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); margin-right: 10px; color: #FF0000; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
 							<i class="icon-youtube" style="font-size: 18px;"></i>
 						</a>
+						<a href="mailto:support@acecollege.ng" style="display: inline-flex; align-items: center; color: rgba(255,255,255,0.8); margin-left: 5px;">
+							<i class="icon-mail" style="color:#d3ee06; margin-right: 8px;"></i> support@acecollege.ng
+						</a> <br>
 						<a href="mailto:info@acecollege.com" style="display: inline-flex; align-items: center; color: rgba(255,255,255,0.8); margin-left: 5px;">
 							<i class="icon-mail" style="color:#d3ee06; margin-right: 8px;"></i> info@acecollege.com
 						</a>
@@ -3045,6 +3051,31 @@
 	    }
 	}
 	</style>
+
+	<!-- Payment Section -->
+	<!-- <div id="fh5co-payment" class="fh5co-bg-section">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-8 col-md-offset-2 text-center fh5co-heading animate-box">
+					<h2>School Payment Portal</h2>
+					<p>Access our secure payment portal to manage your school fees and other payments.</p>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4 col-md-offset-4 text-center animate-box">
+					<div class="services">
+						<div class="icon">
+							<i class="fas fa-money-bill-wave"></i>
+						</div>
+						<h3>Make Payment</h3>
+						<p>Pay your school fees and other charges securely through our payment portal.</p>
+						<a href="backends/school_paymente/payment_interface.php" class="btn btn-primary btn-outline">Go to Payment Portal</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div> -->
+	<!-- End Payment Section -->
 	</body>
 </html>
 

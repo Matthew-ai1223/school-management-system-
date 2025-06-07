@@ -203,10 +203,10 @@ if (isset($_GET['export'])) {
         // Add data rows
         foreach ($reports as $row) {
             $html .= '<tr>
-                        <td>' . htmlspecialchars($row['student_name']) . '</td>
-                        <td>' . htmlspecialchars($row['class']) . '</td>
-                        <td>' . htmlspecialchars($row['application_type']) . '</td>
-                        <td>' . htmlspecialchars($row['exam_title']) . '</td>
+                        <td>' . htmlspecialchars($row['student_name'] ?? '') . '</td>
+                        <td>' . htmlspecialchars($row['class'] ?? '') . '</td>
+                        <td>' . htmlspecialchars($row['application_type'] ?? '') . '</td>
+                        <td>' . htmlspecialchars($row['exam_title'] ?? '') . '</td>
                         <td>' . $row['percentage'] . '%</td>
                         <td>' . $row['status'] . '</td>
                         <td>' . date('M d, Y H:i', strtotime($row['start_time'])) . '</td>
@@ -239,12 +239,12 @@ if (isset($_GET['export'])) {
         // Output data rows
         foreach ($reports as $row) {
             fputcsv($output, [
-                $row['student_name'],
-                $row['class'],
-                $row['application_type'],
-                $row['exam_title'],
+                $row['student_name'] ?? '',
+                $row['class'] ?? '',
+                $row['application_type'] ?? '',
+                $row['exam_title'] ?? '',
                 $row['percentage'] . '%',
-                $row['status'],
+                $row['status'] ?? '',
                 date('M d, Y H:i', strtotime($row['start_time']))
             ]);
         }
@@ -360,19 +360,19 @@ if (isset($_GET['export'])) {
                                     <div class="col-md-3">
                                         <div class="text-center p-3">
                                             <h6 class="text-muted mb-1">Lowest Score</h6>
-                                            <h2 class="mb-0 text-danger"><?php echo number_format($stats['lowest_score'], 1); ?>%</h2>
+                                            <h2 class="mb-0 text-danger"><?php echo number_format($stats['lowest_score'] ?? 0, 1); ?>%</h2>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="text-center p-3">
                                             <h6 class="text-muted mb-1">Average Score</h6>
-                                            <h2 class="mb-0 text-primary"><?php echo number_format($stats['average_score'], 1); ?>%</h2>
+                                            <h2 class="mb-0 text-primary"><?php echo number_format($stats['average_score'] ?? 0, 1); ?>%</h2>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="text-center p-3">
                                             <h6 class="text-muted mb-1">Highest Score</h6>
-                                            <h2 class="mb-0 text-success"><?php echo number_format($stats['highest_score'], 1); ?>%</h2>
+                                            <h2 class="mb-0 text-success"><?php echo number_format($stats['highest_score'] ?? 0, 1); ?>%</h2>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
