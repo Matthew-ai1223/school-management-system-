@@ -249,6 +249,26 @@ function addDebugSection() {
     }
 }
 
+// Helper function to validate image path
+function validateImagePath($path) {
+    // Convert relative path to absolute for validation
+    $absolute_path = '';
+    if (strpos($path, '../../') === 0) {
+        $absolute_path = __DIR__ . '/' . $path;
+    } elseif (strpos($path, '../') === 0) {
+        $absolute_path = __DIR__ . '/' . $path;
+    } else {
+        $absolute_path = $path;
+    }
+    
+    return [
+        'exists' => file_exists($absolute_path),
+        'readable' => is_readable($absolute_path),
+        'size' => file_exists($absolute_path) ? filesize($absolute_path) : 0,
+        'absolute_path' => $absolute_path
+    ];
+}
+
 // Process form field definitions and match them with student data or find them separately
 foreach ($fields as $field) {
     $db_field_name = str_replace(' ', '_', strtolower($field['field_label']));
@@ -682,28 +702,93 @@ foreach ($class_columns as $column) {
                                 
                                 // Only try to find a profile image if the student exists
                                 if (!empty($student['id'])) {
-                                    // First try to find the sanitized passport image
+                                    // First try to find the sanitized passport image in uploads/student_passports/
                                     if (!empty($student['registration_number'])) {
                                         $safe_registration = str_replace('/', '_', $student['registration_number']);
                                         
-                                        // Direct path to the file that we confirmed exists
-                                        $passport_file = $safe_registration . '.jpg';
-                                        $passport_path = __DIR__ . '/../../uploads/student_passports/' . $passport_file;
+                                        // Try multiple file extensions
+                                        $possible_extensions = ['.jpg', '.jpeg', '.png', '.gif'];
+                                        $profile_image_found = false;
                                         
-                                        $debug_paths[] = "Direct path: " . $passport_path . " - Exists: " . (file_exists($passport_path) ? 'Yes' : 'No');
+                                        foreach ($possible_extensions as $ext) {
+                                            $passport_file = $safe_registration . $ext;
+                                            
+                                            // Check absolute path for file existence
+                                            $absolute_path = __DIR__ . '/../../uploads/student_passports/' . $passport_file;
+                                            
+                                            if (file_exists($absolute_path)) {
+                                                // Use the correct relative URL path for web access
+                                                $profile_image = '../../uploads/student_passports/' . $passport_file;
+                                                $profile_image_found = true;
+                                                $debug_paths[] = "Found passport image: " . $passport_file;
+                                                break;
+                                            }
+                                        }
                                         
-                                        if (file_exists($passport_path)) {
-                                            // Use the relative URL for web access - this is key
-                                            $profile_image = '../uploads/student_passports/' . $passport_file;
-                                            $debug_paths[] = "Using image path: " . $profile_image;
+                                        // If not found with registration number, try with student ID
+                                        if (!$profile_image_found) {
+                                            foreach ($possible_extensions as $ext) {
+                                                $passport_file = $student['id'] . $ext;
+                                                $absolute_path = __DIR__ . '/../../uploads/student_passports/' . $passport_file;
+                                                
+                                                if (file_exists($absolute_path)) {
+                                                    $profile_image = '../../uploads/student_passports/' . $passport_file;
+                                                    $profile_image_found = true;
+                                                    $debug_paths[] = "Found passport image with ID: " . $passport_file;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        
+                                        // Final fallback: scan the directory for any image that might match
+                                        if (!$profile_image_found && isset($_GET['debug'])) {
+                                            $passport_dir = __DIR__ . '/../../uploads/student_passports/';
+                                            if (is_dir($passport_dir)) {
+                                                $files = scandir($passport_dir);
+                                                foreach ($files as $file) {
+                                                    if ($file !== '.' && $file !== '..' && in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif'])) {
+                                                        // Check if filename contains registration number or student ID
+                                                        if (strpos($file, $safe_registration) !== false || strpos($file, $student['id']) !== false) {
+                                                            $profile_image = '../../uploads/student_passports/' . $file;
+                                                            $profile_image_found = true;
+                                                            $debug_paths[] = "Found matching image through directory scan: " . $file;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                // If still not found, list all available files for debugging
+                                                if (!$profile_image_found) {
+                                                    $debug_paths[] = "Available files in uploads/student_passports/: " . implode(', ', array_filter($files, function($f) { 
+                                                        return $f !== '.' && $f !== '..' && in_array(strtolower(pathinfo($f, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif']); 
+                                                    }));
+                                                }
+                                            } else {
+                                                $debug_paths[] = "Directory uploads/student_passports/ does not exist";
+                                            }
+                                        }
+                                        
+                                        // Add validation info to debug paths
+                                        if ($profile_image_found && isset($_GET['debug'])) {
+                                            $validation = validateImagePath($profile_image);
+                                            $debug_paths[] = "Image validation - Exists: " . ($validation['exists'] ? 'Yes' : 'No') . 
+                                                            ", Readable: " . ($validation['readable'] ? 'Yes' : 'No') . 
+                                                            ", Size: " . $validation['size'] . " bytes";
                                         }
                                     }
                                     
-                                    // If passport not found, try other image sources
+                                    // If passport not found in uploads/student_passports/, try other image sources
                                     if ($profile_image == $default_image_path) {
+                                        // Try database file_path field
                                         if (!empty($student['file_path'])) {
-                                            $profile_image = str_replace('../../', $base_url . '/backends/', $student['file_path']);
+                                            // Check if it's already a full path or needs to be constructed
+                                            if (strpos($student['file_path'], 'uploads/') === 0) {
+                                                $profile_image = '../../' . $student['file_path'];
+                                            } else {
+                                                $profile_image = str_replace('../../', $base_url . '/backends/', $student['file_path']);
+                                            }
                                         } 
+                                        // Try other image fields from database
                                         elseif (!empty($student['file'])) {
                                             $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['file'];
                                         }
@@ -725,6 +810,7 @@ foreach ($class_columns as $column) {
                                 if (!empty($profile_image)): 
                                 ?>
                                     <!-- Debug image path -->
+                                    <?php if (isset($_GET['debug'])): ?>
                                     <div class="small text-muted mb-2">Image path: <?php echo $profile_image; ?></div>
                                     <div class="small text-muted mb-2">
                                         <?php 
@@ -745,6 +831,7 @@ foreach ($class_columns as $column) {
                                         Readable: <?php echo is_readable($filesystem_path) ? 'Yes' : (is_readable($direct_path) ? 'Yes (direct)' : 'No'); ?><br>
                                         File size: <?php echo file_exists($filesystem_path) ? filesize($filesystem_path) . ' bytes' : (file_exists($direct_path) ? filesize($direct_path) . ' bytes' : 'N/A'); ?>
                                     </div>
+                                    <?php endif; ?>
                                     
                                     <img id="student-profile-image"
                                          src="<?php echo $profile_image; ?>" 

@@ -353,27 +353,74 @@ if ($result && $result->num_rows > 0) {
                                                     // Simplified image source determination
                                                     $profile_image = $default_image_path;
                                                     
-                                                    // Only try to find a profile image if the student ID exists
-                                                    // if (!empty($student['id'])) {
-                                                    //     if (!empty($student['file_path'])) {
-                                                    //         $profile_image = str_replace('../../', $base_url . '/backends/', $student['file_path']);
-                                                    //     } 
-                                                    //     elseif (!empty($student['file'])) {
-                                                    //         $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['file'];
-                                                    //     }
-                                                    //     elseif (!empty($student['passport'])) {
-                                                    //         $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['passport'];
-                                                    //     }
-                                                    //     elseif (!empty($student['profile_picture'])) {
-                                                    //         $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['profile_picture'];
-                                                    //     }
-                                                    //     elseif (!empty($student['photo'])) {
-                                                    //         $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['photo'];
-                                                    //     }
-                                                    //     elseif (!empty($student['student_photo'])) {
-                                                    //         $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['student_photo'];
-                                                    //     }
-                                                    // }
+                                                    // Only try to find a profile image if the student exists
+                                                    if (!empty($student['id'])) {
+                                                        // First try to find the sanitized passport image in uploads/student_passports/
+                                                        if (!empty($student['registration_number'])) {
+                                                            $safe_registration = str_replace('/', '_', $student['registration_number']);
+                                                            
+                                                            // Try multiple file extensions
+                                                            $possible_extensions = ['.jpg', '.jpeg', '.png', '.gif'];
+                                                            $profile_image_found = false;
+                                                            
+                                                            foreach ($possible_extensions as $ext) {
+                                                                $passport_file = $safe_registration . $ext;
+                                                                
+                                                                // Check absolute path for file existence
+                                                                $absolute_path = __DIR__ . '/../../uploads/student_passports/' . $passport_file;
+                                                                
+                                                                if (file_exists($absolute_path)) {
+                                                                    // Use the correct relative URL path for web access
+                                                                    $profile_image = '../../uploads/student_passports/' . $passport_file;
+                                                                    $profile_image_found = true;
+                                                                    break;
+                                                                }
+                                                            }
+                                                            
+                                                            // If not found with registration number, try with student ID
+                                                            if (!$profile_image_found) {
+                                                                foreach ($possible_extensions as $ext) {
+                                                                    $passport_file = $student['id'] . $ext;
+                                                                    $absolute_path = __DIR__ . '/../../uploads/student_passports/' . $passport_file;
+                                                                    
+                                                                    if (file_exists($absolute_path)) {
+                                                                        $profile_image = '../../uploads/student_passports/' . $passport_file;
+                                                                        $profile_image_found = true;
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                        
+                                                        // If passport not found in uploads/student_passports/, try other image sources
+                                                        if ($profile_image == $default_image_path) {
+                                                            // Try database file_path field
+                                                            if (!empty($student['file_path'])) {
+                                                                // Check if it's already a full path or needs to be constructed
+                                                                if (strpos($student['file_path'], 'uploads/') === 0) {
+                                                                    $profile_image = '../../' . $student['file_path'];
+                                                                } else {
+                                                                    $profile_image = str_replace('../../', $base_url . '/backends/', $student['file_path']);
+                                                                }
+                                                            } 
+                                                            // Try other image fields from database
+                                                            elseif (!empty($student['file'])) {
+                                                                $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['file'];
+                                                            }
+                                                            elseif (!empty($student['passport'])) {
+                                                                $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['passport'];
+                                                            }
+                                                            elseif (!empty($student['profile_picture'])) {
+                                                                $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['profile_picture'];
+                                                            }
+                                                            elseif (!empty($student['photo'])) {
+                                                                $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['photo'];
+                                                            }
+                                                            elseif (!empty($student['student_photo'])) {
+                                                                $profile_image = $base_url . '/backends/student/uploads/student_files/' . $student['student_photo'];
+                                                            }
+                                                        }
+                                                    }
                                                     
                                                     // Try alternative paths if the main path doesn't work
                                                     $alternative_paths = [
