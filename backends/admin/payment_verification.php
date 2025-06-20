@@ -18,8 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $amount = floatval($_POST['amount'] ?? 0);
         $email = trim($_POST['email'] ?? '');
         $phone = trim($_POST['phone'] ?? '');
+        $full_name = trim($_POST['full_name'] ?? '');
         
-        if (empty($reference) || $amount <= 0 || empty($email)) {
+        if (empty($reference) || $amount <= 0 || empty($email) || empty($full_name)) {
             throw new Exception('Please fill in all required fields');
         }
         
@@ -32,10 +33,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Insert payment record
-        $query = "INSERT INTO application_payments (reference, amount, email, phone, status, payment_method, payment_date) 
-                 VALUES (?, ?, ?, ?, 'completed', 'manual', NOW())";
+        $query = "INSERT INTO application_payments (reference, amount, email, phone, full_name, status, payment_method, payment_date) 
+                 VALUES (?, ?, ?, ?, ?, 'completed', 'manual', NOW())";
         $stmt = $mysqli->prepare($query);
-        $stmt->bind_param('sdss', $reference, $amount, $email, $phone);
+        $stmt->bind_param('sdsss', $reference, $amount, $email, $phone, $full_name);
         
         if ($stmt->execute()) {
             $response['success'] = true;
@@ -98,6 +99,7 @@ $payments = $mysqli->query($query);
                                     <tr>
                                         <th>Reference</th>
                                         <th>Amount</th>
+                                        <th>Full Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>Status</th>
@@ -111,6 +113,7 @@ $payments = $mysqli->query($query);
                                             <tr>
                                                 <td><?php echo htmlspecialchars($payment['reference']); ?></td>
                                                 <td>₦<?php echo number_format($payment['amount'], 2); ?></td>
+                                                <td><?php echo htmlspecialchars($payment['full_name']); ?></td>
                                                 <td><?php echo htmlspecialchars($payment['email']); ?></td>
                                                 <td><?php echo htmlspecialchars($payment['phone']); ?></td>
                                                 <td>
@@ -124,7 +127,7 @@ $payments = $mysqli->query($query);
                                         <?php endwhile; ?>
                                     <?php else: ?>
                                         <tr>
-                                            <td colspan="7" class="text-center">No payment records found</td>
+                                            <td colspan="8" class="text-center">No payment records found</td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
@@ -153,6 +156,10 @@ $payments = $mysqli->query($query);
                         <div class="mb-3">
                             <label class="form-label">Amount (₦) *</label>
                             <input type="number" name="amount" class="form-control" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" name="full_name" class="form-control" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Email *</label>

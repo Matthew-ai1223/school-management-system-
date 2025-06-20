@@ -1457,7 +1457,7 @@
 							<li class="btn-cta"><a href="backends\@class_teacher\login.php"><span>Class Teacher Login</span></a></li>
 							<li class="btn-cta"><a href="backends\lesson\student\login.php"><span>Tutorial Student Login</span></a></li>
 							<li class="btn-cta"><a href="backends\admin\login.php"><span>Admin Login</span></a></li>
-							<li class="btn-cta"><a href="backends/school_paymente/payment_interface.php" class="btn btn-primary btn-outline">Go to Payment Portal</a></li>
+							<li class="btn-cta"><a href="backends/school_paymente/payment_interface.php"><span>Payments</span></a></li>
 						</ul>
 					</div>
 				</div>
@@ -2127,6 +2127,7 @@
 						<li style="margin-bottom: 8px;"><a href="free_CBT/cbt.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Take CBT Test</a></li>
 						<li style="margin-bottom: 8px;"><a href="about.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>About</a></li>
 						<li style="margin-bottom: 8px;"><a href="contact.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Contact</a></li>
+						<li style="margin-bottom: 8px;"><a href="backends/school_paymente/payment_interface.php" style="color: rgba(255,255,255,0.8); transition: color 0.3s ease;"><i class="icon-arrow-right2" style="margin-right: 8px; color: #d3ee06; font-size: 12px;"></i>Payments</a></li>
 					</ul>
 				</div>
 

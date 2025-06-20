@@ -29,4 +29,4 @@ ini_set('display_errors', 1);
 date_default_timezone_set('Africa/Lagos');
 
 // FPDF Configuration
-define('FPDF_FONTPATH', __DIR__ . '/fpdf_temp/font/');
+define('FPDF_FONTPATH', __DIR__ . '/fpdf_temp/font/');?>

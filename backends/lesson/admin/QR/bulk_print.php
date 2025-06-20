@@ -8,6 +8,13 @@ function getFilteredStudents($conn, $filters = []) {
     $params = [];
     $types = '';
     
+    // Handle name filter
+    if (!empty($filters['name'])) {
+        $where_clauses[] = "fullname LIKE ?";
+        $params[] = '%' . $filters['name'] . '%';
+        $types .= 's';
+    }
+    
     // Handle department filter
     if (!empty($filters['department'])) {
         $where_clauses[] = "department = ?";
@@ -55,6 +62,7 @@ function getFilteredStudents($conn, $filters = []) {
                  FROM morning_students 
                  WHERE $where_clause";
     } else {
+        // For both tables, we need to duplicate the parameters since we're using UNION ALL
         $query = "SELECT $columns, 'morning_students' as source_table 
                  FROM morning_students 
                  WHERE $where_clause
@@ -62,10 +70,22 @@ function getFilteredStudents($conn, $filters = []) {
                  SELECT $columns, 'afternoon_students' as source_table 
                  FROM afternoon_students 
                  WHERE $where_clause";
+        
+        // Duplicate parameters for UNION ALL query
+        if (!empty($params)) {
+            $params = array_merge($params, $params);
+            $types .= $types;
+        }
     }
     
     $stmt = mysqli_prepare($conn, $query);
     if (!empty($params)) {
+        // Debug logging
+        error_log("SQL Query: " . $query);
+        error_log("Types: " . $types);
+        error_log("Params: " . print_r($params, true));
+        
+        // Use array unpacking for dynamic parameter binding
         mysqli_stmt_bind_param($stmt, $types, ...$params);
     }
     mysqli_stmt_execute($stmt);
@@ -98,6 +118,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 
 // Get filters from URL
 $filters = [
+    'name' => $_GET['name'] ?? '',
     'department' => $_GET['department'] ?? '',
     'status' => $_GET['status'] ?? '',
     'payment_type' => $_GET['payment_type'] ?? '',
@@ -275,6 +296,14 @@ $students = getFilteredStudents($conn, $filters);
         <form method="get" id="filterForm">
             <div class="filters">
                 <div class="filter-group">
+                    <label for="name">Search by Name:</label>
+                    <input type="text" name="name" id="name" 
+                           value="<?php echo htmlspecialchars($filters['name']); ?>"
+                           placeholder="Enter student name"
+                           style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+                
+                <div class="filter-group">
                     <label for="department">Department:</label>
                     <select name="department" id="department">
                         <option value="">All Departments</option>
@@ -323,7 +352,7 @@ $students = getFilteredStudents($conn, $filters);
             <div class="buttons">
                 <button type="submit" class="btn print-btn">Apply Filters</button>
                 <a href="bulk_print.php" class="btn reset-btn">Reset Filters</a>
-                <a href="index.php" class="btn back-btn">Back to List</a>
+                <a href="print.php" class="btn back-btn">Print All</a>
                 <button type="button" onclick="window.print()" class="btn print-btn">Print Selected</button>
             </div>
         </form>
