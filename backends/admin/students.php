@@ -111,15 +111,14 @@ if (!empty($status)) {
 }
 
 if (!empty($search)) {
-    // Extend search to include more fields like email, phone
-    $query .= " AND (s.first_name LIKE ? OR s.last_name LIKE ? OR s.registration_number LIKE ? OR s.email LIKE ? OR s.phone LIKE ?)";
+    // Extend search to include more fields like email
+    $query .= " AND (s.first_name LIKE ? OR s.last_name LIKE ? OR s.registration_number LIKE ? OR s.email LIKE ?)";
     $search_param = "%$search%";
     $params[] = $search_param;
     $params[] = $search_param;
     $params[] = $search_param;
     $params[] = $search_param;
-    $params[] = $search_param;
-    $types .= "sssss";
+    $types .= "ssss";
 }
 
 // Add ordering and limit the results to improve performance
@@ -258,13 +257,16 @@ if ($result && $result->num_rows > 0) {
                                     <option value="rejected" <?php echo $status === 'rejected' ? 'selected' : ''; ?>>Rejected</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">Search</label>
-                                <input type="text" name="search" class="form-control" placeholder="Search by name, email, phone or registration number" value="<?php echo htmlspecialchars($search); ?>">
+                                <input type="text" name="search" class="form-control" placeholder="Search by name, email, or reg number" value="<?php echo htmlspecialchars($search); ?>">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label class="form-label">&nbsp;</label>
-                                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                                <div class="d-flex">
+                                    <button type="submit" class="btn btn-primary w-100 me-2">Filter</button>
+                                    <a href="students.php" class="btn btn-outline-secondary w-100">Clear</a>
+                                </div>
                             </div>
                         </form>
                     </div>

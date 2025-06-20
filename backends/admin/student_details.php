@@ -808,6 +808,11 @@ foreach ($class_columns as $column) {
                                     </div>
                                     
                                     <div class="col-md-4 mb-3">
+                                        <div class="field-label">Class/Level</div>
+                                        <div><?php echo !empty($student_class) ? htmlspecialchars($student_class) : 'Not assigned'; ?></div>
+                                    </div>
+                                    
+                                    <div class="col-md-4 mb-3">
                                         <div class="field-label">Payment Reference</div>
                                         <div><?php echo htmlspecialchars($student['payment_reference'] ?? 'N/A'); ?></div>
                                     </div>
@@ -851,11 +856,6 @@ foreach ($class_columns as $column) {
                                     <div class="col-md-4 mb-3">
                                         <div class="field-label">Email</div>
                                         <div><?php echo htmlspecialchars($student['email'] ?? 'N/A'); ?></div>
-                                    </div>
-                                    
-                                    <div class="col-md-4 mb-3">
-                                        <div class="field-label">Class/Level</div>
-                                        <div><?php echo !empty($student_class) ? htmlspecialchars($student_class) : 'Not assigned'; ?></div>
                                     </div>
                                     
                                     <div class="col-md-8 mb-3">
