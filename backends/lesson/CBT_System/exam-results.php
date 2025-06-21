@@ -82,60 +82,15 @@ if ($passed) {
             <div class="col-md-10">
                 <div class="card shadow">
                     <div class="card-header">
-                        <h3 class="text-center">Exam Results</h3>
+                        <h3 class="text-center">Submission Successful</h3>
                     </div>
                     <div class="card-body">
-                        <div class="text-center mb-4">
-                            <h4><?php echo htmlspecialchars($attempt['exam_title']); ?></h4>
-                            <div class="display-4 my-3">
-                                Score: <?php echo $percentage; ?>%
-                            </div>
-                            <div class="alert <?php echo $passed ? 'alert-success' : 'alert-danger'; ?>">
-                                <?php echo $passed ? 'Congratulations! You passed!' : 'Sorry, you did not pass.'; ?>
-                            </div>
-                            <?php if ($passed): ?>
-                            <a href="download-certificate.php?attempt=<?php echo $attempt_id; ?>" 
-                               class="btn btn-success">
-                                Download Certificate
-                            </a>
-                            <?php endif; ?>
+                        <div class="alert alert-success text-center" role="alert">
+                            <h4 class="alert-heading">Well done!</h4>
+                            <p>Your CBT test has been submitted successfully.</p>
+                            <hr>
+                            <p class="mb-0">You will be notified when your results are ready. Kindly check back later.</p>
                         </div>
-
-                        <h5>Detailed Results:</h5>
-                        <?php foreach ($responses as $index => $response): ?>
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <h6>Question <?php echo $index + 1; ?></h6>
-                                <p><?php echo htmlspecialchars($response['question_text']); ?></p>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <p class="mb-1">Your Answer: 
-                                            <span class="<?php echo $response['selected_answer'] === $response['correct_answer'] 
-                                                ? 'text-success' : 'text-danger'; ?>">
-                                                <?php echo $response['selected_answer']; ?>
-                                            </span>
-                                        </p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <p class="mb-1">Correct Answer: 
-                                            <span class="text-success">
-                                                <?php echo $response['correct_answer']; ?>
-                                            </span>
-                                        </p>
-                                    </div>
-                                </div>
-                                
-                                <?php if ($response['selected_answer'] !== $response['correct_answer']): ?>
-                                <div class="alert alert-info mt-2">
-                                    <strong>Explanation:</strong> 
-                                    <?php echo htmlspecialchars($response['explanation']); ?>
-                                </div>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-                        <?php endforeach; ?>
-
                         <div class="text-center mt-4">
                             <a href="dashboard.php" class="btn btn-primary">Back to Dashboard</a>
                         </div>

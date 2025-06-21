@@ -1,9 +1,10 @@
 <?php
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'ace_school_system');
+define('DB_USER', 'aozukhqf_school');
+define('DB_PASS', 'acecollege081');
+define('DB_NAME', 'aozukhqf_aceschool');
+
 
 // YouTube API configuration
 define('YOUTUBE_API_KEY', 'AIzaSyAOs7lhYYROiMJyTBlTOR7pqvXVH8KhirE'); // Replace with your actual API key
@@ -18,9 +19,11 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Start session if not already started
+/*
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+*/
 
 // Database connection
 try {
@@ -30,9 +33,9 @@ try {
     }
     $conn->set_charset("utf8mb4");
 } catch (Exception $e) {
-    die("Database connection failed: " . $e->getMessage());
+    json_response(['success' => false, 'message' => "Database connection failed: " . $e->getMessage()], 500);
 }
-
+/*
 // Create necessary tables if they don't exist
 $tables = [
     "CREATE TABLE IF NOT EXISTS videos (
@@ -73,8 +76,15 @@ foreach ($tables as $sql) {
         die("Error creating table: " . $conn->error);
     }
 }
-
+*/
 // Helper functions
+function json_response($data, $status = 200) {
+    http_response_code($status);
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
+
 function sanitize_input($data) {
     global $conn;
     return $conn->real_escape_string(trim($data));
@@ -105,11 +115,3 @@ function format_file_size($bytes) {
 function is_valid_youtube_url($url) {
     return (bool) get_youtube_video_id($url);
 }
-
-function json_response($data, $status = 200) {
-    http_response_code($status);
-    header('Content-Type: application/json');
-    echo json_encode($data);
-    exit;
-}
-?> 

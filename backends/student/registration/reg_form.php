@@ -74,7 +74,7 @@ foreach ($fields as $field) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         :root {
-            --primary-color: #4361ee;
+            --primary-color:rgb(26, 43, 119);
             --secondary-color: #3f37c9;
             --accent-color: #4895ef;
             --success-color: #4cc9f0;

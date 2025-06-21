@@ -1,4 +1,5 @@
 <?php
+ob_start(); // Start output buffering
 require_once 'config.php';
 
 // Check if ID is provided
@@ -57,5 +58,4 @@ while (!feof($handle)) {
 }
 
 fclose($handle);
-exit;
-?> 
+exit; 

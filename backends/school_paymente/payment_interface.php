@@ -297,7 +297,7 @@ if (isset($_GET['reference'])) {
                         <form method="POST">
                             <div class="mb-3">
                                 <label for="registration_number" class="form-label">
-                                    <i class="fas fa-id-card"></i> Registration Number
+                                    <i class="fas fa-id-card"></i> Studebt Registration Number
                                 </label>
                                 <input type="text" class="form-control" id="registration_number" 
                                        name="registration_number" required 

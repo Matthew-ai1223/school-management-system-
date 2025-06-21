@@ -26,6 +26,7 @@ if (isset($_POST['add_teacher'])) {
     $email = $_POST['email'] ?? '';
     $phone = $_POST['phone'] ?? '';
     $qualification = $_POST['qualification'] ?? '';
+    $subjects = $_POST['subjects'] ?? '';
     $joiningDate = $_POST['joining_date'] ?? '';
     $address = $_POST['address'] ?? '';
     
@@ -117,11 +118,11 @@ if (isset($_POST['add_teacher'])) {
             $stmt->execute();
             $userId = $conn->insert_id;
             
-            // Insert teacher with passport image
-            $insertTeacher = "INSERT INTO teachers (user_id, first_name, last_name, employee_id, joining_date, qualification, phone, address, passport_image) 
-                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            // Insert teacher with passport image and subjects
+            $insertTeacher = "INSERT INTO teachers (user_id, first_name, last_name, employee_id, joining_date, qualification, subjects, phone, address, passport_image) 
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $conn->prepare($insertTeacher);
-            $stmt->bind_param("issssssss", $userId, $firstName, $lastName, $employeeId, $joiningDate, $qualification, $phone, $address, $passportImage);
+            $stmt->bind_param("isssssssss", $userId, $firstName, $lastName, $employeeId, $joiningDate, $qualification, $subjects, $phone, $address, $passportImage);
             
             if ($stmt->execute()) {
                 $conn->commit();
@@ -306,7 +307,14 @@ include 'include/header.php';
                                             <input type="text" class="form-control" id="qualification" name="qualification">
                                         </div>
                                     </div>
-                                    <div class="col-md-8">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label for="subjects" class="required-field">List Of Subject(s) Teaching</label>
+                                            <input type="text" class="form-control" id="subjects" name="subjects" placeholder="e.g. Mathematics, English, Physics" required>
+                                            <small class="text-muted">Separate multiple subjects with commas</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
                                         <div class="form-group">
                                             <label for="address">Address</label>
                                             <textarea class="form-control" id="address" name="address" rows="3"></textarea>
@@ -344,6 +352,7 @@ include 'include/header.php';
                                         <th>Email</th>
                                         <th>Phone</th>
                                         <th>Qualification</th>
+                                        <th>Subjects</th>
                                         <th>Joining Date</th>
                                         <th>Actions</th>
                                     </tr>
@@ -370,6 +379,7 @@ include 'include/header.php';
                                         <td><?php echo htmlspecialchars($teacher['email']); ?></td>
                                         <td><?php echo htmlspecialchars($teacher['phone']); ?></td>
                                         <td><?php echo htmlspecialchars($teacher['qualification']); ?></td>
+                                        <td><?php echo htmlspecialchars($teacher['subjects']); ?></td>
                                         <td><?php echo htmlspecialchars($teacher['joining_date']); ?></td>
                                         <td>
                                             <a href="edit_teacher.php?id=<?php echo $teacher['id']; ?>" class="btn btn-sm btn-info">

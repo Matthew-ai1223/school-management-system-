@@ -28,5 +28,3 @@ if (!file_exists(UPLOAD_DIR)) {
 if (!file_exists(UPLOAD_DIR . 'questions/')) {
     mkdir(UPLOAD_DIR . 'questions/', 0777, true);
 }
-?>
-  </rewritten_file>
