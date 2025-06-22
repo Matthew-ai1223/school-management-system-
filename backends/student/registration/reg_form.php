@@ -1,6 +1,7 @@
 <?php
 require_once '../../config.php';
 require_once '../../database.php';
+require_once '../../admin/include/settings.php';
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
@@ -10,6 +11,31 @@ if (session_status() === PHP_SESSION_NONE) {
 // Initialize database connection
 $db = Database::getInstance();
 $conn = $db->getConnection();
+
+// Get payment verification setting
+$settings = Settings::getInstance();
+$payment_verification_required = $settings->getSetting('payment_verification_required') == '1';
+
+// Set payment verification status
+$paymentVerified = false;
+if (!$payment_verification_required) {
+    // If payment verification is not required, consider it verified
+    $paymentVerified = true;
+    // Set a dummy session reference for consistency
+    $_SESSION['verified_payment_reference'] = 'VERIFICATION_DISABLED';
+} elseif (isset($_SESSION['verified_payment_reference']) && isset($_SESSION['payment_verified_time'])) {
+    $sessionTimeout = 7200; // 2 hours in seconds
+    if ((time() - $_SESSION['payment_verified_time']) < $sessionTimeout) {
+        $paymentVerified = true;
+    } else {
+        // Clear expired verification session
+        unset($_SESSION['verified_payment_reference']);
+        unset($_SESSION['verified_payment_email']);
+        unset($_SESSION['verified_payment_phone']);
+        unset($_SESSION['payment_verified_time']);
+        $_SESSION['error_message'] = 'Your payment verification has expired. Please verify again.';
+    }
+}
 
 // Get registration type from URL parameter (default to kiddies if not specified)
 $registrationType = isset($_GET['type']) ? $_GET['type'] : 'kiddies';
@@ -27,22 +53,6 @@ $fieldCategories = [
 
 // Base URL for assets
 $base_url = "http://" . $_SERVER['HTTP_HOST'];
-
-// Check if payment is verified and session is still valid (2 hour timeout)
-$paymentVerified = false;
-if (isset($_SESSION['verified_payment_reference']) && isset($_SESSION['payment_verified_time'])) {
-    $sessionTimeout = 7200; // 2 hours in seconds
-    if ((time() - $_SESSION['payment_verified_time']) < $sessionTimeout) {
-        $paymentVerified = true;
-    } else {
-        // Clear expired verification session
-        unset($_SESSION['verified_payment_reference']);
-        unset($_SESSION['verified_payment_email']);
-        unset($_SESSION['verified_payment_phone']);
-        unset($_SESSION['payment_verified_time']);
-        $_SESSION['error_message'] = 'Your payment verification has expired. Please verify again.';
-    }
-}
 
 // Fetch form fields for the current registration type
 $sql = "SELECT * FROM registration_form_fields WHERE is_active = 1 AND registration_type = ? ORDER BY field_category, field_order";
@@ -63,6 +73,9 @@ foreach ($fields as $field) {
     $category = $field['field_category'] ?? 'student_info'; // Default to student info if not specified
     $categorizedFields[$category][] = $field;
 }
+
+// Add this after the other initial variables
+$default_email = 'students@acecollege.ng';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -148,11 +161,11 @@ foreach ($fields as $field) {
         }
         
         #paymentVerificationForm {
-            display: <?php echo $paymentVerified ? 'none' : 'block'; ?>;
+            display: <?php echo ($payment_verification_required && !$paymentVerified) ? 'block' : 'none'; ?>;
         }
         
         #registrationForm {
-            display: <?php echo $paymentVerified ? 'block' : 'none'; ?>;
+            display: <?php echo (!$payment_verification_required || $paymentVerified) ? 'block' : 'none'; ?>;
         }
         
         .form-section {
@@ -315,7 +328,7 @@ foreach ($fields as $field) {
                                     <div class="alert alert-info">
                                         <i class="fas fa-info-circle me-2"></i>
                                         <strong>Please select your school type:</strong> 
-                                        Choose "Ace Kiddies" for primary school students or "Ace College" for secondary school students.
+                                        Click on "Ace Kiddies" for nursery and primary school students or Click on "Ace College" for college.
                                     </div>
                                 </div>
                                 <div class="btn-group btn-group-lg">
@@ -342,16 +355,18 @@ foreach ($fields as $field) {
                         <!-- Registration Progress -->
                         <div class="progress-container">
                             <div class="progress-step">
-                                <div class="step <?php echo !$paymentVerified ? 'active' : 'completed'; ?>">
-                                    <i class="<?php echo $paymentVerified ? 'fas fa-check' : '1'; ?>"></i>
+                                <div class="step <?php echo ($payment_verification_required && !$paymentVerified) ? 'active' : 'completed'; ?>">
+                                    <i class="<?php echo $paymentVerified || !$payment_verification_required ? 'fas fa-check' : '1'; ?>"></i>
                                 </div>
-                                <div class="step-connector <?php echo $paymentVerified ? 'active' : ''; ?>"></div>
-                                <div class="step <?php echo $paymentVerified ? 'active' : ''; ?>">
+                                <div class="step-connector <?php echo $paymentVerified || !$payment_verification_required ? 'active' : ''; ?>"></div>
+                                <div class="step <?php echo $paymentVerified || !$payment_verification_required ? 'active' : ''; ?>">
                                     2
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between text-center">
-                                <div class="step-label"><small class="text-muted">Payment Verification</small></div>
+                                <div class="step-label">
+                                    <small class="text-muted"><?php echo $payment_verification_required ? 'Payment Verification' : 'Registration Ready'; ?></small>
+                                </div>
                                 <div class="step-label"><small class="text-muted">Registration Form</small></div>
                             </div>
                         </div>
@@ -368,7 +383,7 @@ foreach ($fields as $field) {
                         <?php endif; ?>
 
                         <!-- Payment Verification Form -->
-                        <div id="paymentVerificationForm" class="form-section">
+                        <div id="paymentVerificationForm" style="display: <?php echo ($payment_verification_required && !$paymentVerified) ? 'block' : 'none'; ?>">
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
                                 Please enter your payment reference to proceed with registration. <br>
@@ -391,17 +406,22 @@ foreach ($fields as $field) {
                         </div>
 
                         <!-- Registration Form -->
-                        <div id="registrationForm">
-                            <?php if ($paymentVerified): ?>
+                        <div id="registrationForm" style="display: <?php echo (!$payment_verification_required || $paymentVerified) ? 'block' : 'none'; ?>">
+                            <?php if ($paymentVerified && $payment_verification_required): ?>
                                 <div class="alert alert-success mb-4">
                                     <i class="fas fa-check-circle me-2"></i>
-                                    Payment verified successfully! Reference: <strong><?php echo htmlspecialchars($_SESSION['verified_payment_reference']); ?></strong>
+                                    Payment verified successfully! Reference: <strong><?php echo htmlspecialchars($_SESSION['verified_payment_reference'] ?? ''); ?></strong>
                                 </div>
+                            <?php elseif (!$payment_verification_required): ?>
+                                <!-- <div class="alert alert-info mb-4">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Payment verification is currently disabled. You can proceed with registration.
+                                </div> -->
                             <?php endif; ?>
 
                             <form action="save_registration.php" method="POST" enctype="multipart/form-data" id="studentRegistrationForm" onsubmit="return validateForm(this, event)">
                                 <input type="hidden" name="registration_type" value="<?php echo $registrationType; ?>">
-                                <input type="hidden" name="payment_reference" value="<?php echo $paymentVerified ? $_SESSION['verified_payment_reference'] : ''; ?>">
+                                <input type="hidden" name="payment_reference" value="<?php echo $payment_verification_required ? ($_SESSION['verified_payment_reference'] ?? '') : 'VERIFICATION_DISABLED'; ?>">
                                 <!-- Add MAX_FILE_SIZE hidden field - must precede file input field -->
                                 <input type="hidden" name="MAX_FILE_SIZE" value="2097152"> <!-- 2MB in bytes -->
                                 
@@ -450,11 +470,12 @@ foreach ($fields as $field) {
                                                                 <input type="<?php echo $field['field_type']; ?>" 
                                                                        name="field_<?php echo $field['id']; ?>" 
                                                                        class="form-control"
-                                                                       placeholder="Enter <?php echo strtolower($field['field_label']); ?>"
+                                                                       placeholder="<?php echo (strtolower($field['field_label']) === 'last name') ? 'Enter surname' : 'Enter ' . strtolower($field['field_label']); ?>"
                                                                        <?php 
                                                                        // Auto-fill email and phone if they match field labels
-                                                                       if (strtolower($field['field_label']) === 'email' && isset($_SESSION['verified_payment_email'])) {
-                                                                           echo 'value="' . htmlspecialchars($_SESSION['verified_payment_email']) . '"';
+                                                                       if (strtolower($field['field_label']) === 'email') {
+                                                                           $email_value = $_SESSION['verified_payment_email'] ?? $default_email;
+                                                                           echo 'value="' . htmlspecialchars($email_value) . '"';
                                                                        } elseif (strtolower($field['field_label']) === 'phone' && isset($_SESSION['verified_payment_phone'])) {
                                                                            echo 'value="' . htmlspecialchars($_SESSION['verified_payment_phone']) . '"';
                                                                        }
@@ -568,9 +589,9 @@ foreach ($fields as $field) {
                                         </button>
                                         
                                         <!-- Test button for direct form submission -->
-                                        <button type="button" onclick="testFormSubmission()" class="btn btn-outline-secondary ms-3">
+                                        <!-- <button type="button" onclick="testFormSubmission()" class="btn btn-outline-secondary ms-3">
                                             <i class="fas fa-bug me-2"></i>Test Submit
-                                        </button>
+                                        </button> -->
                                     </div>
                                 <?php endif; ?>
                             </form>
@@ -583,6 +604,25 @@ foreach ($fields as $field) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if payment verification is required
+            const paymentVerificationRequired = <?php echo $payment_verification_required ? 'true' : 'false'; ?>;
+            const paymentVerified = <?php echo $paymentVerified ? 'true' : 'false'; ?>;
+            
+            // Get form elements
+            const paymentForm = document.getElementById('paymentVerificationForm');
+            const registrationForm = document.getElementById('registrationForm');
+            
+            // Set initial visibility
+            if (!paymentVerificationRequired || paymentVerified) {
+                if (paymentForm) paymentForm.style.display = 'none';
+                if (registrationForm) registrationForm.style.display = 'block';
+            } else {
+                if (paymentForm) paymentForm.style.display = 'block';
+                if (registrationForm) registrationForm.style.display = 'none';
+            }
+        });
+
         function verifyPayment(event) {
             event.preventDefault();
             const form = document.getElementById('verifyPaymentForm');
@@ -594,16 +634,6 @@ foreach ($fields as $field) {
             submitButton.disabled = true;
             submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Verifying...';
             
-            // Create or clear error message container
-            let errorDiv = document.getElementById('paymentErrorMessage');
-            if (!errorDiv) {
-                errorDiv = document.createElement('div');
-                errorDiv.id = 'paymentErrorMessage';
-                errorDiv.className = 'alert alert-danger mt-3';
-                form.appendChild(errorDiv);
-            }
-            errorDiv.style.display = 'none';
-            
             fetch('verify_payment.php', {
                 method: 'POST',
                 body: formData
@@ -614,7 +644,7 @@ foreach ($fields as $field) {
                     // Create success message
                     const successDiv = document.createElement('div');
                     successDiv.className = 'alert alert-success mt-3';
-                    successDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i><strong>Success!</strong> ' + data.message + '<br>Please wait while we load the registration form...';
+                    successDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>' + data.message;
                     form.appendChild(successDiv);
                     
                     // Update progress steps
@@ -624,17 +654,18 @@ foreach ($fields as $field) {
                     document.querySelector('.step-connector').classList.add('active');
                     document.querySelector('.step:last-child').classList.add('active');
                     
-                    // Hide payment form and redirect after a short delay
+                    // Hide payment form and show registration form
                     setTimeout(() => {
                         document.getElementById('paymentVerificationForm').style.display = 'none';
                         document.getElementById('registrationForm').style.display = 'block';
-                        // Reload the page to show the registration form with verified payment
                         window.location.reload();
                     }, 1500);
                 } else {
                     // Show error message
-                    errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + (data.message || 'An error occurred while verifying the payment.');
-                    errorDiv.style.display = 'block';
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'alert alert-danger mt-3';
+                    errorDiv.innerHTML = '<i class="fas fa-exclamation-circle me-2"></i>' + data.message;
+                    form.appendChild(errorDiv);
                     
                     // Reset button
                     submitButton.disabled = false;
@@ -643,8 +674,10 @@ foreach ($fields as $field) {
             })
             .catch(error => {
                 console.error('Error:', error);
-                errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>A network error occurred while verifying the payment. Please try again.';
-                errorDiv.style.display = 'block';
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger mt-3';
+                errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>An error occurred while verifying the payment.';
+                form.appendChild(errorDiv);
                 
                 // Reset button
                 submitButton.disabled = false;

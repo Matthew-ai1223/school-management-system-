@@ -2,12 +2,17 @@
 require_once '../auth.php';
 require_once '../config.php';
 require_once '../database.php';
+require_once 'include/settings.php';
 
 $auth = new Auth();
 $auth->requireRole('admin');
 
 $db = Database::getInstance();
 $mysqli = $db->getConnection();
+
+// Get payment verification status
+$settings = Settings::getInstance();
+$payment_verification_required = $settings->getSetting('payment_verification_required') == '1';
 
 // Handle form submission for manual reference code
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -68,6 +73,52 @@ $payments = $mysqli->query($query);
     <title>Payment Verification - <?php echo SCHOOL_NAME; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #2196F3;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+    </style>
 </head>
 <body>
     <div class="container-fluid">
@@ -79,10 +130,25 @@ $payments = $mysqli->query($query);
             <div class="col-md-9 col-lg-10 main-content p-4">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2>Payment Verification</h2>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
-                        <i class="bi bi-plus"></i> Add Manual Payment
-                    </button>
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="paymentVerificationToggle" 
+                                       <?php echo $payment_verification_required ? 'checked' : ''; ?>>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="ms-2" id="toggleStatus">
+                                Payment Verification is <?php echo $payment_verification_required ? 'Required' : 'Optional'; ?>
+                            </span>
+                        </div>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPaymentModal">
+                            <i class="bi bi-plus"></i> Add Manual Payment
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Status Messages -->
+                <div id="statusMessage" class="alert" style="display: none;"></div>
 
                 <?php if (isset($response) && !$response['success']): ?>
                     <div class="alert alert-danger">
@@ -181,6 +247,41 @@ $payments = $mysqli->query($query);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Add this to your existing JavaScript
+        document.getElementById('paymentVerificationToggle').addEventListener('change', function() {
+            const statusMessage = document.getElementById('statusMessage');
+            const toggleStatus = document.getElementById('toggleStatus');
+            
+            // Show loading state
+            statusMessage.className = 'alert alert-info';
+            statusMessage.style.display = 'block';
+            statusMessage.innerHTML = '<i class="bi bi-hourglass-split"></i> Updating payment verification setting...';
+            
+            fetch('ajax/toggle_payment_verification.php', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusMessage.className = 'alert alert-success';
+                    statusMessage.innerHTML = '<i class="bi bi-check-circle"></i> ' + data.message;
+                    toggleStatus.textContent = 'Payment Verification is ' + 
+                        (data.new_status === '1' ? 'Required' : 'Optional');
+                } else {
+                    throw new Error(data.message || 'Failed to update setting');
+                }
+            })
+            .catch(error => {
+                statusMessage.className = 'alert alert-danger';
+                statusMessage.innerHTML = '<i class="bi bi-exclamation-triangle"></i> ' + error.message;
+                // Revert the toggle if there was an error
+                this.checked = !this.checked;
+            });
+        });
+
         function savePayment() {
             const form = document.getElementById('addPaymentForm');
             const formData = new FormData(form);
