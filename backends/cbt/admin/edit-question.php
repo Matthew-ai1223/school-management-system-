@@ -1,9 +1,15 @@
 <?php
+// Start output buffering
+ob_start();
+
+// Start session if not already started
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
-
-session_start();
 
 $auth = new Auth();
 

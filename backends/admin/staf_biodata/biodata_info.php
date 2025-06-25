@@ -9,7 +9,6 @@ $conn = $db->getConnection();
 // Handle search and filters
 $search = isset($_GET['search']) ? $_GET['search'] : '';
 $employment_type = isset($_GET['employment_type']) ? $_GET['employment_type'] : '';
-$staff_category = isset($_GET['staff_category']) ? $_GET['staff_category'] : '';
 $sort_by = isset($_GET['sort_by']) ? $_GET['sort_by'] : 'surname';
 $sort_order = isset($_GET['sort_order']) ? $_GET['sort_order'] : 'ASC';
 
@@ -28,11 +27,6 @@ if (!empty($search)) {
 if (!empty($employment_type)) {
     $employment_type = $conn->real_escape_string($employment_type);
     $query .= " AND employment_type = '$employment_type'";
-}
-
-if (!empty($staff_category)) {
-    $staff_category = $conn->real_escape_string($staff_category);
-    $query .= " AND staff_category = '$staff_category'";
 }
 
 $query .= " ORDER BY $sort_by $sort_order";
@@ -182,23 +176,6 @@ $result = $conn->query($query);
         .sort-icon:hover {
             color: var(--accent-color);
         }
-
-        .category-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-left: 0.5rem;
-        }
-
-        .category-badge.teaching {
-            background-color: #4895ef;
-            color: white;
-        }
-
-        .category-badge.non-teaching {
-            background-color: #f72585;
-            color: white;
-        }
     </style>
 </head>
 <body>
@@ -222,13 +199,6 @@ $result = $conn->query($query);
                                 <option value="">All Employment Types</option>
                                 <option value="Full Time" <?php echo $employment_type == 'Full Time' ? 'selected' : ''; ?>>Full Time</option>
                                 <option value="Part Time" <?php echo $employment_type == 'Part Time' ? 'selected' : ''; ?>>Part Time</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <select name="staff_category" class="form-select">
-                                <option value="">All Staff Categories</option>
-                                <option value="Teaching" <?php echo $staff_category == 'Teaching' ? 'selected' : ''; ?>>Teaching Staff</option>
-                                <option value="Non-Teaching" <?php echo $staff_category == 'Non-Teaching' ? 'selected' : ''; ?>>Non-Teaching Staff</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -260,9 +230,6 @@ $result = $conn->query($query);
                                         <div class="text-center mb-3">
                                             <span class="employment-badge <?php echo strtolower(str_replace(' ', '-', $staff['employment_type'])); ?>">
                                                 <?php echo htmlspecialchars($staff['employment_type']); ?>
-                                            </span>
-                                            <span class="category-badge <?php echo strtolower(str_replace(' ', '-', $staff['staff_category'])); ?>">
-                                                <?php echo htmlspecialchars($staff['staff_category']); ?>
                                             </span>
                                         </div>
                                         <div class="d-grid">
@@ -338,6 +305,30 @@ $result = $conn->query($query);
                                                                 <p><span class="detail-label">Joining Date:</span><br>
                                                                 <?php echo date('F j, Y', strtotime($staff['joining_date'])); ?></p>
                                                             </div>
+                                                            <div class="col-md-12">
+                                                                <p>
+                                                                    <span class="detail-label">Certificate:</span><br>
+                                                                    <?php if (!empty($staff['certificate_path'])): ?>
+                                                                        <?php 
+                                                                            $file_extension = strtolower(pathinfo($staff['certificate_path'], PATHINFO_EXTENSION));
+                                                                            if (in_array($file_extension, ['jpg', 'jpeg', 'png'])): 
+                                                                        ?>
+                                                                            <img src="<?php echo $staff['certificate_path']; ?>" 
+                                                                                 alt="Certificate" 
+                                                                                 class="img-fluid mt-2 mb-2" 
+                                                                                 style="max-width: 300px;">
+                                                                        <?php else: ?>
+                                                                            <a href="<?php echo $staff['certificate_path']; ?>" 
+                                                                               class="btn btn-primary mt-2" 
+                                                                               target="_blank">
+                                                                                <i class="fas fa-file-pdf me-2"></i>View Certificate
+                                                                            </a>
+                                                                        <?php endif; ?>
+                                                                    <?php else: ?>
+                                                                        <span class="text-muted">No certificate uploaded</span>
+                                                                    <?php endif; ?>
+                                                                </p>
+                                                            </div>
                                                             <div class="col-12">
                                                                 <hr>
                                                                 <h6 class="detail-label">Next of Kin Information</h6>
@@ -345,14 +336,6 @@ $result = $conn->query($query);
                                                                 <?php echo htmlspecialchars($staff['next_of_kin_name']); ?></p>
                                                                 <p><span class="detail-label">Phone:</span><br>
                                                                 <?php echo htmlspecialchars($staff['next_of_kin_phone']); ?></p>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <p><span class="detail-label">Employment Type:</span><br>
-                                                                <?php echo htmlspecialchars($staff['employment_type']); ?></p>
-                                                            </div>
-                                                            <div class="col-md-6">
-                                                                <p><span class="detail-label">Staff Category:</span><br>
-                                                                <?php echo htmlspecialchars($staff['staff_category']); ?></p>
                                                             </div>
                                                         </div>
                                                     </div>

@@ -1,4 +1,7 @@
 <?php
+// Start output buffering
+ob_start();
+
 require_once '../config/config.php';
 require_once '../includes/Database.php';
 require_once '../includes/Auth.php';

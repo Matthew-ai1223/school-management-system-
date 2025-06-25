@@ -11,6 +11,7 @@ $create_table_sql = "CREATE TABLE IF NOT EXISTS staff_biodata (
     id INT AUTO_INCREMENT PRIMARY KEY,
     staff_id VARCHAR(20) UNIQUE,
     image_path VARCHAR(255),
+    certificate_path VARCHAR(255),
     surname VARCHAR(100) NOT NULL,
     first_name VARCHAR(100) NOT NULL,
     other_name VARCHAR(100),
@@ -50,6 +51,18 @@ if ($result->num_rows === 0) {
     }
 }
 
+// Add certificate_path column if it doesn't exist
+$check_column_sql = "SHOW COLUMNS FROM staff_biodata LIKE 'certificate_path'";
+$result = $conn->query($check_column_sql);
+if ($result->num_rows === 0) {
+    $alter_table_sql = "ALTER TABLE staff_biodata 
+                       ADD COLUMN certificate_path VARCHAR(255) 
+                       AFTER image_path";
+    if ($conn->query($alter_table_sql) === FALSE) {
+        die("Error adding certificate_path column: " . $conn->error);
+    }
+}
+
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Generate staff ID (e.g., STAFF_2024_001)
@@ -72,18 +85,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         move_uploaded_file($_FILES['staff_image']['tmp_name'], $image_path);
     }
 
+    // Handle certificate upload
+    $certificate_path = '';
+    if (isset($_FILES['staff_certificate']) && $_FILES['staff_certificate']['error'] == 0) {
+        $upload_dir = '../../../uploads/staff_certificates/';
+        if (!file_exists($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
+        $file_extension = pathinfo($_FILES['staff_certificate']['name'], PATHINFO_EXTENSION);
+        $certificate_path = $upload_dir . $staff_id . '_certificate.' . $file_extension;
+        move_uploaded_file($_FILES['staff_certificate']['tmp_name'], $certificate_path);
+    }
+
     // Prepare and execute INSERT statement
     $stmt = $conn->prepare("INSERT INTO staff_biodata (
-        staff_id, image_path, surname, first_name, other_name, sex, 
+        staff_id, image_path, certificate_path, surname, first_name, other_name, sex, 
         staff_category, state_of_origin, nationality, marital_status, religion,
         highest_qualification, qualification_date, course_of_study,
         employment_type, joining_date, phone_number, email, address,
         next_of_kin_name, next_of_kin_phone
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-    $stmt->bind_param("sssssssssssssssssssss",
+    $stmt->bind_param("ssssssssssssssssssssss",
         $staff_id,
         $image_path,
+        $certificate_path,
         $_POST['surname'],
         $_POST['first_name'],
         $_POST['other_name'],
@@ -546,6 +572,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label required">Course of Study</label>
                                     <input type="text" class="form-control" name="course_of_study" required>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label required">Certificate Upload</label>
+                                    <input type="file" class="form-control" name="staff_certificate" accept=".pdf,.jpg,.jpeg,.png" required>
+                                    <div class="form-text">Upload your highest qualification certificate (PDF, JPG, JPEG, or PNG)</div>
                                 </div>
                             </div>
 

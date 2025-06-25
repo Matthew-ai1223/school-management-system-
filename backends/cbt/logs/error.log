@@ -3327,3 +3327,2046 @@ Stack trace:
     [:subject_teacher_id] => 2
 )
 
+[22-Jun-2025 20:17:37 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 20:17:37 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 20:17:38 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[22-Jun-2025 20:17:38 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[22-Jun-2025 20:18:48 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 20:18:48 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 20:18:48 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[22-Jun-2025 20:18:48 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[22-Jun-2025 20:18:52 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 20:18:52 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 20:18:52 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[22-Jun-2025 20:18:52 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[22-Jun-2025 20:19:00 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                     OR s.last_name LIKE :search 
+                     OR s.parent_phone LIKE :search 
+                     OR s.registration_number LIKE :search) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 20:19:00 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/KID/0010%
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 20:19:00 Africa/Lagos] Error executing main query: SQLSTATE[HY093]: Invalid parameter number
+[22-Jun-2025 20:19:00 Africa/Lagos] SQL State: HY093
+[22-Jun-2025 20:19:00 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                          OR s.last_name LIKE :search 
+                          OR s.parent_phone LIKE :search 
+                          OR s.registration_number LIKE :search)
+[22-Jun-2025 20:19:00 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/KID/0010%
+)
+
+[22-Jun-2025 20:19:00 Africa/Lagos] Error executing count query: SQLSTATE[HY093]: Invalid parameter number
+[22-Jun-2025 20:19:00 Africa/Lagos] SQL State: HY093
+[22-Jun-2025 20:19:06 Africa/Lagos] Successfully fetched 5 reports
+[22-Jun-2025 20:19:06 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
+[22-Jun-2025 20:20:32 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 20:20:32 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 20:20:32 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[22-Jun-2025 20:20:32 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[22-Jun-2025 20:20:34 Africa/Lagos] Successfully fetched 5 reports
+[22-Jun-2025 20:20:34 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
+[22-Jun-2025 20:20:40 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 20:20:40 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 20:20:40 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[22-Jun-2025 20:20:40 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[22-Jun-2025 20:25:09 Africa/Lagos] Successfully fetched 5 reports
+[22-Jun-2025 20:25:09 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
+[22-Jun-2025 20:25:19 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 20:25:19 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 20:25:19 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[22-Jun-2025 20:25:19 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[22-Jun-2025 20:25:21 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[22-Jun-2025 20:25:21 Africa/Lagos] Debug - Teacher ID: 2
+[22-Jun-2025 20:25:21 Africa/Lagos] Debug - Found 0 exams
+[22-Jun-2025 20:25:21 Africa/Lagos] Debug - Exams data: Array
+(
+)
+
+[22-Jun-2025 20:25:45 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[22-Jun-2025 20:25:45 Africa/Lagos] Debug - Teacher ID: 2
+[22-Jun-2025 20:25:45 Africa/Lagos] Debug - Found 0 exams
+[22-Jun-2025 20:25:45 Africa/Lagos] Debug - Exams data: Array
+(
+)
+
+[22-Jun-2025 20:26:04 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[22-Jun-2025 20:26:04 Africa/Lagos] Debug - Teacher ID: 2
+[22-Jun-2025 20:26:04 Africa/Lagos] Debug - Found 0 exams
+[22-Jun-2025 20:26:04 Africa/Lagos] Debug - Exams data: Array
+(
+)
+
+[22-Jun-2025 20:26:16 Africa/Lagos] Debug - Verify Query: SELECT id FROM exams 
+                   WHERE id = :exam_id AND created_by = :teacher_id
+[22-Jun-2025 20:26:16 Africa/Lagos] Debug - Params: exam_id=5, teacher_id=2
+[22-Jun-2025 20:26:16 Africa/Lagos] Debug - Verify Result: Array
+(
+    [id] => 5
+)
+
+[22-Jun-2025 20:26:16 Africa/Lagos] Debug - Main Query: SELECT e.*, COUNT(q.id) as total_questions 
+              FROM exams e 
+              LEFT JOIN questions q ON e.id = q.exam_id 
+              WHERE e.id = :exam_id AND e.created_by = :teacher_id 
+              GROUP BY e.id
+[22-Jun-2025 20:26:16 Africa/Lagos] Debug - Exam Result: Array
+(
+    [id] => 5
+    [title] => English Language JS Exam
+    [subject] => English Language JS
+    [description] => Nemo excepteur in op
+    [duration] => 99
+    [passing_score] => 21
+    [max_attempts] => 11
+    [is_active] => 0
+    [created_by] => 2
+    [class] => SS3
+    [created_at] => 2025-06-22 20:26:15
+    [total_questions] => 0
+)
+
+[22-Jun-2025 20:26:16 Africa/Lagos] Debug - Questions Count: 0
+[22-Jun-2025 20:26:16 Africa/Lagos] Debug - Stats Result: Array
+(
+    [attempt_count] => 0
+    [avg_score] => 0.000000
+)
+
+[22-Jun-2025 20:26:16 Africa/Lagos] Successfully loaded exam ID 5 with 0 questions
+[22-Jun-2025 20:26:33 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[22-Jun-2025 20:26:33 Africa/Lagos] Debug - Teacher ID: 2
+[22-Jun-2025 20:26:33 Africa/Lagos] Debug - Found 1 exams
+[22-Jun-2025 20:26:33 Africa/Lagos] Debug - Exams data: Array
+(
+    [0] => Array
+        (
+            [id] => 5
+            [title] => English Language JS Exam
+            [subject] => English Language JS
+            [description] => Nemo excepteur in op
+            [duration] => 99
+            [passing_score] => 21
+            [max_attempts] => 11
+            [is_active] => 0
+            [created_by] => 2
+            [class] => SS3
+            [created_at] => 2025-06-22 20:26:15
+            [question_count] => 0
+            [attempt_count] => 0
+            [avg_score] => 0.000000
+        )
+
+)
+
+[22-Jun-2025 20:26:33 Africa/Lagos] Debug - Processing exam: ID=5, Title=English Language JS Exam
+[22-Jun-2025 20:26:42 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[22-Jun-2025 20:26:42 Africa/Lagos] Debug - Teacher ID: 2
+[22-Jun-2025 20:26:42 Africa/Lagos] Debug - Found 1 exams
+[22-Jun-2025 20:26:42 Africa/Lagos] Debug - Exams data: Array
+(
+    [0] => Array
+        (
+            [id] => 5
+            [title] => English Language JS Exam
+            [subject] => English Language JS
+            [description] => Nemo excepteur in op
+            [duration] => 99
+            [passing_score] => 21
+            [max_attempts] => 11
+            [is_active] => 0
+            [created_by] => 2
+            [class] => SS3
+            [created_at] => 2025-06-22 20:26:15
+            [question_count] => 0
+            [attempt_count] => 0
+            [avg_score] => 0.000000
+        )
+
+)
+
+[22-Jun-2025 20:26:42 Africa/Lagos] Debug - Processing exam: ID=5, Title=English Language JS Exam
+[22-Jun-2025 20:26:43 Africa/Lagos] Successfully fetched 5 reports
+[22-Jun-2025 20:26:43 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
+[22-Jun-2025 20:27:55 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 20:27:55 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 20:27:55 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[22-Jun-2025 20:27:55 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[22-Jun-2025 20:28:12 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 20:28:12 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 20:28:12 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[22-Jun-2025 20:28:12 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[22-Jun-2025 20:28:39 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[22-Jun-2025 20:28:39 Africa/Lagos] Debug - Teacher ID: 2
+[22-Jun-2025 20:28:39 Africa/Lagos] Debug - Found 1 exams
+[22-Jun-2025 20:28:39 Africa/Lagos] Debug - Exams data: Array
+(
+    [0] => Array
+        (
+            [id] => 5
+            [title] => English Language JS Exam
+            [subject] => English Language JS
+            [description] => Nemo excepteur in op
+            [duration] => 99
+            [passing_score] => 21
+            [max_attempts] => 11
+            [is_active] => 0
+            [created_by] => 2
+            [class] => SS3
+            [created_at] => 2025-06-22 20:26:15
+            [question_count] => 0
+            [attempt_count] => 0
+            [avg_score] => 0.000000
+        )
+
+)
+
+[22-Jun-2025 20:28:39 Africa/Lagos] Debug - Processing exam: ID=5, Title=English Language JS Exam
+[22-Jun-2025 20:28:48 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\edit-exam.php on line 6
+[22-Jun-2025 20:28:57 Africa/Lagos] Debug - Verify Query: SELECT id FROM exams 
+                   WHERE id = :exam_id AND created_by = :teacher_id
+[22-Jun-2025 20:28:57 Africa/Lagos] Debug - Params: exam_id=5, teacher_id=2
+[22-Jun-2025 20:28:57 Africa/Lagos] Debug - Verify Result: Array
+(
+    [id] => 5
+)
+
+[22-Jun-2025 20:28:57 Africa/Lagos] Debug - Main Query: SELECT e.*, COUNT(q.id) as total_questions 
+              FROM exams e 
+              LEFT JOIN questions q ON e.id = q.exam_id 
+              WHERE e.id = :exam_id AND e.created_by = :teacher_id 
+              GROUP BY e.id
+[22-Jun-2025 20:28:57 Africa/Lagos] Debug - Exam Result: Array
+(
+    [id] => 5
+    [title] => English Language JS Exam
+    [subject] => English Language JS
+    [description] => Nemo excepteur in op
+    [duration] => 99
+    [passing_score] => 21
+    [max_attempts] => 11
+    [is_active] => 0
+    [created_by] => 2
+    [class] => SS3
+    [created_at] => 2025-06-22 20:26:15
+    [total_questions] => 0
+)
+
+[22-Jun-2025 20:28:57 Africa/Lagos] Debug - Questions Count: 0
+[22-Jun-2025 20:28:57 Africa/Lagos] Debug - Stats Result: Array
+(
+    [attempt_count] => 0
+    [avg_score] => 0.000000
+)
+
+[22-Jun-2025 20:28:57 Africa/Lagos] Successfully loaded exam ID 5 with 0 questions
+[22-Jun-2025 20:29:00 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\add-question.php on line 6
+[22-Jun-2025 20:29:06 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\add-question.php on line 6
+[22-Jun-2025 20:29:06 Africa/Lagos] Debug - Verify Query: SELECT id FROM exams 
+                   WHERE id = :exam_id AND created_by = :teacher_id
+[22-Jun-2025 20:29:06 Africa/Lagos] Debug - Params: exam_id=5, teacher_id=2
+[22-Jun-2025 20:29:06 Africa/Lagos] Debug - Verify Result: Array
+(
+    [id] => 5
+)
+
+[22-Jun-2025 20:29:06 Africa/Lagos] Debug - Main Query: SELECT e.*, COUNT(q.id) as total_questions 
+              FROM exams e 
+              LEFT JOIN questions q ON e.id = q.exam_id 
+              WHERE e.id = :exam_id AND e.created_by = :teacher_id 
+              GROUP BY e.id
+[22-Jun-2025 20:29:06 Africa/Lagos] Debug - Exam Result: Array
+(
+    [id] => 5
+    [title] => English Language JS Exam
+    [subject] => English Language JS
+    [description] => Nemo excepteur in op
+    [duration] => 99
+    [passing_score] => 21
+    [max_attempts] => 11
+    [is_active] => 0
+    [created_by] => 2
+    [class] => SS3
+    [created_at] => 2025-06-22 20:26:15
+    [total_questions] => 1
+)
+
+[22-Jun-2025 20:29:06 Africa/Lagos] Debug - Questions Count: 1
+[22-Jun-2025 20:29:06 Africa/Lagos] Debug - Stats Result: Array
+(
+    [attempt_count] => 0
+    [avg_score] => 0.000000
+)
+
+[22-Jun-2025 20:29:06 Africa/Lagos] Successfully loaded exam ID 5 with 1 questions
+[22-Jun-2025 21:02:04 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 21:02:04 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 21:02:04 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[22-Jun-2025 21:02:04 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[22-Jun-2025 21:02:13 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[22-Jun-2025 21:02:13 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => P3
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[22-Jun-2025 21:02:13 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[22-Jun-2025 21:02:13 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => P3
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[22-Jun-2025 21:02:29 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php on line 6
+[22-Jun-2025 21:02:29 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.added_by' in 'where clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php:30
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php(30): PDO->prepare('SELECT u.* FROM...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php on line 30
+[22-Jun-2025 21:02:51 Africa/Lagos] Debug - Exams Query: SELECT e.*, 
+          (SELECT COUNT(*) FROM questions q WHERE q.exam_id = e.id) as question_count,
+          (SELECT COUNT(*) FROM exam_attempts ea WHERE ea.exam_id = e.id) as attempt_count,
+          (SELECT COALESCE(AVG(score), 0) FROM exam_attempts ea WHERE ea.exam_id = e.id AND ea.status = 'completed') as avg_score
+          FROM exams e
+          WHERE e.created_by = :teacher_id
+          ORDER BY e.created_at DESC
+[22-Jun-2025 21:02:51 Africa/Lagos] Debug - Teacher ID: 2
+[22-Jun-2025 21:02:51 Africa/Lagos] Debug - Found 1 exams
+[22-Jun-2025 21:02:51 Africa/Lagos] Debug - Exams data: Array
+(
+    [0] => Array
+        (
+            [id] => 5
+            [title] => English Language JS Exam
+            [subject] => English Language JS
+            [description] => Nemo excepteur in op
+            [duration] => 99
+            [passing_score] => 21
+            [max_attempts] => 11
+            [is_active] => 0
+            [created_by] => 2
+            [class] => SS3
+            [created_at] => 2025-06-22 20:26:15
+            [question_count] => 1
+            [attempt_count] => 0
+            [avg_score] => 0.000000
+        )
+
+)
+
+[22-Jun-2025 21:02:51 Africa/Lagos] Debug - Processing exam: ID=5, Title=English Language JS Exam
+[25-Jun-2025 10:05:06 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:05:06 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:05:06 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[25-Jun-2025 10:05:06 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[25-Jun-2025 10:05:13 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:05:13 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:05:13 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed'
+[25-Jun-2025 10:05:13 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+)
+
+[25-Jun-2025 10:05:42 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:05:42 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:05:42 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[25-Jun-2025 10:05:42 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[25-Jun-2025 10:06:07 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:06:07 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:06:07 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[25-Jun-2025 10:06:07 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[25-Jun-2025 10:06:11 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                     OR s.last_name LIKE :search 
+                     OR s.parent_phone LIKE :search 
+                     OR s.registration_number LIKE :search) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:06:11 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/COL/0010%
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:06:11 Africa/Lagos] Error executing main query: SQLSTATE[HY093]: Invalid parameter number
+[25-Jun-2025 10:06:11 Africa/Lagos] SQL State: HY093
+[25-Jun-2025 10:06:11 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                          OR s.last_name LIKE :search 
+                          OR s.parent_phone LIKE :search 
+                          OR s.registration_number LIKE :search)
+[25-Jun-2025 10:06:11 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/COL/0010%
+)
+
+[25-Jun-2025 10:06:11 Africa/Lagos] Error executing count query: SQLSTATE[HY093]: Invalid parameter number
+[25-Jun-2025 10:06:11 Africa/Lagos] SQL State: HY093
+[25-Jun-2025 10:06:19 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                     OR s.last_name LIKE :search 
+                     OR s.parent_phone LIKE :search 
+                     OR s.registration_number LIKE :search) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:06:19 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/COL/0010%
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:06:19 Africa/Lagos] Error executing main query: SQLSTATE[HY093]: Invalid parameter number
+[25-Jun-2025 10:06:19 Africa/Lagos] SQL State: HY093
+[25-Jun-2025 10:06:19 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                          OR s.last_name LIKE :search 
+                          OR s.parent_phone LIKE :search 
+                          OR s.registration_number LIKE :search)
+[25-Jun-2025 10:06:19 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/COL/0010%
+)
+
+[25-Jun-2025 10:06:19 Africa/Lagos] Error executing count query: SQLSTATE[HY093]: Invalid parameter number
+[25-Jun-2025 10:06:19 Africa/Lagos] SQL State: HY093
+[25-Jun-2025 10:06:30 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                     OR s.last_name LIKE :search 
+                     OR s.parent_phone LIKE :search 
+                     OR s.registration_number LIKE :search) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:06:30 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/COL/0010%
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:06:30 Africa/Lagos] Error executing main query: SQLSTATE[HY093]: Invalid parameter number
+[25-Jun-2025 10:06:30 Africa/Lagos] SQL State: HY093
+[25-Jun-2025 10:06:30 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                          OR s.last_name LIKE :search 
+                          OR s.parent_phone LIKE :search 
+                          OR s.registration_number LIKE :search)
+[25-Jun-2025 10:06:30 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/COL/0010%
+)
+
+[25-Jun-2025 10:06:30 Africa/Lagos] Error executing count query: SQLSTATE[HY093]: Invalid parameter number
+[25-Jun-2025 10:06:30 Africa/Lagos] SQL State: HY093
+[25-Jun-2025 10:06:39 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:06:39 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:06:39 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[25-Jun-2025 10:06:39 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[25-Jun-2025 10:06:52 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                     OR s.last_name LIKE :search 
+                     OR s.parent_phone LIKE :search 
+                     OR s.registration_number LIKE :search) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:06:52 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/COL/0010%
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:06:52 Africa/Lagos] Error executing main query: SQLSTATE[HY093]: Invalid parameter number
+[25-Jun-2025 10:06:52 Africa/Lagos] SQL State: HY093
+[25-Jun-2025 10:06:52 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                          OR s.last_name LIKE :search 
+                          OR s.parent_phone LIKE :search 
+                          OR s.registration_number LIKE :search)
+[25-Jun-2025 10:06:52 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/COL/0010%
+)
+
+[25-Jun-2025 10:06:52 Africa/Lagos] Error executing count query: SQLSTATE[HY093]: Invalid parameter number
+[25-Jun-2025 10:06:52 Africa/Lagos] SQL State: HY093
+[25-Jun-2025 10:07:26 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:07:26 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:07:26 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[25-Jun-2025 10:07:26 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[25-Jun-2025 10:14:59 Africa/Lagos] PHP Notice:  session_start(): Ignoring session_start() because a session is already active in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php on line 6
+[25-Jun-2025 10:14:59 Africa/Lagos] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'u.added_by' in 'where clause' in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php:30
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php(30): PDO->prepare('SELECT u.* FROM...')
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\student-performance.php on line 30
+[25-Jun-2025 10:15:03 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:15:03 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:15:03 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[25-Jun-2025 10:15:03 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[25-Jun-2025 10:15:03 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                     OR s.last_name LIKE :search 
+                     OR s.parent_phone LIKE :search 
+                     OR s.registration_number LIKE :search) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:15:03 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/COL/0010%
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:15:03 Africa/Lagos] Error executing main query: SQLSTATE[HY093]: Invalid parameter number
+[25-Jun-2025 10:15:03 Africa/Lagos] SQL State: HY093
+[25-Jun-2025 10:15:03 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND s.class = :class AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) AND (s.first_name LIKE :search 
+                          OR s.last_name LIKE :search 
+                          OR s.parent_phone LIKE :search 
+                          OR s.registration_number LIKE :search)
+[25-Jun-2025 10:15:03 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:class] => JSS3 Pearl
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:search] => %2425/COL/0010%
+)
+
+[25-Jun-2025 10:15:03 Africa/Lagos] Error executing count query: SQLSTATE[HY093]: Invalid parameter number
+[25-Jun-2025 10:15:03 Africa/Lagos] SQL State: HY093
+[25-Jun-2025 10:15:09 Africa/Lagos] Debug - Query: SELECT DISTINCT
+            s.id,
+            s.first_name,
+            s.last_name,
+            s.email,
+            s.parent_phone,
+            s.class,
+            s.registration_number,
+            COUNT(DISTINCT ea.id) as total_exams,
+            ROUND(AVG(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END), 2) as avg_score,
+            MAX(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as highest_score,
+            MIN(CASE WHEN ea.status = 'completed' THEN (ea.score / q.total_questions * 100) ELSE NULL END) as lowest_score,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score THEN 1 ELSE 0 END) as passed_exams,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) < e.passing_score THEN 1 ELSE 0 END) as failed_exams,
+            GROUP_CONCAT(DISTINCT CASE WHEN ea.status = 'completed' THEN e.subject END) as subjects_taken,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= 70 THEN 1 ELSE 0 END) as distinctions,
+            SUM(CASE WHEN ea.status = 'completed' AND (ea.score / q.total_questions * 100) >= e.passing_score AND (ea.score / q.total_questions * 100) < 70 THEN 1 ELSE 0 END) as credits
+          FROM students s
+          INNER JOIN exam_attempts ea ON s.id = ea.student_id
+          INNER JOIN exams e ON ea.exam_id = e.id
+          LEFT JOIN (
+              SELECT exam_id, COUNT(*) as total_questions 
+              FROM questions 
+              GROUP BY exam_id
+          ) q ON e.id = q.exam_id
+          WHERE EXISTS (
+              SELECT 1 
+              FROM teacher_subjects ts 
+              WHERE ts.teacher_id = :teacher_id
+          )
+          AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    ) GROUP BY s.id
+           ORDER BY s.class, s.first_name, s.last_name
+           LIMIT :limit OFFSET :offset
+[25-Jun-2025 10:15:09 Africa/Lagos] Debug - Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+    [:limit] => 10
+    [:offset] => 0
+)
+
+[25-Jun-2025 10:15:09 Africa/Lagos] Debug - Count Query: SELECT COUNT(DISTINCT s.id) 
+                FROM students s
+                INNER JOIN exam_attempts ea ON s.id = ea.student_id
+                INNER JOIN exams e ON ea.exam_id = e.id
+                WHERE EXISTS (
+                    SELECT 1 
+                    FROM teacher_subjects ts 
+                    WHERE ts.teacher_id = :teacher_id
+                )
+                AND ea.status = 'completed' AND EXISTS (
+        SELECT 1 
+        FROM teacher_subjects ts2 
+        WHERE ts2.subject = :subject
+        AND ts2.teacher_id = :subject_teacher_id
+    )
+[25-Jun-2025 10:15:09 Africa/Lagos] Debug - Count Params: Array
+(
+    [:teacher_id] => 2
+    [:subject] => English Language JS
+    [:subject_teacher_id] => 2
+)
+
+[25-Jun-2025 10:15:30 Africa/Lagos] Successfully fetched 5 reports
+[25-Jun-2025 10:15:30 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
+[25-Jun-2025 10:16:10 Africa/Lagos] Successfully fetched 1 reports
+[25-Jun-2025 10:16:10 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
+[25-Jun-2025 10:16:25 Africa/Lagos] Successfully fetched 5 reports
+[25-Jun-2025 10:16:25 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
+[25-Jun-2025 10:16:37 Africa/Lagos] Successfully fetched 3 reports
+[25-Jun-2025 10:16:37 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
+[25-Jun-2025 10:21:36 Africa/Lagos] Successfully fetched 5 reports
+[25-Jun-2025 10:21:36 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330

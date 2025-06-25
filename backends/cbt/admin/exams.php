@@ -258,7 +258,7 @@ if (isset($_SESSION['success_message'])) {
         }
 
         function deleteExam(examId) {
-            if (confirm('Are you sure you want to delete this exam? This action cannot be undone.')) {
+            if (confirm('Are you sure you want to delete this exam? This will also delete all questions, attempts, and associated data. This action cannot be undone.')) {
                 fetch('delete-exam.php', {
                     method: 'POST',
                     headers: {
@@ -268,17 +268,39 @@ if (isset($_SESSION['success_message'])) {
                         exam_id: examId
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        window.location.reload();
+                        // Show success message before reload
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success';
+                        alertDiv.textContent = data.message;
+                        document.querySelector('main').insertBefore(alertDiv, document.querySelector('.card'));
+                        
+                        // Reload after a short delay to show the message
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     } else {
-                        alert('Error deleting exam: ' + data.message);
+                        // Show error in a Bootstrap alert
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-danger';
+                        alertDiv.textContent = data.message || 'Error deleting exam';
+                        document.querySelector('main').insertBefore(alertDiv, document.querySelector('.card'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while deleting the exam.');
+                    // Show error in a Bootstrap alert
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger';
+                    alertDiv.textContent = 'An error occurred while deleting the exam. Please try again.';
+                    document.querySelector('main').insertBefore(alertDiv, document.querySelector('.card'));
                 });
             }
         }

@@ -362,17 +362,39 @@ if (isset($_SESSION['success_message'])) {
                         question_id: questionId
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
-                        window.location.reload();
+                        // Show success message before reload
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success';
+                        alertDiv.textContent = data.message;
+                        document.querySelector('main').insertBefore(alertDiv, document.querySelector('.accordion'));
+                        
+                        // Reload after a short delay to show the message
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
                     } else {
-                        alert('Error deleting question: ' + data.message);
+                        // Show error in a Bootstrap alert
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-danger';
+                        alertDiv.textContent = data.message || 'Error deleting question';
+                        document.querySelector('main').insertBefore(alertDiv, document.querySelector('.accordion'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('An error occurred while deleting the question.');
+                    // Show error in a Bootstrap alert
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger';
+                    alertDiv.textContent = 'An error occurred while deleting the question. Please try again.';
+                    document.querySelector('main').insertBefore(alertDiv, document.querySelector('.accordion'));
                 });
             }
         }
