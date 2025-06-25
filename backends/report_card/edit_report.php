@@ -49,6 +49,34 @@ if (isset($_GET['id'])) {
             $conn->begin_transaction();
             
             try {
+                // Handle new subject addition
+                if (isset($_POST['action']) && $_POST['action'] === 'add_subject') {
+                    $subject_id = $conn->real_escape_string($_POST['subject_id']);
+                    
+                    // Check if subject already exists in report card
+                    $check_sql = "SELECT id FROM report_card_details 
+                                WHERE report_card_id = '$report_id' 
+                                AND subject_id = '$subject_id'";
+                    $check_result = $conn->query($check_sql);
+                    
+                    if ($check_result && $check_result->num_rows > 0) {
+                        throw new Exception("This subject already exists in the report card.");
+                    }
+                    
+                    // Insert new subject
+                    $sql = "INSERT INTO report_card_details 
+                            (report_card_id, subject_id, test_score, exam_score, total_score) 
+                            VALUES ('$report_id', '$subject_id', 0, 0, 0)";
+                    
+                    if (!$conn->query($sql)) {
+                        throw new Exception("Error adding new subject: " . $conn->error);
+                    }
+                    
+                    $conn->commit();
+                    header("Location: edit_report.php?id=$report_id");
+                    exit();
+                }
+
                 // Update report card
                 $teacher_comment = $conn->real_escape_string($_POST['teacher_comment']);
                 $principal_comment = $conn->real_escape_string($_POST['principal_comment']);
@@ -163,6 +191,12 @@ if (isset($_GET['id'])) {
                         </div>
 
                         <!-- Academic Performance -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Academic Performance</h4>
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+                                <i class="fas fa-plus"></i> Add Subject
+                            </button>
+                        </div>
                         <div class="table-responsive mb-4">
                             <table class="table table-bordered">
                                 <thead>
@@ -240,6 +274,114 @@ if (isset($_GET['id'])) {
         <?php endif; ?>
     </div>
 
+    <!-- Add Subject Modal -->
+    <div class="modal fade" id="addSubjectModal" tabindex="-1" aria-labelledby="addSubjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSubjectModalLabel">Add New Subject</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="POST" action="">
+                    <div class="modal-body">
+                        <input type="hidden" name="action" value="add_subject">
+                        <div class="mb-3">
+                            <label for="subject_id" class="form-label">Select Subject</label>
+                            <select class="form-select" id="subject_id" name="subject_id" required>
+                                <option value="">Choose a subject...</option>
+                                <?php
+                                // Fetch available subjects that are not already in the report card
+                                $sql = "SELECT rs.* FROM report_subjects rs 
+                                        WHERE rs.id NOT IN (
+                                            SELECT subject_id FROM report_card_details 
+                                            WHERE report_card_id = '$report_id'
+                                        )
+                                        ORDER BY rs.subject_name";
+                                $subjects_result = $conn->query($sql);
+                                if ($subjects_result) {
+                                    while ($subject = $subjects_result->fetch_assoc()) {
+                                        echo '<option value="' . $subject['id'] . '">' . 
+                                             htmlspecialchars($subject['subject_name']) . '</option>';
+                                    }
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Add Subject</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Calculate scores and grades for all rows when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('tr').forEach(calculateRowScores);
+        });
+
+        // Add event listeners to test and exam score inputs
+        document.querySelectorAll('input[name^="scores"][name$="[test]"], input[name^="scores"][name$="[exam]"]').forEach(input => {
+            input.addEventListener('input', function() {
+                const row = this.closest('tr');
+                calculateRowScores(row);
+            });
+        });
+
+        // Function to calculate scores, grades and remarks for a row
+        function calculateRowScores(row) {
+            const testInput = row.querySelector('input[name$="[test]"]');
+            const examInput = row.querySelector('input[name$="[exam]"]');
+            
+            if (!testInput || !examInput) return;
+
+            const testScore = parseFloat(testInput.value) || 0;
+            const examScore = parseFloat(examInput.value) || 0;
+            const totalScore = testScore + examScore;
+            
+            // Update total score cell
+            const totalCell = row.cells[3];
+            if (totalCell) {
+                totalCell.textContent = totalScore.toFixed(1);
+            }
+            
+            // Calculate grade and remark
+            let grade = '';
+            let remark = '';
+            if (totalScore >= 80) {
+                grade = 'A';
+                remark = 'Excellent';
+            } else if (totalScore >= 70) {
+                grade = 'B';
+                remark = 'Very Good';
+            } else if (totalScore >= 60) {
+                grade = 'C';
+                remark = 'Good';
+            } else if (totalScore >= 50) {
+                grade = 'D';
+                remark = 'Pass';
+            } else {
+                grade = 'F';
+                remark = 'Fail';
+            }
+            
+            // Update grade input
+            const gradeInput = row.querySelector('input[name$="[grade]"]');
+            if (gradeInput) {
+                gradeInput.value = grade;
+            }
+            
+            // Update remark input
+            const remarkInput = row.querySelector('input[name$="[remark]"]');
+            if (remarkInput) {
+                remarkInput.value = remark;
+            }
+        }
+    </script>
 </body>
 </html> 
