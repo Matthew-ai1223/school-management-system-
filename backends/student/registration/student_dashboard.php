@@ -382,6 +382,58 @@ $remaining_other_balance = $total_other_to_pay - $total_other_paid;
 $total_amount_paid = $total_school_fees_paid + $total_other_paid;
 $remaining_balance = $remaining_school_fees_balance + $remaining_other_balance;
 
+// Function to get payment history for breakdown
+function getPaymentHistory($conn, $reg_number) {
+    // Get online payments
+    $sql_online = "SELECT sp.*, spt.name as payment_type_name, 'Online' as payment_method
+            FROM school_payments sp 
+            JOIN school_payment_types spt ON sp.payment_type_id = spt.id 
+            WHERE sp.student_id = ? 
+            ORDER BY sp.payment_date DESC";
+            
+    $stmt = $conn->prepare($sql_online);
+    $stmt->bind_param("s", $reg_number);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $online_payments = [];
+    
+    while ($row = $result->fetch_assoc()) {
+        $online_payments[] = $row;
+    }
+    $stmt->close();
+    
+    // Get cash payments
+    $sql_cash = "SELECT cp.*, spt.name as payment_type_name, 'Cash' as payment_method
+            FROM cash_payments cp 
+            JOIN school_payment_types spt ON cp.payment_type_id = spt.id 
+            WHERE cp.student_id = ? 
+            ORDER BY cp.payment_date DESC";
+            
+    $stmt = $conn->prepare($sql_cash);
+    $stmt->bind_param("s", $reg_number);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $cash_payments = [];
+    
+    while ($row = $result->fetch_assoc()) {
+        $cash_payments[] = $row;
+    }
+    $stmt->close();
+    
+    // Combine and sort all payments by date
+    $all_payments = array_merge($online_payments, $cash_payments);
+    
+    // Sort by payment date (newest first)
+    usort($all_payments, function($a, $b) {
+        return strtotime($b['payment_date']) - strtotime($a['payment_date']);
+    });
+    
+    return $all_payments;
+}
+
+// Get payment history for current student
+$payment_history = getPaymentHistory($conn, $registration_number);
+
 // Function to format date
 function formatDate($date) {
     return date('M d, Y', strtotime($date));
@@ -1375,6 +1427,118 @@ while ($row = $announcementsResult->fetch_assoc()) {
         .text-secondary {
             color: #858796 !important;
         }
+
+        /* Payment Breakdown Styles */
+        .payment-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-failed {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .approval-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .approval-under_review {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .approval-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .approval-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .payment-method {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .method-cash {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .method-online {
+            background-color: #3498db;
+            color: white;
+        }
+
+        /* Remaining Balance Link Styling */
+        .remaining-balance-link {
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background-color: rgba(255, 193, 7, 0.15);
+            border: 2px solid rgba(255, 193, 7, 0.5);
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+        }
+
+        .remaining-balance-link:hover {
+            text-decoration: none;
+            background-color: rgba(255, 193, 7, 0.25);
+            border-color: rgba(255, 193, 7, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        }
+
+        .remaining-balance-link:hover .text-warning {
+            color: #e0a800 !important;
+            font-weight: 700;
+        }
+
+        .remaining-balance-link .text-info {
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .remaining-balance-link:hover .text-info {
+            color: #17a2b8 !important;
+            font-weight: 700;
+        }
+
+        .remaining-balance-link .fas.fa-eye {
+            transition: transform 0.3s ease;
+        }
+
+        .remaining-balance-link:hover .fas.fa-eye {
+            transform: scale(1.2);
+        }
     </style>
 </head>
 <body>
@@ -1402,11 +1566,11 @@ while ($row = $announcementsResult->fetch_assoc()) {
                             <i class="fas fa-user"></i> Profile
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <!-- <li class="nav-item">
                         <a class="nav-link" href="#exams" data-toggle="tab" role="tab" aria-controls="exams" aria-selected="false">
                             <i class="fas fa-money-bill-wave"></i> Payments
                         </a>
-                    </li>
+                    </li> -->
                     <li class="nav-item">
                         <a class="nav-link" href="#cbt-exams" data-toggle="tab" role="tab" aria-controls="cbt-exams" aria-selected="false">
                             <i class="fas fa-laptop"></i> CBT Exams
@@ -1549,10 +1713,16 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                         <p>Total amount paid</p>
                                         <?php if ($remaining_balance > 0): ?>
                                             <div class="mt-2">
-                                                <small class="text-warning">
-                                                    <i class="fas fa-exclamation-triangle"></i> 
-                                                    ₦<?php echo number_format($remaining_balance, 2); ?> remaining
-                                                </small>
+                                                <a href="../../school_paymente/student_payment_history.php" class="remaining-balance-link">
+                                                    <small class="text-warning">
+                                                        <!-- <i class="fas fa-exclamation-triangle"></i> 
+                                                        ₦<?php echo number_format($remaining_balance, 2); ?> remaining 
+                                                        <br>-->
+                                                        <span class="text-info">
+                                                            <i class="fas fa-eye"></i> View your full payment details
+                                                        </span>
+                                                    </small>
+                                                </a>
                                             </div>
                                         <?php else: ?>
                                             <div class="mt-2">
@@ -2229,160 +2399,244 @@ while ($row = $announcementsResult->fetch_assoc()) {
                     <!-- Payments Tab -->
                     <div class="tab-pane fade" id="payments" role="tabpanel" aria-labelledby="payments-tab">
                         <div class="dashboard-card">
-                            <h4><i class="fas fa-money-bill-wave"></i> Payment History</h4>
+                            <h4><i class="fas fa-money-bill-wave"></i> Payment Breakdown</h4>
                             
-                            <?php
-                            // Get payment history for this student
-                            $payments_query = "SELECT p.*, 
-                                DATE_FORMAT(p.payment_date, '%M %d, %Y') as formatted_date,
-                                DATE_FORMAT(p.created_at, '%M %d, %Y %h:%i %p') as created_date
-                         FROM payments p
-                         WHERE p.student_id = ? 
-                         ORDER BY p.payment_date DESC, p.created_at DESC";
-                            
-                            $stmt = $conn->prepare($payments_query);
-                            $stmt->bind_param("i", $student_id);
-                            $stmt->execute();
-                            $payments_result = $stmt->get_result();
-                            
-                            if ($payments_result->num_rows > 0): ?>
+                            <!-- Financial Summary -->
+                            <div class="row mb-4">
+                                <!-- School Fees Section -->
+                                <div class="col-12 mb-3">
+                                    <h5 class="text-primary"><i class="fas fa-graduation-cap"></i> School Fees Summary</h5>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-primary text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title"><i class="fas fa-money-bill-wave"></i> School Fees to Pay</h6>
+                                            <h4 class="mb-0">₦<?php echo number_format($total_school_fees_to_pay, 2); ?></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title"><i class="fas fa-check-circle"></i> School Fees Paid</h6>
+                                            <h4 class="mb-0">₦<?php echo number_format($total_school_fees_paid, 2); ?></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card <?php echo $remaining_school_fees_balance > 0 ? 'bg-warning' : 'bg-info'; ?> text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">
+                                                <i class="fas <?php echo $remaining_school_fees_balance > 0 ? 'fa-exclamation-triangle' : 'fa-check-double'; ?>"></i> 
+                                                School Fees Balance
+                                            </h6>
+                                            <h4 class="mb-0">₦<?php echo number_format($remaining_school_fees_balance, 2); ?></h4>
+                                            <?php if ($remaining_school_fees_balance > 0): ?>
+                                                <small class="d-block mt-1">Payment Required</small>
+                                            <?php else: ?>
+                                                <small class="d-block mt-1">Fully Paid</small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-secondary text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title"><i class="fas fa-percentage"></i> Payment Progress</h6>
+                                            <h4 class="mb-0">
+                                                <?php 
+                                                $progress = $total_school_fees_to_pay > 0 ? ($total_school_fees_paid / $total_school_fees_to_pay) * 100 : 0;
+                                                echo round($progress, 1) . '%';
+                                                ?>
+                                            </h4>
+                                            <small class="d-block mt-1">Complete</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Other Payments Section -->
+                            <?php if ($total_other_to_pay > 0): ?>
+                            <div class="row mb-4">
+                                <div class="col-12 mb-3">
+                                    <h5 class="text-info"><i class="fas fa-credit-card"></i> Other Payments Summary</h5>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-info text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title"><i class="fas fa-list"></i> Other Fees to Pay</h6>
+                                            <h4 class="mb-0">₦<?php echo number_format($total_other_to_pay, 2); ?></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title"><i class="fas fa-check-circle"></i> Other Fees Paid</h6>
+                                            <h4 class="mb-0">₦<?php echo number_format($total_other_paid, 2); ?></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card <?php echo $remaining_other_balance > 0 ? 'bg-warning' : 'bg-info'; ?> text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">
+                                                <i class="fas <?php echo $remaining_other_balance > 0 ? 'fa-exclamation-triangle' : 'fa-check-double'; ?>"></i> 
+                                                Other Fees Balance
+                                            </h6>
+                                            <h4 class="mb-0">₦<?php echo number_format($remaining_other_balance, 2); ?></h4>
+                                            <?php if ($remaining_other_balance > 0): ?>
+                                                <small class="d-block mt-1">Payment Required</small>
+                                            <?php else: ?>
+                                                <small class="d-block mt-1">Fully Paid</small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="card bg-secondary text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title"><i class="fas fa-percentage"></i> Payment Progress</h6>
+                                            <h4 class="mb-0">
+                                                <?php 
+                                                $other_progress = $total_other_to_pay > 0 ? ($total_other_paid / $total_other_to_pay) * 100 : 0;
+                                                echo round($other_progress, 1) . '%';
+                                                ?>
+                                            </h4>
+                                            <small class="d-block mt-1">Complete</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+
+                            <!-- Overall Summary -->
+                            <div class="row mb-4">
+                                <div class="col-12 mb-3">
+                                    <h5 class="text-dark"><i class="fas fa-chart-pie"></i> Overall Summary</h5>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-dark text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title"><i class="fas fa-calculator"></i> Total Amount to Pay</h6>
+                                            <h4 class="mb-0">₦<?php echo number_format($total_school_fees_to_pay + $total_other_to_pay, 2); ?></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-success text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title"><i class="fas fa-check-circle"></i> Total Amount Paid</h6>
+                                            <h4 class="mb-0">₦<?php echo number_format($total_amount_paid, 2); ?></h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card <?php echo $remaining_balance > 0 ? 'bg-warning' : 'bg-info'; ?> text-white">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">
+                                                <i class="fas <?php echo $remaining_balance > 0 ? 'fa-exclamation-triangle' : 'fa-check-double'; ?>"></i> 
+                                                Total Remaining Balance
+                                            </h6>
+                                            <h4 class="mb-0">₦<?php echo number_format($remaining_balance, 2); ?></h4>
+                                            <?php if ($remaining_balance > 0): ?>
+                                                <small class="d-block mt-1">Payment Required</small>
+                                            <?php else: ?>
+                                                <small class="d-block mt-1">Fully Paid</small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <?php if ($payment_history): ?>
+                                <!-- Payment History Table -->
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover">
-                                        <thead class="table-light">
+                                    <table class="table table-hover">
+                                        <thead>
                                             <tr>
                                                 <th>Date</th>
+                                                <th>Payment Method</th>
                                                 <th>Payment Type</th>
                                                 <th>Amount</th>
-                                                <th>Method</th>
+                                                <th>Service Charge</th>
+                                                <th>Total Amount</th>
                                                 <th>Reference</th>
                                                 <th>Status</th>
-                                                <th>Notes</th>
+                                                <th>Approval Status</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <?php 
-                                            $total_paid = 0;
-                                            $total_pending = 0;
-                                            while ($payment = $payments_result->fetch_assoc()): 
-                                                if ($payment['status'] === 'completed') {
-                                                    $total_paid += $payment['amount'];
-                                                } elseif ($payment['status'] === 'pending') {
-                                                    $total_pending += $payment['amount'];
-                                                }
-                                            ?>
+                                            <?php foreach ($payment_history as $payment): ?>
                                                 <tr>
+                                                    <td><?php echo date('M d, Y', strtotime($payment['payment_date'])); ?></td>
                                                     <td>
-                                                        <?php echo $payment['formatted_date']; ?>
-                                                        <small class="d-block text-muted">
-                                                            Created: <?php echo $payment['created_date']; ?>
-                                                        </small>
+                                                        <span class="payment-method method-<?php echo strtolower($payment['payment_method']); ?>">
+                                                            <?php echo $payment['payment_method']; ?>
+                                                        </span>
                                                     </td>
+                                                    <td><?php echo htmlspecialchars($payment['payment_type_name']); ?></td>
+                                                    <td>₦<?php echo number_format($payment['base_amount'], 2); ?></td>
+                                                    <td>₦<?php echo number_format($payment['service_charge'], 2); ?></td>
+                                                    <td>₦<?php echo number_format($payment['base_amount'] + $payment['service_charge'], 2); ?></td>
+                                                    <td><?php echo htmlspecialchars($payment['reference_code']); ?></td>
                                                     <td>
-                                                        <?php 
-                                                        $payment_type = str_replace('_', ' ', $payment['payment_type']);
-                                                        echo ucwords($payment_type); 
-                                                        ?>
-                                                    </td>
-                                                    <td class="text-end">₦<?php echo number_format($payment['amount'], 2); ?></td>
-                                                    <td>
-                                                        <?php 
-                                                        $method = str_replace('_', ' ', $payment['payment_method']);
-                                                        echo ucwords($method); 
-                                                        ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php if ($payment['reference_number']): ?>
-                                                            <span class="text-primary"><?php echo $payment['reference_number']; ?></span>
-                                                        <?php else: ?>
-                                                            <span class="text-muted">-</span>
-                                                        <?php endif; ?>
-                                                    </td>
-                                                    <td>
-                                                        <?php
-                                                        $status_class = '';
-                                                        switch ($payment['status']) {
-                                                            case 'completed':
-                                                                $status_class = 'success';
-                                                                break;
-                                                            case 'pending':
-                                                                $status_class = 'warning';
-                                                                break;
-                                                            case 'failed':
-                                                                $status_class = 'danger';
-                                                                break;
-                                                            default:
-                                                                $status_class = 'secondary';
-                                                        }
-                                                        ?>
-                                                        <span class="badge bg-<?php echo $status_class; ?>">
-                                                            <?php echo ucfirst($payment['status']); ?>
+                                                        <span class="payment-status status-<?php echo strtolower($payment['payment_status']); ?>">
+                                                            <?php echo ucfirst($payment['payment_status']); ?>
                                                         </span>
                                                     </td>
                                                     <td>
-                                                        <?php if ($payment['notes']): ?>
-                                                            <span class="text-muted"><?php echo htmlspecialchars($payment['notes']); ?></span>
+                                                        <?php if ($payment['payment_method'] === 'Cash' && isset($payment['approval_status'])): ?>
+                                                            <span class="approval-status approval-<?php echo strtolower($payment['approval_status']); ?>">
+                                                                <?php 
+                                                                switch($payment['approval_status']) {
+                                                                    case 'under_review':
+                                                                        echo 'Under Review';
+                                                                        break;
+                                                                    case 'approved':
+                                                                        echo 'Approved';
+                                                                        break;
+                                                                    case 'rejected':
+                                                                        echo 'Rejected';
+                                                                        break;
+                                                                    default:
+                                                                        echo 'N/A';
+                                                                }
+                                                                ?>
+                                                            </span>
                                                         <?php else: ?>
-                                                            <span class="text-muted">-</span>
+                                                            <span class="text-muted">N/A</span>
                                                         <?php endif; ?>
                                                     </td>
                                                 </tr>
-                                            <?php endwhile; ?>
+                                            <?php endforeach; ?>
                                         </tbody>
-                                        <tfoot>
-                                            <tr class="table-light">
-                                                <td colspan="2"><strong>Total Paid:</strong></td>
-                                                <td class="text-end" colspan="5"><strong>₦<?php echo number_format($total_paid, 2); ?></strong></td>
-                                            </tr>
-                                        </tfoot>
                                     </table>
                                 </div>
-                                
-                                <!-- Payment Summary Cards -->
-                                <div class="row mt-4">
-                                    <div class="col-md-4">
-                                        <div class="card bg-success text-white">
-                                            <div class="card-body">
-                                                <h5 class="card-title">Total Paid</h5>
-                                                <h3 class="mb-0">₦<?php echo number_format($total_paid, 2); ?></h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="col-md-4">
-                                        <div class="card bg-warning text-dark">
-                                            <div class="card-body">
-                                                <h5 class="card-title">Pending Payments</h5>
-                                                <h3 class="mb-0">₦<?php echo number_format($total_pending, 2); ?></h3>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="col-md-4">
-                                        <div class="card bg-info text-white">
-                                            <div class="card-body">
-                                                <h5 class="card-title">Last Payment</h5>
-                                                <?php
-                                                $payments_result->data_seek(0);
-                                                $last_payment = $payments_result->fetch_assoc();
-                                                if ($last_payment):
-                                                ?>
-                                                    <p class="mb-0">
-                                                        ₦<?php echo number_format($last_payment['amount'], 2); ?><br>
-                                                        <small><?php echo $last_payment['formatted_date']; ?></small>
-                                                    </p>
-                                                <?php else: ?>
-                                                    <p class="mb-0">No payments yet</p>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
                             <?php else: ?>
                                 <div class="alert alert-info">
-                                    <p class="mb-0"><i class="fas fa-info-circle me-2"></i> No payment records found.</p>
+                                    <i class="fas fa-info-circle"></i> No payment history found for this student.
                                 </div>
                             <?php endif; ?>
+                            
+                            <!-- Link to Detailed Payment History -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <h6 class="alert-heading mb-1">
+                                                    <i class="fas fa-info-circle me-2"></i> Need More Details?
+                                                </h6>
+                                                <p class="mb-0">View your complete payment history with detailed breakdown and receipt information.</p>
+                                            </div>
+                                            <a href="../../school_paymente/student_payment_history.php" class="btn btn-primary">
+                                                <i class="fas fa-external-link-alt me-2"></i> View Detailed History
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     

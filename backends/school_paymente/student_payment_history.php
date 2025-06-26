@@ -339,7 +339,8 @@ function getRemainingBalance($reg_number) {
     return $school_fees_balance + $other_balance;
 }
 
-// Handle student search
+// Check if student is logged in via session
+$student_logged_in = false;
 $student_data = null;
 $payment_history = null;
 $search_message = '';
@@ -352,7 +353,29 @@ $remaining_other_balance = 0;
 $total_amount_paid = 0;
 $remaining_balance = 0;
 
-if (isset($_POST['search_student'])) {
+// Check if student is logged in via session
+if (isset($_SESSION['student_id']) && isset($_SESSION['registration_number'])) {
+    $student_logged_in = true;
+    $registration_number = $_SESSION['registration_number'];
+    $student_data = getStudentDetails($registration_number);
+    
+    if ($student_data) {
+        $payment_history = getPaymentHistory($registration_number);
+        $total_school_fees_to_pay = getTotalAmountToPay($registration_number);
+        $total_other_to_pay = getTotalOtherAmountToPay($registration_number);
+        $total_school_fees_paid = getTotalSchoolFeesPaid($registration_number);
+        $total_other_paid = getTotalOtherAmountPaid($registration_number);
+        $remaining_school_fees_balance = getRemainingSchoolFeesBalance($registration_number);
+        $remaining_other_balance = getRemainingOtherBalance($registration_number);
+        $total_amount_paid = getTotalAmountPaid($registration_number);
+        $remaining_balance = getRemainingBalance($registration_number);
+    } else {
+        $search_message = '<div class="alert alert-danger">Student record not found in database!</div>';
+    }
+}
+
+// Handle manual search if not logged in or for additional searches
+if (isset($_POST['search_student']) && !empty($_POST['registration_number'])) {
     $reg_number = $_POST['registration_number'];
     $student_data = getStudentDetails($reg_number);
     
@@ -520,45 +543,83 @@ if (isset($_POST['search_student'])) {
                 <h3 class="mb-0"><i class="fas fa-history"></i> Payment History</h3>
             </div>
             <div class="card-body">
-                <!-- Description Section -->
-                <div class="alert alert-info mb-4" style="border-left: 4px solid #17a2b8;">
-                    <div class="d-flex align-items-start">
-                        <i class="fas fa-info-circle me-3 mt-1" style="color: #17a2b8; font-size: 1.2em;"></i>
-                        <div>
-                            <h6 class="alert-heading mb-2" style="color: #0c5460;">Why Registration Number Verification?</h6>
-                            <p class="mb-2" style="color: #0c5460; font-size: 0.95em;">
-                                To ensure the security and privacy of your payment information, we require you to enter your 
-                                <strong>Registration Number</strong>. This verification step helps us:
-                            </p>
-                            <ul class="mb-0" style="color: #0c5460; font-size: 0.9em;">
-                                <li>Protect your personal payment data from unauthorized access</li>
-                                <li>Ensure only you can view your own payment history</li>
-                                <li>Maintain accurate and secure financial records</li>
-                                <li>Comply with data protection and privacy regulations</li>
-                            </ul>
+                <?php if ($student_logged_in): ?>
+                    <!-- Welcome message for logged-in students -->
+                    <div class="alert alert-success mb-4" style="border-left: 4px solid #28a745;">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-user-check me-3 mt-1" style="color: #28a745; font-size: 1.2em;"></i>
+                            <div>
+                                <h6 class="alert-heading mb-2" style="color: #155724;">Welcome, <?php echo htmlspecialchars($student_data['first_name'] . ' ' . $student_data['last_name']); ?>!</h6>
+                                <p class="mb-2" style="color: #155724; font-size: 0.95em;">
+                                    You are logged in as <strong><?php echo htmlspecialchars($registration_number); ?></strong>. 
+                                    Below is your complete payment history and financial summary.
+                                </p>
+                                <p class="mb-0" style="color: #155724; font-size: 0.9em;">
+                                    <i class="fas fa-shield-alt me-1"></i> Your session is secure and your data is protected.
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Search Form -->
-                <div class="search-form">
-                    <form method="POST" class="mb-4">
-                        <div class="row align-items-end">
-                            <div class="col-md-8">
-                                <label for="registration_number" class="form-label">Registration Number</label>
-                                <input type="text" class="form-control" id="registration_number" 
-                                       name="registration_number" required 
-                                       placeholder="Enter your registration number"
-                                       value="<?php echo isset($_POST['registration_number']) ? htmlspecialchars($_POST['registration_number']) : ''; ?>">
-                            </div>
-                            <div class="col-md-4">
-                                <button type="submit" name="search_student" class="btn btn-primary w-100">
-                                    <i class="fas fa-search"></i> Search
-                                </button>
+                <?php else: ?>
+                    <!-- Login prompt for non-logged-in users -->
+                    <div class="alert alert-warning mb-4" style="border-left: 4px solid #ffc107;">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-sign-in-alt me-3 mt-1" style="color: #ffc107; font-size: 1.2em;"></i>
+                            <div>
+                                <h6 class="alert-heading mb-2" style="color: #856404;">Quick Access Available!</h6>
+                                <p class="mb-2" style="color: #856404; font-size: 0.95em;">
+                                    If you're a registered student, you can <strong>log in to your dashboard</strong> for instant access to your payment history without entering your registration number manually.
+                                </p>
+                                <div class="mb-2">
+                                    <a href="../student/registration/login.php" class="btn btn-warning btn-sm">
+                                        <i class="fas fa-sign-in-alt me-1"></i> Login to Dashboard
+                                    </a>
+                                    <span class="text-muted ms-2" style="font-size: 0.9em;">or continue with manual search below</span>
+                                </div>
                             </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+
+                    <!-- Description Section for non-logged-in users -->
+                    <div class="alert alert-info mb-4" style="border-left: 4px solid #17a2b8;">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-info-circle me-3 mt-1" style="color: #17a2b8; font-size: 1.2em;"></i>
+                            <div>
+                                <h6 class="alert-heading mb-2" style="color: #0c5460;">Why Registration Number Verification?</h6>
+                                <p class="mb-2" style="color: #0c5460; font-size: 0.95em;">
+                                    To ensure the security and privacy of your payment information, we require you to enter your 
+                                    <strong>Registration Number</strong>. This verification step helps us:
+                                </p>
+                                <ul class="mb-0" style="color: #0c5460; font-size: 0.9em;">
+                                    <li>Protect your personal payment data from unauthorized access</li>
+                                    <li>Ensure only you can view your own payment history</li>
+                                    <li>Maintain accurate and secure financial records</li>
+                                    <li>Comply with data protection and privacy regulations</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Form for non-logged-in users -->
+                    <div class="search-form">
+                        <form method="POST" class="mb-4">
+                            <div class="row align-items-end">
+                                <div class="col-md-8">
+                                    <label for="registration_number" class="form-label">Registration Number</label>
+                                    <input type="text" class="form-control" id="registration_number" 
+                                           name="registration_number" required 
+                                           placeholder="Enter your registration number"
+                                           value="<?php echo isset($_POST['registration_number']) ? htmlspecialchars($_POST['registration_number']) : ''; ?>">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" name="search_student" class="btn btn-primary w-100">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                <?php endif; ?>
 
                 <?php echo $search_message; ?>
 
