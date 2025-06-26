@@ -333,17 +333,17 @@ foreach ($payments as $payment) {
                                             <i class="fas fa-print"></i>
                                         </button>
                                     <?php else: ?>
-                                        <a href="payment_receipt.php?reference=<?php echo urlencode($payment['reference_code']); ?>" 
-                                           class="btn btn-sm btn-success" title="Print Receipt" target="_blank">
-                                            <i class="fas fa-print"></i>
-                                        </a>
+                                    <a href="payment_receipt.php?reference=<?php echo urlencode($payment['reference_code']); ?>" 
+                                       class="btn btn-sm btn-success" title="Print Receipt" target="_blank">
+                                        <i class="fas fa-print"></i>
+                                    </a>
                                     <?php endif; ?>
                                     <?php if ($payment['payment_status'] === 'pending'): ?>
-                                        <button class="btn btn-sm btn-primary approve-btn" 
+                                    <button class="btn btn-sm btn-primary approve-btn" 
                                                 onclick="approvePayment('<?php echo $payment['reference_code']; ?>', '<?php echo $payment['payment_method']; ?>', this)" 
-                                                title="Approve Payment">
-                                            <i class="fas fa-check"></i>
-                                        </button>
+                                            title="Approve Payment">
+                                        <i class="fas fa-check"></i>
+                                    </button>
                                     <?php endif; ?>
                                     <?php if ($payment['payment_method'] === 'cash' && ($payment['approval_status'] ?? 'under_review') === 'under_review'): ?>
                                         <button class="btn btn-sm btn-warning approve-cash-btn" 
@@ -681,7 +681,7 @@ foreach ($payments as $payment) {
                     // Restore button
                     printButton.innerHTML = originalText;
                     printButton.disabled = false;
-                });
+            });
         }
     </script>
 </body>

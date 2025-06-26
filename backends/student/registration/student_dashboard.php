@@ -240,6 +240,148 @@ if ($payments_result && $payments_result->num_rows > 0) {
     }
 }
 
+// Get payment information from new payment system
+$total_school_fees_to_pay = 0;
+$total_other_to_pay = 0;
+$total_school_fees_paid = 0;
+$total_other_paid = 0;
+$remaining_school_fees_balance = 0;
+$remaining_other_balance = 0;
+$total_amount_paid = 0;
+$remaining_balance = 0;
+
+// Function to calculate total amount to pay for school fees
+function getTotalAmountToPay($conn, $reg_number) {
+    $sql = "SELECT SUM(amount) as total_amount FROM school_payment_types 
+            WHERE is_active = 1 
+            AND (name LIKE '%school%fee%' OR name LIKE '%tuition%' OR name LIKE '%academic%fee%' 
+                 OR name LIKE '%registration%fee%' OR name LIKE '%session%fee%')";
+    $result = $conn->query($sql);
+    $row = $result->fetch_assoc();
+    return $row['total_amount'] ?? 0;
+}
+
+// Function to calculate total amount to pay for other payments
+function getTotalOtherAmountToPay($conn, $reg_number) {
+    $sql = "SELECT SUM(amount) as total_amount FROM school_payment_types 
+            WHERE is_active = 1 
+            AND NOT (name LIKE '%school%fee%' OR name LIKE '%tuition%' OR name LIKE '%academic%fee%' 
+                     OR name LIKE '%registration%fee%' OR name LIKE '%session%fee%')";
+    $result = $conn->query($sql);
+    $row = $result->fetch_assoc();
+    return $row['total_amount'] ?? 0;
+}
+
+// Function to calculate total amount paid for school fees
+function getTotalSchoolFeesPaid($conn, $reg_number) {
+    // Get school fees payment types IDs
+    $sql_types = "SELECT id FROM school_payment_types 
+                  WHERE is_active = 1 
+                  AND (name LIKE '%school%fee%' OR name LIKE '%tuition%' OR name LIKE '%academic%fee%' 
+                       OR name LIKE '%registration%fee%' OR name LIKE '%session%fee%')";
+    $result = $conn->query($sql_types);
+    $school_fee_ids = [];
+    while ($row = $result->fetch_assoc()) {
+        $school_fee_ids[] = $row['id'];
+    }
+    
+    if (empty($school_fee_ids)) {
+        return 0;
+    }
+    
+    $placeholders = str_repeat('?,', count($school_fee_ids) - 1) . '?';
+    
+    // Get total from online payments for school fees (completed only)
+    $sql_online = "SELECT SUM(base_amount + service_charge) as total_online 
+                   FROM school_payments 
+                   WHERE student_id = ? AND payment_status IN ('completed', 'Success') 
+                   AND payment_type_id IN ($placeholders)";
+    $stmt = $conn->prepare($sql_online);
+    $params = array_merge([$reg_number], $school_fee_ids);
+    $stmt->bind_param(str_repeat('s', count($params)), ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $total_online = $row['total_online'] ?? 0;
+    $stmt->close();
+    
+    // Get total from cash payments for school fees (completed and approved only)
+    $sql_cash = "SELECT SUM(base_amount + service_charge) as total_cash 
+                 FROM cash_payments 
+                 WHERE student_id = ? AND payment_status IN ('completed', 'Success') 
+                 AND approval_status = 'approved' AND payment_type_id IN ($placeholders)";
+    $stmt = $conn->prepare($sql_cash);
+    $params = array_merge([$reg_number], $school_fee_ids);
+    $stmt->bind_param(str_repeat('s', count($params)), ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $total_cash = $row['total_cash'] ?? 0;
+    $stmt->close();
+    
+    return $total_online + $total_cash;
+}
+
+// Function to calculate total amount paid for other payments
+function getTotalOtherAmountPaid($conn, $reg_number) {
+    // Get other payment types IDs (excluding school fees)
+    $sql_types = "SELECT id FROM school_payment_types 
+                  WHERE is_active = 1 
+                  AND NOT (name LIKE '%school%fee%' OR name LIKE '%tuition%' OR name LIKE '%academic%fee%' 
+                           OR name LIKE '%registration%fee%' OR name LIKE '%session%fee%')";
+    $result = $conn->query($sql_types);
+    $other_payment_ids = [];
+    while ($row = $result->fetch_assoc()) {
+        $other_payment_ids[] = $row['id'];
+    }
+    
+    if (empty($other_payment_ids)) {
+        return 0;
+    }
+    
+    $placeholders = str_repeat('?,', count($other_payment_ids) - 1) . '?';
+    
+    // Get total from online payments for other payments (completed only)
+    $sql_online = "SELECT SUM(base_amount + service_charge) as total_online 
+                   FROM school_payments 
+                   WHERE student_id = ? AND payment_status IN ('completed', 'Success') 
+                   AND payment_type_id IN ($placeholders)";
+    $stmt = $conn->prepare($sql_online);
+    $params = array_merge([$reg_number], $other_payment_ids);
+    $stmt->bind_param(str_repeat('s', count($params)), ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $total_online = $row['total_online'] ?? 0;
+    $stmt->close();
+    
+    // Get total from cash payments for other payments (completed and approved only)
+    $sql_cash = "SELECT SUM(base_amount + service_charge) as total_cash 
+                 FROM cash_payments 
+                 WHERE student_id = ? AND payment_status IN ('completed', 'Success') 
+                 AND approval_status = 'approved' AND payment_type_id IN ($placeholders)";
+    $stmt = $conn->prepare($sql_cash);
+    $params = array_merge([$reg_number], $other_payment_ids);
+    $stmt->bind_param(str_repeat('s', count($params)), ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $total_cash = $row['total_cash'] ?? 0;
+    $stmt->close();
+    
+    return $total_online + $total_cash;
+}
+
+// Calculate payment information
+$total_school_fees_to_pay = getTotalAmountToPay($conn, $registration_number);
+$total_other_to_pay = getTotalOtherAmountToPay($conn, $registration_number);
+$total_school_fees_paid = getTotalSchoolFeesPaid($conn, $registration_number);
+$total_other_paid = getTotalOtherAmountPaid($conn, $registration_number);
+$remaining_school_fees_balance = $total_school_fees_to_pay - $total_school_fees_paid;
+$remaining_other_balance = $total_other_to_pay - $total_other_paid;
+$total_amount_paid = $total_school_fees_paid + $total_other_paid;
+$remaining_balance = $remaining_school_fees_balance + $remaining_other_balance;
+
 // Function to format date
 function formatDate($date) {
     return date('M d, Y', strtotime($date));
@@ -1403,8 +1545,23 @@ while ($row = $announcementsResult->fetch_assoc()) {
                                     <div class="text-center">
                                         <i class="fas fa-money-bill-wave card-icon"></i>
                                         <h4>Payments</h4>
-                                        <p class="h3"><?php echo count($payments); ?></p>
-                                        <p>Total payments made</p>
+                                        <p class="h3">₦<?php echo number_format($total_amount_paid, 2); ?></p>
+                                        <p>Total amount paid</p>
+                                        <?php if ($remaining_balance > 0): ?>
+                                            <div class="mt-2">
+                                                <small class="text-warning">
+                                                    <i class="fas fa-exclamation-triangle"></i> 
+                                                    ₦<?php echo number_format($remaining_balance, 2); ?> remaining
+                                                </small>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="mt-2">
+                                                <small class="text-success">
+                                                    <i class="fas fa-check-circle"></i> 
+                                                    Fully paid
+                                                </small>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                 </div>
                             </div>

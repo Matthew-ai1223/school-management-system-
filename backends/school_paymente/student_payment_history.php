@@ -35,7 +35,7 @@ function createPaymentTables($conn) {
             base_amount DECIMAL(10,2) NOT NULL,
             service_charge DECIMAL(10,2) NOT NULL,
             reference_code VARCHAR(100) UNIQUE,
-            payment_status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
+            payment_status ENUM('Success', 'completed', 'failed') DEFAULT 'completed',
             payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (payment_type_id) REFERENCES school_payment_types(id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
@@ -66,7 +66,7 @@ function createPaymentTables($conn) {
             base_amount DECIMAL(10,2) NOT NULL,
             service_charge DECIMAL(10,2) DEFAULT 0.00,
             reference_code VARCHAR(100) UNIQUE,
-            payment_status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
+            payment_status ENUM('Success', 'completed', 'failed') DEFAULT 'completed',
             approval_status ENUM('under_review', 'approved', 'rejected') DEFAULT 'under_review',
             approver_id VARCHAR(50) NULL,
             approver_name VARCHAR(100) NULL,
@@ -174,10 +174,183 @@ function getPaymentHistory($reg_number) {
     return $all_payments;
 }
 
+// Function to calculate total amount to pay for a student
+function getTotalAmountToPay($reg_number) {
+    global $conn;
+    
+    // Get only school fees payment types (assuming school fees have specific names or IDs)
+    // You can modify this query based on how school fees are identified in your payment_types table
+    $sql = "SELECT SUM(amount) as total_amount FROM school_payment_types 
+            WHERE is_active = 1 
+            AND (name LIKE '%school%fee%' OR name LIKE '%tuition%' OR name LIKE '%academic%fee%' 
+                 OR name LIKE '%registration%fee%' OR name LIKE '%session%fee%')";
+    $result = $conn->query($sql);
+    $row = $result->fetch_assoc();
+    $total_amount_to_pay = $row['total_amount'] ?? 0;
+    
+    return $total_amount_to_pay;
+}
+
+// Function to calculate total amount to pay for other payments (non-school fees)
+function getTotalOtherAmountToPay($reg_number) {
+    global $conn;
+    
+    // Get other payment types (excluding school fees)
+    $sql = "SELECT SUM(amount) as total_amount FROM school_payment_types 
+            WHERE is_active = 1 
+            AND NOT (name LIKE '%school%fee%' OR name LIKE '%tuition%' OR name LIKE '%academic%fee%' 
+                     OR name LIKE '%registration%fee%' OR name LIKE '%session%fee%')";
+    $result = $conn->query($sql);
+    $row = $result->fetch_assoc();
+    $total_amount_to_pay = $row['total_amount'] ?? 0;
+    
+    return $total_amount_to_pay;
+}
+
+// Function to calculate total amount paid by a student for school fees only
+function getTotalSchoolFeesPaid($reg_number) {
+    global $conn;
+    
+    // Get school fees payment types IDs
+    $sql_types = "SELECT id FROM school_payment_types 
+                  WHERE is_active = 1 
+                  AND (name LIKE '%school%fee%' OR name LIKE '%tuition%' OR name LIKE '%academic%fee%' 
+                       OR name LIKE '%registration%fee%' OR name LIKE '%session%fee%')";
+    $result = $conn->query($sql_types);
+    $school_fee_ids = [];
+    while ($row = $result->fetch_assoc()) {
+        $school_fee_ids[] = $row['id'];
+    }
+    
+    if (empty($school_fee_ids)) {
+        return 0;
+    }
+    
+    $placeholders = str_repeat('?,', count($school_fee_ids) - 1) . '?';
+    
+    // Get total from online payments for school fees (completed only)
+    $sql_online = "SELECT SUM(base_amount + service_charge) as total_online 
+                   FROM school_payments 
+                   WHERE student_id = ? AND payment_status IN ('completed', 'Success') 
+                   AND payment_type_id IN ($placeholders)";
+    $stmt = $conn->prepare($sql_online);
+    $params = array_merge([$reg_number], $school_fee_ids);
+    $stmt->bind_param(str_repeat('s', count($params)), ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $total_online = $row['total_online'] ?? 0;
+    $stmt->close();
+    
+    // Get total from cash payments for school fees (completed and approved only)
+    $sql_cash = "SELECT SUM(base_amount + service_charge) as total_cash 
+                 FROM cash_payments 
+                 WHERE student_id = ? AND payment_status IN ('completed', 'Success') 
+                 AND approval_status = 'approved' AND payment_type_id IN ($placeholders)";
+    $stmt = $conn->prepare($sql_cash);
+    $params = array_merge([$reg_number], $school_fee_ids);
+    $stmt->bind_param(str_repeat('s', count($params)), ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $total_cash = $row['total_cash'] ?? 0;
+    $stmt->close();
+    
+    return $total_online + $total_cash;
+}
+
+// Function to calculate total amount paid by a student for other payments
+function getTotalOtherAmountPaid($reg_number) {
+    global $conn;
+    
+    // Get other payment types IDs (excluding school fees)
+    $sql_types = "SELECT id FROM school_payment_types 
+                  WHERE is_active = 1 
+                  AND NOT (name LIKE '%school%fee%' OR name LIKE '%tuition%' OR name LIKE '%academic%fee%' 
+                           OR name LIKE '%registration%fee%' OR name LIKE '%session%fee%')";
+    $result = $conn->query($sql_types);
+    $other_payment_ids = [];
+    while ($row = $result->fetch_assoc()) {
+        $other_payment_ids[] = $row['id'];
+    }
+    
+    if (empty($other_payment_ids)) {
+        return 0;
+    }
+    
+    $placeholders = str_repeat('?,', count($other_payment_ids) - 1) . '?';
+    
+    // Get total from online payments for other payments (completed only)
+    $sql_online = "SELECT SUM(base_amount + service_charge) as total_online 
+                   FROM school_payments 
+                   WHERE student_id = ? AND payment_status IN ('completed', 'Success') 
+                   AND payment_type_id IN ($placeholders)";
+    $stmt = $conn->prepare($sql_online);
+    $params = array_merge([$reg_number], $other_payment_ids);
+    $stmt->bind_param(str_repeat('s', count($params)), ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $total_online = $row['total_online'] ?? 0;
+    $stmt->close();
+    
+    // Get total from cash payments for other payments (completed and approved only)
+    $sql_cash = "SELECT SUM(base_amount + service_charge) as total_cash 
+                 FROM cash_payments 
+                 WHERE student_id = ? AND payment_status IN ('completed', 'Success') 
+                 AND approval_status = 'approved' AND payment_type_id IN ($placeholders)";
+    $stmt = $conn->prepare($sql_cash);
+    $params = array_merge([$reg_number], $other_payment_ids);
+    $stmt->bind_param(str_repeat('s', count($params)), ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $total_cash = $row['total_cash'] ?? 0;
+    $stmt->close();
+    
+    return $total_online + $total_cash;
+}
+
+// Function to calculate total amount paid by a student
+function getTotalAmountPaid($reg_number) {
+    $school_fees_paid = getTotalSchoolFeesPaid($reg_number);
+    $other_paid = getTotalOtherAmountPaid($reg_number);
+    return $school_fees_paid + $other_paid;
+}
+
+// Function to calculate remaining balance for school fees only
+function getRemainingSchoolFeesBalance($reg_number) {
+    $total_to_pay = getTotalAmountToPay($reg_number);
+    $total_paid = getTotalSchoolFeesPaid($reg_number);
+    return $total_to_pay - $total_paid;
+}
+
+// Function to calculate remaining balance for other payments
+function getRemainingOtherBalance($reg_number) {
+    $total_to_pay = getTotalOtherAmountToPay($reg_number);
+    $total_paid = getTotalOtherAmountPaid($reg_number);
+    return $total_to_pay - $total_paid;
+}
+
+// Function to calculate remaining balance
+function getRemainingBalance($reg_number) {
+    $school_fees_balance = getRemainingSchoolFeesBalance($reg_number);
+    $other_balance = getRemainingOtherBalance($reg_number);
+    return $school_fees_balance + $other_balance;
+}
+
 // Handle student search
 $student_data = null;
 $payment_history = null;
 $search_message = '';
+$total_school_fees_to_pay = 0;
+$total_other_to_pay = 0;
+$total_school_fees_paid = 0;
+$total_other_paid = 0;
+$remaining_school_fees_balance = 0;
+$remaining_other_balance = 0;
+$total_amount_paid = 0;
+$remaining_balance = 0;
 
 if (isset($_POST['search_student'])) {
     $reg_number = $_POST['registration_number'];
@@ -187,6 +360,14 @@ if (isset($_POST['search_student'])) {
         $search_message = '<div class="alert alert-danger">Student not found!</div>';
     } else {
         $payment_history = getPaymentHistory($reg_number);
+        $total_school_fees_to_pay = getTotalAmountToPay($reg_number);
+        $total_other_to_pay = getTotalOtherAmountToPay($reg_number);
+        $total_school_fees_paid = getTotalSchoolFeesPaid($reg_number);
+        $total_other_paid = getTotalOtherAmountPaid($reg_number);
+        $remaining_school_fees_balance = getRemainingSchoolFeesBalance($reg_number);
+        $remaining_other_balance = getRemainingOtherBalance($reg_number);
+        $total_amount_paid = getTotalAmountPaid($reg_number);
+        $remaining_balance = getRemainingBalance($reg_number);
     }
 }
 ?>
@@ -397,6 +578,154 @@ if (isset($_POST['search_student'])) {
                             </div>
                         </div>
                     </div>
+
+                    <!-- Financial Summary -->
+                    <div class="row mb-4">
+                        <!-- School Fees Section -->
+                        <div class="col-12 mb-3">
+                            <h5 class="text-primary"><i class="fas fa-graduation-cap"></i> School Fees Summary</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title"><i class="fas fa-money-bill-wave"></i> School Fees to Pay</h6>
+                                    <h4 class="mb-0">₦<?php echo number_format($total_school_fees_to_pay, 2); ?></h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title"><i class="fas fa-check-circle"></i> School Fees Paid</h6>
+                                    <h4 class="mb-0">₦<?php echo number_format($total_school_fees_paid, 2); ?></h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card <?php echo $remaining_school_fees_balance > 0 ? 'bg-warning' : 'bg-info'; ?> text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">
+                                        <i class="fas <?php echo $remaining_school_fees_balance > 0 ? 'fa-exclamation-triangle' : 'fa-check-double'; ?>"></i> 
+                                        School Fees Balance
+                                    </h6>
+                                    <h4 class="mb-0">₦<?php echo number_format($remaining_school_fees_balance, 2); ?></h4>
+                                    <?php if ($remaining_school_fees_balance > 0): ?>
+                                        <small class="d-block mt-1">Payment Required</small>
+                                    <?php else: ?>
+                                        <small class="d-block mt-1">Fully Paid</small>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-secondary text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title"><i class="fas fa-percentage"></i> Payment Progress</h6>
+                                    <h4 class="mb-0">
+                                        <?php 
+                                        $progress = $total_school_fees_to_pay > 0 ? ($total_school_fees_paid / $total_school_fees_to_pay) * 100 : 0;
+                                        echo round($progress, 1) . '%';
+                                        ?>
+                                    </h4>
+                                    <small class="d-block mt-1">Complete</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Payments Section -->
+                    <!-- <?php if ($total_other_to_pay > 0): ?>
+                    <div class="row mb-4">
+                        <div class="col-12 mb-3">
+                            <h5 class="text-info"><i class="fas fa-credit-card"></i> Other Payments Summary</h5>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title"><i class="fas fa-list"></i> Other Fees to Pay</h6>
+                                    <h4 class="mb-0">₦<?php echo number_format($total_other_to_pay, 2); ?></h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title"><i class="fas fa-check-circle"></i> Other Fees Paid</h6>
+                                    <h4 class="mb-0">₦<?php echo number_format($total_other_paid, 2); ?></h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card <?php echo $remaining_other_balance > 0 ? 'bg-warning' : 'bg-info'; ?> text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">
+                                        <i class="fas <?php echo $remaining_other_balance > 0 ? 'fa-exclamation-triangle' : 'fa-check-double'; ?>"></i> 
+                                        Other Fees Balance
+                                    </h6>
+                                    <h4 class="mb-0">₦<?php echo number_format($remaining_other_balance, 2); ?></h4>
+                                    <?php if ($remaining_other_balance > 0): ?>
+                                        <small class="d-block mt-1">Payment Required</small>
+                                    <?php else: ?>
+                                        <small class="d-block mt-1">Fully Paid</small>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-secondary text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title"><i class="fas fa-percentage"></i> Payment Progress</h6>
+                                    <h4 class="mb-0">
+                                        <?php 
+                                        $other_progress = $total_other_to_pay > 0 ? ($total_other_paid / $total_other_to_pay) * 100 : 0;
+                                        echo round($other_progress, 1) . '%';
+                                        ?>
+                                    </h4>
+                                    <small class="d-block mt-1">Complete</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endif; ?> -->
+
+                    <!-- Overall Summary -->
+                    <!-- <div class="row mb-4">
+                        <div class="col-12 mb-3">
+                            <h5 class="text-dark"><i class="fas fa-chart-pie"></i> Overall Summary</h5>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-dark text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title"><i class="fas fa-calculator"></i> Total Amount to Pay</h6>
+                                    <h4 class="mb-0">₦<?php echo number_format($total_school_fees_to_pay + $total_other_to_pay, 2); ?></h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title"><i class="fas fa-check-circle"></i> Total Amount Paid</h6>
+                                    <h4 class="mb-0">₦<?php echo number_format($total_amount_paid, 2); ?></h4>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card <?php echo $remaining_balance > 0 ? 'bg-warning' : 'bg-info'; ?> text-white">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">
+                                        <i class="fas <?php echo $remaining_balance > 0 ? 'fa-exclamation-triangle' : 'fa-check-double'; ?>"></i> 
+                                        Total Remaining Balance
+                                    </h6>
+                                    <h4 class="mb-0">₦<?php echo number_format($remaining_balance, 2); ?></h4>
+                                    <?php if ($remaining_balance > 0): ?>
+                                        <small class="d-block mt-1">Payment Required</small>
+                                    <?php else: ?>
+                                        <small class="d-block mt-1">Fully Paid</small>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
 
                     <?php if ($payment_history): ?>
                         <!-- Payment History Table -->
