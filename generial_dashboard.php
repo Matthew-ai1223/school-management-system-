@@ -205,11 +205,11 @@ if (!isset($_SESSION['logged_in'])) {
                 <i class="fas fa-user-graduate"></i>
                 Tutorial Student Portal
             </a>
-            <!-- <a href="teacher_portal.php" class="dashboard-btn btn-teacher">
+           <a href="backends/school_paymente/buxer_dashbord.php" class="dashboard-btn btn-teacher">
                 <i class="fas fa-chalkboard-teacher"></i>
-                Teacher Portal
+                Bursar Dashboard
             </a>
-            <a href="admin_portal.php" class="dashboard-btn btn-admin">
+             <!-- <a href="admin_portal.php" class="dashboard-btn btn-admin">
                 <i class="fas fa-user-shield"></i>
                 Admin Portal
             </a> -->

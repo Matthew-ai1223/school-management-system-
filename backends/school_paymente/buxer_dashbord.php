@@ -968,9 +968,9 @@ function generateReceiptHTML($payment) {
             <a href="payment_interface_cash.php" class="btn btn-success me-2">
                 <i class="fas fa-plus"></i> New Cash Payment
             </a>
-            <a href="../admin/dashboard.php" class="btn btn-outline-secondary">
+            <!-- <a href="../admin/dashboard.php" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Admin
-            </a>
+            </a> -->
         </div>
     </div>
 

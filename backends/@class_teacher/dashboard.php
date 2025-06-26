@@ -364,7 +364,7 @@ include '../admin/include/header.php';
                                     </a>
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <a href="payments.php" class="btn btn-block btn-success elevation-1">
+                                    <a href="../school_paymente/student_payment_history.php" class="btn btn-block btn-success elevation-1">
                                         <i class="fas fa-money-bill-wave mr-2"></i> Record Payments
                                     </a>
                                 </div>

@@ -487,6 +487,18 @@ function generateReceiptHTML($payment) {
     }
     
     $receipt_html .= '
+                
+                <!-- Payment Review Notice -->
+                <div class="receipt-row" style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-top: 20px;">
+                    <div style="text-align: center; width: 100%;">
+                        <div style="color: #856404; font-weight: 600; margin-bottom: 8px;">
+                            <i class="fas fa-clock" style="margin-right: 8px;"></i>Payment Review Notice
+                        </div>
+                        <div style="color: #856404; font-size: 14px; line-height: 1.4;">
+                            Your payment is under review and it will be approved and reflect on your portal in less than 48 hours.
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="receipt-footer">
