@@ -114,6 +114,47 @@ foreach ($payments as $payment) {
             color: #721c24;
         }
 
+        .payment-method-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .method-online {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .method-cash {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .approval-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .approval-under_review {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .approval-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .approval-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
         /* Export Buttons Styling */
         .dt-buttons .btn {
             margin-right: 5px;
@@ -229,10 +270,12 @@ foreach ($payments as $payment) {
                             <th>Student ID</th>
                             <th>Student Name</th>
                             <th>Payment Type</th>
+                            <th>Method</th>
                             <th>Amount</th>
                             <th>Base Amount</th>
                             <th>Service Charge</th>
                             <th>Status</th>
+                            <th>Approval Status</th>
                             <th>Date</th>
                             <th>Actions</th>
                         </tr>
@@ -244,6 +287,11 @@ foreach ($payments as $payment) {
                                 <td><?php echo htmlspecialchars($payment['student_id']); ?></td>
                                 <td><?php echo htmlspecialchars($payment['student_name'] ?: 'N/A'); ?></td>
                                 <td><?php echo htmlspecialchars($payment['payment_type_name']); ?></td>
+                                <td>
+                                    <span class="payment-method-badge method-<?php echo $payment['payment_method']; ?>">
+                                        <?php echo strtoupper($payment['payment_method']); ?>
+                                    </span>
+                                </td>
                                 <td>₦<?php echo number_format($payment['amount'], 2); ?></td>
                                 <td>₦<?php echo number_format($payment['base_amount'], 2); ?></td>
                                 <td>₦<?php echo number_format($payment['service_charge'], 2); ?></td>
@@ -252,21 +300,57 @@ foreach ($payments as $payment) {
                                         <?php echo ucfirst($payment['payment_status']); ?>
                                     </span>
                                 </td>
+                                <td>
+                                    <?php if ($payment['payment_method'] === 'cash' && isset($payment['approval_status'])): ?>
+                                        <span class="approval-status approval-<?php echo strtolower($payment['approval_status'] ?? 'under_review'); ?>">
+                                            <?php 
+                                            switch($payment['approval_status'] ?? 'under_review') {
+                                                case 'under_review':
+                                                    echo 'Under Review';
+                                                    break;
+                                                case 'approved':
+                                                    echo 'Approved';
+                                                    break;
+                                                case 'rejected':
+                                                    echo 'Rejected';
+                                                    break;
+                                                default:
+                                                    echo 'Under Review';
+                                            }
+                                            ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-muted">N/A</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?php echo date('M d, Y H:i', strtotime($payment['payment_date'])); ?></td>
                                 <td>
-                                    <button class="btn btn-sm btn-info" onclick="viewDetails('<?php echo $payment['reference_code']; ?>')" title="View Details">
+                                    <button class="btn btn-sm btn-info" onclick="viewDetails('<?php echo $payment['reference_code']; ?>', '<?php echo $payment['payment_method']; ?>')" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </button>
-                                    <a href="payment_receipt.php?reference=<?php echo urlencode($payment['reference_code']); ?>" 
-                                       class="btn btn-sm btn-success" title="Print Receipt" target="_blank">
-                                        <i class="fas fa-print"></i>
-                                    </a>
+                                    <?php if ($payment['payment_method'] === 'cash' && $payment['receipt_number']): ?>
+                                        <button class="btn btn-sm btn-success" onclick="printCashReceipt('<?php echo $payment['receipt_number']; ?>', <?php echo $payment['id']; ?>)" title="Print Receipt">
+                                            <i class="fas fa-print"></i>
+                                        </button>
+                                    <?php else: ?>
+                                        <a href="payment_receipt.php?reference=<?php echo urlencode($payment['reference_code']); ?>" 
+                                           class="btn btn-sm btn-success" title="Print Receipt" target="_blank">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                    <?php endif; ?>
                                     <?php if ($payment['payment_status'] === 'pending'): ?>
-                                    <button class="btn btn-sm btn-primary approve-btn" 
-                                            onclick="approvePayment('<?php echo $payment['reference_code']; ?>', this)" 
-                                            title="Approve Payment">
-                                        <i class="fas fa-check"></i>
-                                    </button>
+                                        <button class="btn btn-sm btn-primary approve-btn" 
+                                                onclick="approvePayment('<?php echo $payment['reference_code']; ?>', '<?php echo $payment['payment_method']; ?>', this)" 
+                                                title="Approve Payment">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    <?php endif; ?>
+                                    <?php if ($payment['payment_method'] === 'cash' && ($payment['approval_status'] ?? 'under_review') === 'under_review'): ?>
+                                        <button class="btn btn-sm btn-warning approve-cash-btn" 
+                                                onclick="approveCashPayment('<?php echo $payment['reference_code']; ?>', this)" 
+                                                title="Approve Cash Payment">
+                                            <i class="fas fa-thumbs-up"></i>
+                                        </button>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -331,12 +415,12 @@ foreach ($payments as $payment) {
                                 text: '<i class="fas fa-file-excel"></i> Excel',
                                 className: 'btn-success',
                                 exportOptions: {
-                                    columns: [0,1,2,3,4,5,6,7,8]
+                                    columns: [0,1,2,3,4,5,6,7,8,9]
                                 },
                                 title: 'Payment Records - ' + new Date().toLocaleDateString(),
                                 customize: function(xlsx) {
                                     var sheet = xlsx.xl.worksheets['sheet1.xml'];
-                                    $('row c[r^="D"], row c[r^="E"], row c[r^="F"]', sheet).each(function() {
+                                    $('row c[r^="E"], row c[r^="F"], row c[r^="G"]', sheet).each(function() {
                                         $(this).attr('s', '60'); // Apply number format
                                     });
                                 }
@@ -346,7 +430,7 @@ foreach ($payments as $payment) {
                                 text: '<i class="fas fa-file-pdf"></i> PDF',
                                 className: 'btn-danger',
                                 exportOptions: {
-                                    columns: [0,1,2,3,4,5,6,7,8]
+                                    columns: [0,1,2,3,4,5,6,7,8,9]
                                 },
                                 title: 'Payment Records',
                                 customize: function(doc) {
@@ -361,7 +445,7 @@ foreach ($payments as $payment) {
                                 text: '<i class="fas fa-file-csv"></i> CSV',
                                 className: 'btn-info',
                                 exportOptions: {
-                                    columns: [0,1,2,3,4,5,6,7,8]
+                                    columns: [0,1,2,3,4,5,6,7,8,9]
                                 }
                             },
                             {
@@ -369,7 +453,7 @@ foreach ($payments as $payment) {
                                 text: '<i class="fas fa-print"></i> Print',
                                 className: 'btn-secondary',
                                 exportOptions: {
-                                    columns: [0,1,2,3,4,5,6,7,8]
+                                    columns: [0,1,2,3,4,5,6,7,8,9]
                                 },
                                 customize: function(win) {
                                     $(win.document.body).css('font-size', '10pt');
@@ -398,7 +482,7 @@ foreach ($payments as $payment) {
         });
 
         // View payment details
-        function viewDetails(reference) {
+        function viewDetails(reference, method) {
             let modal = new bootstrap.Modal(document.getElementById('paymentDetailsModal'));
             
             // Show modal with loading state
@@ -414,6 +498,7 @@ foreach ($payments as $payment) {
                             <p><strong>Student ID:</strong> ${data.student_id}</p>
                             <p><strong>Student Name:</strong> ${data.student_name || 'N/A'}</p>
                             <p><strong>Payment Type:</strong> ${data.payment_type_name}</p>
+                            <p><strong>Method:</strong> ${strtoupper(method)}</p>
                             <p><strong>Amount:</strong> ₦${parseFloat(data.amount).toLocaleString('en-NG', {minimumFractionDigits: 2})}</p>
                             <p><strong>Base Amount:</strong> ₦${parseFloat(data.base_amount).toLocaleString('en-NG', {minimumFractionDigits: 2})}</p>
                             <p><strong>Service Charge:</strong> ₦${parseFloat(data.service_charge).toLocaleString('en-NG', {minimumFractionDigits: 2})}</p>
@@ -429,10 +514,10 @@ foreach ($payments as $payment) {
         }
 
         // Function to approve payment
-        function approvePayment(reference, button) {
+        function approvePayment(reference, method, button) {
             Swal.fire({
                 title: 'Confirm Approval',
-                text: 'Are you sure you want to approve this payment?',
+                text: `Are you sure you want to approve this ${method} payment?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -450,14 +535,14 @@ foreach ($payments as $payment) {
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
                         },
-                        body: 'reference=' + encodeURIComponent(reference)
+                        body: 'reference=' + encodeURIComponent(reference) + '&method=' + encodeURIComponent(method)
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.status === 'success') {
                             // Update the payment status in the table
                             let row = button.closest('tr');
-                            let statusCell = row.querySelector('td:nth-child(7)');
+                            let statusCell = row.querySelector('td:nth-child(9)'); // Status column
                             statusCell.innerHTML = '<span class="status-badge status-completed">Completed</span>';
                             
                             // Remove the approve button
@@ -477,7 +562,7 @@ foreach ($payments as $payment) {
                             // Show success message
                             Swal.fire(
                                 'Approved!',
-                                'Payment has been approved successfully.',
+                                data.message,
                                 'success'
                             );
                         } else {
@@ -498,6 +583,105 @@ foreach ($payments as $payment) {
                     });
                 }
             });
+        }
+
+        // Function to approve cash payment
+        function approveCashPayment(reference, button) {
+            Swal.fire({
+                title: 'Confirm Cash Payment Approval',
+                text: 'Are you sure you want to approve this cash payment?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, approve it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading state
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+                    // Send approval request
+                    fetch('ctrl/approve_cash_payment.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: 'reference=' + encodeURIComponent(reference)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Update the approval status in the table
+                            let row = button.closest('tr');
+                            let approvalStatusCell = row.querySelector('td:nth-child(10)'); // Approval Status column
+                            approvalStatusCell.innerHTML = '<span class="approval-status approval-approved">Approved</span>';
+                            
+                            // Remove the approve button
+                            button.remove();
+
+                            // Show success message
+                            Swal.fire(
+                                'Approved!',
+                                data.message,
+                                'success'
+                            );
+                        } else {
+                            throw new Error(data.message || 'Failed to approve cash payment');
+                        }
+                    })
+                    .catch(error => {
+                        // Re-enable button
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fas fa-thumbs-up"></i>';
+                        
+                        // Show error message
+                        Swal.fire(
+                            'Error!',
+                            error.message || 'Failed to approve cash payment',
+                            'error'
+                        );
+                    });
+                }
+            });
+        }
+
+        // Function to print cash receipt
+        function printCashReceipt(receiptNumber, paymentId) {
+            // Show loading
+            const printButton = event.target;
+            const originalText = printButton.innerHTML;
+            printButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            printButton.disabled = true;
+
+            // Fetch receipt data from cash payment interface
+            fetch(`payment_interface_cash.php?generate_receipt=1&receipt_number=${receiptNumber}&payment_id=${paymentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Create a new window for printing
+                        const printWindow = window.open('', '_blank', 'width=800,height=600');
+                        printWindow.document.write(data.receipt_html);
+                        printWindow.document.close();
+                        
+                        // Wait for content to load then print
+                        printWindow.onload = function() {
+                            printWindow.print();
+                            printWindow.close();
+                        };
+                    } else {
+                        alert('Error generating receipt: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error generating receipt. Please try again.');
+                })
+                .finally(() => {
+                    // Restore button
+                    printButton.innerHTML = originalText;
+                    printButton.disabled = false;
+                });
         }
     </script>
 </body>
