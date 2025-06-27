@@ -288,7 +288,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="morning_reference" class="form-label">Reference Number (Optional)</label>
                                 <input type="text" class="form-control" id="morning_reference" placeholder="Enter pre-generated reference number">
-                                <small class="text-muted">Leave empty to pay with Paystack</small>
+                                <small class="text-muted">Leave empty if you haven't paid with cash</small>
                             </div>
                         </div>
                     </div>
@@ -395,7 +395,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="afternoon_reference" class="form-label">Reference Number (Optional)</label>
                                 <input type="text" class="form-control" id="afternoon_reference" placeholder="Enter pre-generated reference number">
-                                <small class="text-muted">Leave empty to pay with Paystack</small>
+                                <small class="text-muted">Leave empty to if you haven't paid</small>
                             </div>
                         </div>
                     </div>

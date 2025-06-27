@@ -4,6 +4,21 @@ include '../confg.php';
 require_once 'check_account_status.php';
 require_once 'generate_receipt.php';
 
+// Add migration to ensure created_at column exists
+try {
+    $conn->query("ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP");
+} catch (Exception $e) {}
+try {
+    $conn->query("ALTER TABLE afternoon_students ADD COLUMN IF NOT EXISTS created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP");
+} catch (Exception $e) {}
+// Add migration to ensure reg_number column exists
+try {
+    $conn->query("ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS reg_number VARCHAR(32) UNIQUE NULL");
+} catch (Exception $e) {}
+try {
+    $conn->query("ALTER TABLE afternoon_students ADD COLUMN IF NOT EXISTS reg_number VARCHAR(32) UNIQUE NULL");
+} catch (Exception $e) {}
+
 // Verify Paystack payment
 function verifyPaystackPayment($reference) {
     $curl = curl_init();
@@ -182,6 +197,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Registration failed: ' . $stmt->error);
         }
 
+        // Generate registration number
+        $year = date('Y');
+        $class_type = strtoupper($form_type); // MORNING or AFTERNOON
+        // Get the last serial for this year and class type
+        if ($form_type === 'morning') {
+            $serial_sql = "SELECT COUNT(*) as count FROM morning_students WHERE YEAR(created_at) = ?";
+            $serial_stmt = $conn->prepare($serial_sql);
+            $serial_stmt->bind_param('i', $year);
+        } else {
+            $serial_sql = "SELECT COUNT(*) as count FROM afternoon_students WHERE YEAR(created_at) = ?";
+            $serial_stmt = $conn->prepare($serial_sql);
+            $serial_stmt->bind_param('i', $year);
+        }
+        $serial_stmt->execute();
+        $serial_result = $serial_stmt->get_result();
+        $serial_row = $serial_result->fetch_assoc();
+        $serial = $serial_row ? ((int)$serial_row['count']) : 0;
+        $serial++;
+        $reg_number = sprintf('%s/%s/%04d', $year, $class_type, $serial);
+        $serial_stmt->close();
+
+        // Update the student record with the reg number
+        if ($form_type === 'morning') {
+            $update_sql = "UPDATE morning_students SET reg_number = ? WHERE email = ? AND payment_reference = ?";
+            $update_stmt = $conn->prepare($update_sql);
+            $update_stmt->bind_param('sss', $reg_number, $email, $reference);
+        } else {
+            $update_sql = "UPDATE afternoon_students SET reg_number = ? WHERE email = ? AND payment_reference = ?";
+            $update_stmt = $conn->prepare($update_sql);
+            $update_stmt->bind_param('sss', $reg_number, $email, $reference);
+        }
+        $update_stmt->execute();
+        $update_stmt->close();
+
         // Prepare user data for receipt
         $user = [
             'fullname' => $fullname,
@@ -207,11 +256,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $receipt_path = $uploads_dir . '/' . $receipt_filename;
         $pdf->Output('F', $receipt_path);
 
-        // Return success with the correct relative path
+        // Return success with the correct relative path and reg number
         echo json_encode([
             'status' => 'success', 
             'message' => 'Registration completed successfully',
-            'receipt_url' => 'uploads/' . $receipt_filename
+            'receipt_url' => 'uploads/' . $receipt_filename,
+            'reg_number' => $reg_number
         ]);
         
     } catch (Exception $e) {

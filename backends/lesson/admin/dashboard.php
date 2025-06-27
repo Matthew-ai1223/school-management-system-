@@ -341,6 +341,7 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                                 <tr>
                                     <th>Photo</th>
                                     <th>Name</th>
+                                    <th>Reg Number</th>
                                     <th>Session</th>
                                     <th>Registration Date</th>
                                     <th>Status</th>
@@ -357,6 +358,7 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                                     echo "<tr>
                                         <td><img src='../student/uploads/" . basename($morning['photo']) . "' class='user-avatar' onerror=\"this.src='https://via.placeholder.com/40'\"></td>
                                         <td>" . htmlspecialchars($morning['fullname']) . "</td>
+                                        <td>" . htmlspecialchars($morning['reg_number'] ?? '-') . "</td>
                                         <td><span class='badge bg-primary'>Morning</span></td>
                                         <td>" . date('M j, Y', strtotime($morning['registration_date'])) . "</td>
                                         <td><span class='badge bg-" . $status['class'] . "'>" . $status['status'] . "</span></td>
@@ -384,6 +386,7 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                                 <tr>
                                     <th>Photo</th>
                                     <th>Name</th>
+                                    <th>Reg Number</th>
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>Department</th>
@@ -400,6 +403,7 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                                     echo "<tr>
                                         <td><img src='../student/uploads/" . basename($student['photo']) . "' class='user-avatar' onerror=\"this.src='https://via.placeholder.com/40'\"></td>
                                         <td>" . htmlspecialchars($student['fullname']) . "</td>
+                                        <td>" . htmlspecialchars($student['reg_number'] ?? '-') . "</td>
                                         <td>" . htmlspecialchars($student['email']) . "</td>
                                         <td>" . htmlspecialchars($student['phone']) . "</td>
                                         <td>" . htmlspecialchars($student['department']) . "</td>
@@ -439,6 +443,7 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                                 <tr>
                                     <th>Photo</th>
                                     <th>Name</th>
+                                    <th>Reg Number</th>
                                     <th>Email</th>
                                     <th>Phone</th>
                                     <th>School</th>
@@ -455,6 +460,7 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                                     echo "<tr>
                                         <td><img src='../student/uploads/" . basename($student['photo']) . "' class='user-avatar' onerror=\"this.src='https://via.placeholder.com/40'\"></td>
                                         <td>" . htmlspecialchars($student['fullname']) . "</td>
+                                        <td>" . htmlspecialchars($student['reg_number'] ?? '-') . "</td>
                                         <td>" . htmlspecialchars($student['email']) . "</td>
                                         <td>" . htmlspecialchars($student['phone']) . "</td>
                                         <td>" . htmlspecialchars($student['school']) . "</td>
@@ -492,6 +498,7 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                             <thead>
                                 <tr>
                                     <th>Student Name</th>
+                                    <th>Reg Number</th>
                                     <th>Session</th>
                                     <th>Payment Type</th>
                                     <th>Amount</th>
@@ -510,6 +517,7 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                                     $receipt_path = "../student/uploads/receipt_" . $student['payment_reference'] . ".pdf";
                                     echo "<tr>
                                         <td>" . htmlspecialchars($student['fullname']) . "</td>
+                                        <td>" . htmlspecialchars($student['reg_number'] ?? '-') . "</td>
                                         <td><span class='badge bg-primary'>Morning</span></td>
                                         <td>" . ucfirst($student['payment_type']) . "</td>
                                         <td>₦" . number_format($student['payment_amount'], 2) . "</td>
@@ -529,6 +537,7 @@ if (isset($_GET['status']) && isset($_GET['message'])) {
                                     $receipt_path = "../student/uploads/receipt_" . $student['payment_reference'] . ".pdf";
                                     echo "<tr>
                                         <td>" . htmlspecialchars($student['fullname']) . "</td>
+                                        <td>" . htmlspecialchars($student['reg_number'] ?? '-') . "</td>
                                         <td><span class='badge bg-info'>Afternoon</span></td>
                                         <td>" . ucfirst($student['payment_type']) . "</td>
                                         <td>₦" . number_format($student['payment_amount'], 2) . "</td>
