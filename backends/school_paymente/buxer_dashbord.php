@@ -165,6 +165,24 @@ function getPaymentStats($conn, $bursar_id = null) {
     $stats = $result->fetch_assoc();
     $stmt->close();
     
+    // Get today's amount
+    $today = date('Y-m-d');
+    $sql_today = "SELECT SUM(amount) as day_amount FROM cash_payments WHERE DATE(payment_date) = ?";
+    if ($bursar_id) {
+        $sql_today .= " AND bursar_id = ?";
+    }
+    $stmt_today = $conn->prepare($sql_today);
+    if ($bursar_id) {
+        $stmt_today->bind_param('ss', $today, $bursar_id);
+    } else {
+        $stmt_today->bind_param('s', $today);
+    }
+    $stmt_today->execute();
+    $result_today = $stmt_today->get_result();
+    $row_today = $result_today->fetch_assoc();
+    $stats['day_amount'] = $row_today['day_amount'] ?? 0;
+    $stmt_today->close();
+    
     return $stats;
 }
 
@@ -805,6 +823,12 @@ function generateReceiptHTML($payment) {
                 <div class="stats-card">
                     <h3><?php echo $payment_stats['last_payment_date'] ? date('M d', strtotime($payment_stats['last_payment_date'])) : 'N/A'; ?></h3>
                     <p><i class="fas fa-calendar"></i> Last Payment</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h3>₦<?php echo number_format($payment_stats['day_amount'], 2); ?></h3>
+                    <p><i class="fas fa-calendar-day"></i> Day Amount</p>
                 </div>
             </div>
         </div>

@@ -536,7 +536,7 @@ function isReferenceUsed($conn, $reference) {
                     <div class="col-xs-2">
                         <div id="fh5co-logo" style="display: flex; align-items: center; gap: 10px;">
                             <a href="../../../index.html"><img src="../../../images/logo.png" alt="ACE College Logo" style="width: 100px; height: 70px;"></a>
-                            <a href="../../../index.html"><img src="../../../images/logo_2.jpg" alt="ACE Kiddies Logo" style="width: 70px; height: 70px; border-radius: 50%;"></a>
+                            <!-- <a href="../../../index.html"><img src="../../../images/logo_2.jpg" alt="ACE Kiddies Logo" style="width: 70px; height: 70px; border-radius: 50%;"></a> -->
                         </div>
                     </div>
                     <div class="col-xs-10 text-right menu-1">
@@ -554,7 +554,9 @@ function isReferenceUsed($conn, $reference) {
 
     <div class="container payment-container">
         <div class="school-header">
-            <h1>ACE MODEL COLLEGE</h1>
+            <h1 style="font-size: 2.5em; font-weight: 700; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);">
+                ACE <?php echo strtoupper($applicationType); ?>
+            </h1>
             <h2>Application Fee Payment</h2>
             <?php if (defined('PAYSTACK_PUBLIC_KEY')): ?>
                 <div class="badge badge-success">Payment System Ready</div>

@@ -209,10 +209,10 @@ if (!isset($_SESSION['logged_in'])) {
                 <i class="fas fa-chalkboard-teacher"></i>
                 Bursar Dashboard
             </a>
-             <!-- <a href="admin_portal.php" class="dashboard-btn btn-admin">
+            <a href="admin_portal.php" class="dashboard-btn btn-admin">
                 <i class="fas fa-user-shield"></i>
                 Admin Portal
-            </a> -->
+            </a> 
         </div>
     </div>
 
