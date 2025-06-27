@@ -4,6 +4,70 @@ require_once 'ctrl/payment_types.php';
 
 session_start();
 
+// Add a simple test endpoint for debugging
+if (isset($_GET['test'])) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Server is working',
+        'php_version' => PHP_VERSION,
+        'server_time' => date('Y-m-d H:i:s'),
+        'post_data' => $_POST,
+        'get_data' => $_GET
+    ]);
+    exit;
+}
+
+// Test database connection
+if (isset($_GET['test_db'])) {
+    try {
+        if ($conn->connect_error) {
+            throw new Exception("Database connection failed: " . $conn->connect_error);
+        }
+        
+        $result = $conn->query("SELECT 1 as test");
+        if ($result) {
+            echo json_encode(['status' => 'success', 'message' => 'Database connection successful']);
+        } else {
+            throw new Exception("Database query failed");
+        }
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
+// Test table structure
+if (isset($_GET['test_table'])) {
+    try {
+        if ($conn->connect_error) {
+            throw new Exception("Database connection failed: " . $conn->connect_error);
+        }
+        
+        // Check if cash_payments table exists
+        $result = $conn->query("SHOW TABLES LIKE 'cash_payments'");
+        if ($result->num_rows == 0) {
+            throw new Exception("cash_payments table does not exist");
+        }
+        
+        // Get table structure
+        $result = $conn->query("DESCRIBE cash_payments");
+        $columns = [];
+        while ($row = $result->fetch_assoc()) {
+            $columns[] = $row;
+        }
+        
+        echo json_encode([
+            'status' => 'success', 
+            'message' => 'Table structure retrieved',
+            'columns' => $columns
+        ]);
+    } catch (Exception $e) {
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
 // Create tables if they don't exist
 function createPaymentTables($conn) {
     $conn->query("SET FOREIGN_KEY_CHECKS = 0");
@@ -18,7 +82,7 @@ function createPaymentTables($conn) {
             base_amount DECIMAL(10,2) NOT NULL,
             service_charge DECIMAL(10,2) DEFAULT 0.00,
             reference_code VARCHAR(100) UNIQUE,
-            payment_status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
+            payment_status ENUM('pending', 'completed', 'failed', 'Success') DEFAULT 'pending',
             approval_status ENUM('under_review', 'approved', 'rejected') DEFAULT 'under_review',
             approver_id VARCHAR(50) NULL,
             approver_name VARCHAR(100) NULL,
@@ -40,7 +104,8 @@ function createPaymentTables($conn) {
             "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS approval_status ENUM('under_review', 'approved', 'rejected') DEFAULT 'under_review' AFTER payment_status",
             "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS approver_id VARCHAR(50) NULL AFTER approval_status",
             "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS approver_name VARCHAR(100) NULL AFTER approver_id",
-            "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS approval_date TIMESTAMP NULL AFTER approver_name"
+            "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS approval_date TIMESTAMP NULL AFTER approver_name",
+            "ALTER TABLE cash_payments MODIFY COLUMN payment_status ENUM('pending', 'completed', 'failed', 'Success') DEFAULT 'pending'"
         ];
 
         foreach ($alterQueries as $alterQuery) {
@@ -115,44 +180,84 @@ if (isset($_POST['search_student'])) {
 
 // Handle cash payment submission
 if (isset($_POST['process_cash_payment'])) {
-    $student_id = $_POST['student_id'];
-    $payment_type_id = $_POST['payment_type'];
-    $amount = $_POST['amount'];
-    $bursar_id = $_POST['bursar_id'];
-    $bursar_name = $_POST['bursar_name'];
-    $notes = $_POST['notes'];
+    // Enable error reporting for debugging
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
     
-    // Generate unique codes
-    $reference_code = generateReferenceCode();
-    $receipt_number = generateReceiptNumber();
-    
-    // Get payment type details
-    $stmt = $conn->prepare("SELECT * FROM school_payment_types WHERE id = ?");
-    $stmt->bind_param("i", $payment_type_id);
-    $stmt->execute();
-    $payment_type = $stmt->get_result()->fetch_assoc();
-    $stmt->close();
-    
-    $base_amount = $amount;
-    $service_charge = 0.00; // No service charge for cash payments
-    
-    // Insert cash payment
-    $sql = "INSERT INTO cash_payments (student_id, payment_type_id, amount, base_amount, service_charge, 
-            reference_code, receipt_number, bursar_id, bursar_name, notes, approval_status, payment_status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'under_review', 'pending')";
-    
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("sidddsssss", $student_id, $payment_type_id, $amount, $base_amount, 
-                      $service_charge, $reference_code, $receipt_number, $bursar_id, $bursar_name, $notes);
-    
-    if ($stmt->execute()) {
+    try {
+        // Validate required fields
+        if (empty($_POST['student_id']) || empty($_POST['payment_type']) || empty($_POST['amount'])) {
+            throw new Exception("Required fields are missing");
+        }
+        
+        $student_id = $_POST['student_id'];
+        $payment_type_id = $_POST['payment_type'];
+        $amount = $_POST['amount'];
+        $bursar_id = $_POST['bursar_id'];
+        $bursar_name = $_POST['bursar_name'];
+        $notes = $_POST['notes'];
+        
+        // Validate data types
+        if (!is_numeric($payment_type_id) || !is_numeric($amount)) {
+            throw new Exception("Invalid data types for payment type or amount");
+        }
+        
+        // Generate unique codes
+        $reference_code = generateReferenceCode();
+        $receipt_number = generateReceiptNumber();
+        
+        // Check database connection
+        if ($conn->connect_error) {
+            throw new Exception("Database connection failed: " . $conn->connect_error);
+        }
+        
+        // Get payment type details
+        $stmt = $conn->prepare("SELECT * FROM school_payment_types WHERE id = ?");
+        if (!$stmt) {
+            throw new Exception("Error preparing payment type query: " . $conn->error);
+        }
+        
+        $stmt->bind_param("i", $payment_type_id);
+        if (!$stmt->execute()) {
+            throw new Exception("Error executing payment type query: " . $stmt->error);
+        }
+        
+        $payment_type = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        
+        if (!$payment_type) {
+            throw new Exception("Payment type not found");
+        }
+        
+        $base_amount = $amount;
+        $service_charge = 0.00; // No service charge for cash payments
+        
+        // Insert cash payment - using the correct ENUM values from the database
+        $sql = "INSERT INTO cash_payments (student_id, payment_type_id, amount, base_amount, service_charge, 
+                reference_code, receipt_number, bursar_id, bursar_name, notes, approval_status, payment_status) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'under_review', 'completed')";
+        
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            throw new Exception("Error preparing insert query: " . $conn->error);
+        }
+        
+        $stmt->bind_param("sidddsssss", $student_id, $payment_type_id, $amount, $base_amount, 
+                          $service_charge, $reference_code, $receipt_number, $bursar_id, $bursar_name, $notes);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Error executing insert query: " . $stmt->error);
+        }
+        
         $payment_id = $conn->insert_id;
         
         $success_message = '<div class="alert alert-success">'
             . '<i class="fas fa-check-circle"></i> Cash payment processed successfully!<br>'
             . '<strong>Receipt Number:</strong> ' . $receipt_number . '<br>'
             . '<strong>Reference Code:</strong> ' . $reference_code . '<br>'
-            . '<strong>Status:</strong> <span class="badge bg-warning">Under Review</span><br>'
+            . '<strong>Payment ID:</strong> ' . $payment_id . '<br>'
+            . '<strong>Status:</strong> <span class="badge bg-success">Completed</span><br>'
+            . '<strong>Approval:</strong> <span class="badge bg-warning">Under Review</span><br>'
             . '<strong>Note:</strong> Payment is pending admin approval<br><br>'
             . '<div class="d-flex gap-2">'
             . '<button type="button" class="btn btn-primary btn-sm" onclick="printReceipt(\'' . $receipt_number . '\', \'' . $payment_id . '\')">'
@@ -166,10 +271,21 @@ if (isset($_POST['process_cash_payment'])) {
         
         // Clear student data to allow new search
         $student_data = null;
-    } else {
-        $search_message = '<div class="alert alert-danger">Error processing payment: ' . $conn->error . '</div>';
+        
+    } catch (Exception $e) {
+        $search_message = '<div class="alert alert-danger">'
+            . '<i class="fas fa-exclamation-triangle"></i> Error processing payment: ' . $e->getMessage() . '<br>'
+            . '<small>Please check the server logs for more details.</small>'
+            . '</div>';
+        
+        // Log the error for debugging
+        error_log("Payment processing error: " . $e->getMessage());
+        error_log("POST data: " . print_r($_POST, true));
     }
-    $stmt->close();
+    
+    if (isset($stmt)) {
+        $stmt->close();
+    }
 }
 
 // Handle receipt generation request
@@ -833,12 +949,77 @@ function generateReceiptHTML($payment) {
                         <i class="fas fa-arrow-left"></i> Back to Admin
                     </a>
                 </div>
+
+                <!-- Debug Section (remove in production) -->
+                <div class="card mt-4">
+                    <div class="card-body">
+                        <h6 class="card-title text-warning">
+                            <i class="fas fa-bug"></i> Debug Tools (Development Only)
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="testServer()">
+                                    <i class="fas fa-server"></i> Test Server
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="testDatabase()">
+                                    <i class="fas fa-database"></i> Test Database
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="testTableStructure()">
+                                    <i class="fas fa-table"></i> Test Table
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-sm btn-outline-info" onclick="showFormData()">
+                                    <i class="fas fa-eye"></i> Show Form Data
+                                </button>
+                            </div>
+                        </div>
+                        <div id="debug-output" class="mt-3" style="display: none;">
+                            <pre id="debug-content" class="bg-light p-2 rounded" style="font-size: 12px;"></pre>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Add debugging for form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const cashPaymentForm = document.getElementById('cashPaymentForm');
+            if (cashPaymentForm) {
+                cashPaymentForm.addEventListener('submit', function(e) {
+                    console.log('Form submission started');
+                    
+                    // Log form data for debugging
+                    const formData = new FormData(this);
+                    console.log('Form data:');
+                    for (let [key, value] of formData.entries()) {
+                        console.log(key + ': ' + value);
+                    }
+                    
+                    // Check if all required fields are filled
+                    const studentId = formData.get('student_id');
+                    const paymentType = formData.get('payment_type');
+                    const amount = formData.get('amount');
+                    
+                    if (!studentId || !paymentType || !amount) {
+                        e.preventDefault();
+                        alert('Please fill in all required fields');
+                        console.log('Form validation failed - missing required fields');
+                        return false;
+                    }
+                    
+                    console.log('Form validation passed, submitting...');
+                });
+            }
+        });
+
         function validateAmount() {
             const paymentType = document.getElementById('payment_type');
             const amount = document.getElementById('amount');
@@ -974,6 +1155,62 @@ function generateReceiptHTML($payment) {
                     console.error('Error:', error);
                     alert('Error loading receipt. Please try again.');
                 });
+        }
+
+        // Debug functions
+        function testServer() {
+            fetch('payment_interface_cash.php?test=1')
+                .then(response => response.json())
+                .then(data => {
+                    showDebugOutput('Server Test Result:', data);
+                })
+                .catch(error => {
+                    showDebugOutput('Server Test Error:', { error: error.message });
+                });
+        }
+
+        function testDatabase() {
+            fetch('payment_interface_cash.php?test_db=1')
+                .then(response => response.json())
+                .then(data => {
+                    showDebugOutput('Database Test Result:', data);
+                })
+                .catch(error => {
+                    showDebugOutput('Database Test Error:', { error: error.message });
+                });
+        }
+
+        function testTableStructure() {
+            fetch('payment_interface_cash.php?test_table=1')
+                .then(response => response.json())
+                .then(data => {
+                    showDebugOutput('Table Test Result:', data);
+                })
+                .catch(error => {
+                    showDebugOutput('Table Test Error:', { error: error.message });
+                });
+        }
+
+        function showFormData() {
+            const form = document.getElementById('cashPaymentForm');
+            if (form) {
+                const formData = new FormData(form);
+                const data = {};
+                for (let [key, value] of formData.entries()) {
+                    data[key] = value;
+                }
+                showDebugOutput('Current Form Data:', data);
+            } else {
+                showDebugOutput('Form Data Error:', { error: 'Form not found' });
+            }
+        }
+
+        function showDebugOutput(title, data) {
+            const output = document.getElementById('debug-output');
+            const content = document.getElementById('debug-content');
+            
+            content.innerHTML = title + '\n' + JSON.stringify(data, null, 2);
+            output.style.display = 'block';
         }
     </script>
 </body>

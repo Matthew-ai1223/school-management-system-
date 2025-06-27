@@ -1,8 +1,53 @@
 <?php
+// Set session configuration for better compatibility with shared hosting
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_secure', 0); // Set to 1 if using HTTPS
+ini_set('session.cookie_samesite', 'Lax');
+
+// Start session with proper configuration
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once 'ctrl/db_config.php';
 require_once 'ctrl/payment_types.php';
 
-session_start();
+// Add session debugging
+$session_debug = [
+    'session_id' => session_id(),
+    'session_status' => session_status(),
+    'session_data' => $_SESSION,
+    'cookies' => $_COOKIE
+];
+
+// Test session endpoint
+if (isset($_GET['test_session'])) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => 'success',
+        'session_debug' => $session_debug_info,
+        'student_logged_in' => isset($_SESSION['student_id']) && isset($_SESSION['registration_number']),
+        'session_vars' => [
+            'student_id' => $_SESSION['student_id'] ?? 'not_set',
+            'registration_number' => $_SESSION['registration_number'] ?? 'not_set',
+            'student_name' => $_SESSION['student_name'] ?? 'not_set'
+        ],
+        'session_config' => [
+            'session_name' => session_name(),
+            'session_save_path' => session_save_path(),
+            'session_cookie_params' => session_get_cookie_params(),
+            'session_status' => session_status()
+        ],
+        'server_info' => [
+            'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? 'not_set',
+            'script_name' => $_SERVER['SCRIPT_NAME'] ?? 'not_set',
+            'request_uri' => $_SERVER['REQUEST_URI'] ?? 'not_set',
+            'http_host' => $_SERVER['HTTP_HOST'] ?? 'not_set'
+        ]
+    ]);
+    exit;
+}
 
 // Create all necessary tables if they don't exist
 function createPaymentTables($conn) {
@@ -353,7 +398,23 @@ $remaining_other_balance = 0;
 $total_amount_paid = 0;
 $remaining_balance = 0;
 
-// Check if student is logged in via session
+// Enhanced session checking with multiple fallbacks
+$session_vars_to_check = [
+    'student_id',
+    'registration_number',
+    'student_name'
+];
+
+$session_debug_info = [
+    'session_id' => session_id(),
+    'session_status' => session_status(),
+    'session_data' => $_SESSION,
+    'cookies' => $_COOKIE,
+    'session_name' => session_name(),
+    'session_save_path' => session_save_path()
+];
+
+// Check if student is logged in via session with multiple validation methods
 if (isset($_SESSION['student_id']) && isset($_SESSION['registration_number'])) {
     $student_logged_in = true;
     $registration_number = $_SESSION['registration_number'];
@@ -371,6 +432,14 @@ if (isset($_SESSION['student_id']) && isset($_SESSION['registration_number'])) {
         $remaining_balance = getRemainingBalance($registration_number);
     } else {
         $search_message = '<div class="alert alert-danger">Student record not found in database!</div>';
+    }
+} else {
+    // Session debug info for troubleshooting
+    $session_debug_info['missing_vars'] = [];
+    foreach ($session_vars_to_check as $var) {
+        if (!isset($_SESSION[$var])) {
+            $session_debug_info['missing_vars'][] = $var;
+        }
     }
 }
 
@@ -561,6 +630,45 @@ if (isset($_POST['search_student']) && !empty($_POST['registration_number'])) {
                         </div>
                     </div>
                 <?php else: ?>
+                    <!-- Session Debug Section (Development Only) -->
+                    <div class="alert alert-info mb-4" style="border-left: 4px solid #17a2b8;">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-bug me-3 mt-1" style="color: #17a2b8; font-size: 1.2em;"></i>
+                            <div>
+                                <h6 class="alert-heading mb-2" style="color: #0c5460;">Session Debug (Development)</h6>
+                                <p class="mb-2" style="color: #0c5460; font-size: 0.95em;">
+                                    If you're logged in to the dashboard but seeing this message, there might be a session sharing issue.
+                                </p>
+                                <div class="mb-2">
+                                    <button type="button" class="btn btn-info btn-sm" onclick="testSession()">
+                                        <i class="fas fa-bug me-1"></i> Test Session
+                                    </button>
+                                    <a href="../student/registration/student_dashboard.php" class="btn btn-success btn-sm ms-2">
+                                        <i class="fas fa-external-link-alt me-1"></i> Go to Dashboard
+                                    </a>
+                                    <span class="text-muted ms-2" style="font-size: 0.9em;">Check session status</span>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <strong>Current Session ID:</strong> <?php echo session_id(); ?><br>
+                                        <strong>Session Status:</strong> <?php echo session_status(); ?><br>
+                                        <strong>Missing Variables:</strong> 
+                                        <?php 
+                                        if (isset($session_debug_info['missing_vars'])) {
+                                            echo implode(', ', $session_debug_info['missing_vars']);
+                                        } else {
+                                            echo 'None';
+                                        }
+                                        ?>
+                                    </small>
+                                </div>
+                                <div id="session-debug-output" class="mt-3" style="display: none;">
+                                    <pre id="session-debug-content" class="bg-light p-2 rounded" style="font-size: 12px;"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Login prompt for non-logged-in users -->
                     <div class="alert alert-warning mb-4" style="border-left: 4px solid #ffc107;">
                         <div class="d-flex align-items-start">
@@ -863,5 +971,26 @@ if (isset($_POST['search_student']) && !empty($_POST['registration_number'])) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Session test function
+        function testSession() {
+            fetch('student_payment_history.php?test_session=1')
+                .then(response => response.json())
+                .then(data => {
+                    showSessionDebugOutput('Session Test Result:', data);
+                })
+                .catch(error => {
+                    showSessionDebugOutput('Session Test Error:', { error: error.message });
+                });
+        }
+
+        function showSessionDebugOutput(title, data) {
+            const output = document.getElementById('session-debug-output');
+            const content = document.getElementById('session-debug-content');
+            
+            content.innerHTML = title + '\n' + JSON.stringify(data, null, 2);
+            output.style.display = 'block';
+        }
+    </script>
 </body>
 </html>
