@@ -1,5 +1,5 @@
 <?php
-require('../fpdf/fpdf.php');
+require_once(dirname(__FILE__) . '/../fpdf/fpdf.php');
 
 class Receipt extends FPDF {
     private $schoolName = 'ACE COLLEGE TUTORIAL';
@@ -93,6 +93,7 @@ class Receipt extends FPDF {
             // Student Information
             $studentInfo = [
                 'Full Name' => $user['fullname'],
+                'Reg Number' => isset($user['reg_number']) ? $user['reg_number'] : '-',
                 'Email' => $user['email'],
                 'Phone' => $user['phone'],
                 'Department' => ucfirst($user['department']),

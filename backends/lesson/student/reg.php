@@ -191,6 +191,26 @@
     <div class="container">
         <h2 class="text-center mb-4">Student Registration</h2>
         
+        <!-- Reference Number Verification Section -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Reference Number Verification</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <label for="reference_verification" class="form-label">Enter Reference Number (if you have one)</label>
+                        <input type="text" class="form-control" id="reference_verification" placeholder="Enter your reference number">
+                        <small class="text-muted">If you have a reference number from cash payment, enter it here to auto-fill your details</small>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="button" class="btn btn-info" onclick="verifyReference()">Verify Reference</button>
+                    </div>
+                </div>
+                <div id="reference_result" class="mt-3" style="display: none;"></div>
+            </div>
+        </div>
+        
         <ul class="nav nav-tabs" id="registrationTabs" role="tablist">
             <li class="nav-item">
                 <a class="nav-link active" id="morning-tab" data-bs-toggle="tab" href="#morning" role="tab">Morning Class</a>
@@ -288,7 +308,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="morning_reference" class="form-label">Reference Number (Optional)</label>
                                 <input type="text" class="form-control" id="morning_reference" placeholder="Enter pre-generated reference number">
-                                <small class="text-muted">Leave empty if you haven't paid with cash</small>
+                                <small class="text-muted">Leave empty to pay with Paystack</small>
                             </div>
                         </div>
                     </div>
@@ -395,7 +415,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="afternoon_reference" class="form-label">Reference Number (Optional)</label>
                                 <input type="text" class="form-control" id="afternoon_reference" placeholder="Enter pre-generated reference number">
-                                <small class="text-muted">Leave empty to if you haven't paid</small>
+                                <small class="text-muted">Leave empty to pay with Paystack</small>
                             </div>
                         </div>
                     </div>
@@ -411,6 +431,95 @@
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
             input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function verifyReference() {
+            const reference = document.getElementById('reference_verification').value.trim();
+            const resultDiv = document.getElementById('reference_result');
+            
+            if (!reference) {
+                alert('Please enter a reference number');
+                return;
+            }
+            
+            // Show loading
+            resultDiv.innerHTML = '<div class="alert alert-info">Verifying reference number...</div>';
+            resultDiv.style.display = 'block';
+            
+            const formData = new FormData();
+            formData.append('reference', reference);
+            
+            fetch('verify_reference.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Auto-fill form with reference data
+                    fillFormWithReference(data.data);
+                    resultDiv.innerHTML = '<div class="alert alert-success">Reference verified successfully! Form has been auto-filled.</div>';
+                } else {
+                    resultDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+                }
+            })
+            .catch(error => {
+                resultDiv.innerHTML = '<div class="alert alert-danger">Error verifying reference: ' + error.message + '</div>';
+            });
+        }
+
+        function fillFormWithReference(data) {
+            // Switch to appropriate tab
+            const sessionType = data.session_type;
+            if (sessionType === 'morning') {
+                document.getElementById('morning-tab').click();
+            } else {
+                document.getElementById('afternoon-tab').click();
+            }
+            
+            // Fill form fields based on session
+            const prefix = sessionType;
+            
+            // Fill basic information
+            document.getElementById(prefix + '_fullname').value = data.fullname;
+            document.getElementById(prefix + '_department').value = data.department;
+            
+            // Set payment type
+            const paymentRadio = document.querySelector(`input[name="${prefix}_payment_type"][value="${data.payment_type}"]`);
+            if (paymentRadio) {
+                paymentRadio.checked = true;
+            }
+            
+            // Fill additional fields for afternoon session
+            if (sessionType === 'afternoon') {
+                document.getElementById(prefix + '_class').value = data.class;
+                document.getElementById(prefix + '_school').value = data.school;
+            }
+            
+            // Set reference number in the form
+            document.getElementById(prefix + '_reference').value = data.reference_number;
+            
+            // Update payment labels
+            updatePaymentLabels(sessionType);
+        }
+
+        function updatePaymentLabels(sessionType) {
+            // Find the payment type labels by looking for the label elements associated with the radio buttons
+            const fullPaymentRadio = document.getElementById(sessionType + '_full_payment');
+            const halfPaymentRadio = document.getElementById(sessionType + '_half_payment');
+            
+            if (fullPaymentRadio && halfPaymentRadio) {
+                const fullPaymentLabel = fullPaymentRadio.nextElementSibling;
+                const halfPaymentLabel = halfPaymentRadio.nextElementSibling;
+                
+                if (sessionType === 'afternoon') {
+                    fullPaymentLabel.textContent = 'Full Payment (₦4,000)';
+                    halfPaymentLabel.textContent = 'Half Payment (₦2,200)';
+                } else {
+                    fullPaymentLabel.textContent = 'Full Payment (₦10,000)';
+                    halfPaymentLabel.textContent = 'Half Payment (₦5,200)';
+                }
+            }
         }
 
         function showLoading() {
@@ -510,8 +619,10 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error('Server response: ' + text);
+                    return response.json().then(err => {
+                        throw new Error(err.message || 'Server error occurred');
+                    }).catch(() => {
+                        throw new Error('Failed to process registration. Please try again.');
                     });
                 }
                 return response.json();
@@ -594,8 +705,10 @@
                     })
                     .then(response => {
                         if (!response.ok) {
-                            return response.text().then(text => {
-                                throw new Error('Server response: ' + text);
+                            return response.json().then(err => {
+                                throw new Error(err.message || 'Server error occurred');
+                            }).catch(() => {
+                                throw new Error('Failed to process registration. Please try again.');
                             });
                         }
                         return response.json();

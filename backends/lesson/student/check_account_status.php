@@ -1,4 +1,5 @@
 <?php
+file_put_contents(__DIR__ . '/debug.log', 'check_account_status.php loaded' . PHP_EOL, FILE_APPEND);
 include '../confg.php';
 
 function checkAndUpdateAccountStatus($conn) {
@@ -81,4 +82,3 @@ function getDaysRemaining($conn, $user_id, $user_table) {
     
     return $interval->days;
 }
-?> 

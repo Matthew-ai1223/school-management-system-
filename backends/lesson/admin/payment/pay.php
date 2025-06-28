@@ -43,11 +43,11 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
     $table = $session === 'morning' ? 'morning_students' : 'afternoon_students';
     // Extend expiration date by 30 days from today
     $new_expiration = date('Y-m-d', strtotime('+30 days'));
-    $update_sql = "UPDATE $table SET payment_type = ?, payment_amount = ?, expiration_date = ? WHERE reg_number = ?";
+    $update_sql = "UPDATE $table SET payment_type = ?, payment_amount = ?, expiration_date = ?, is_active = 1, is_processed = 0 WHERE reg_number = ?";
     $stmt = $conn->prepare($update_sql);
     $stmt->bind_param('sdss', $payment_type, $amount, $new_expiration, $reg_number);
     if ($stmt->execute()) {
-        $success = 'Payment renewed successfully! Expiration extended to ' . $new_expiration;
+        $success = 'Payment renewed successfully! Expiration extended to ' . $new_expiration . '. Payment is pending admin approval.';
         // Fetch updated student info
         $stmt = $conn->prepare("SELECT *, ? as session FROM $table WHERE reg_number = ?");
         $stmt->bind_param('ss', $session, $reg_number);
@@ -55,6 +55,92 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
         $result = $stmt->get_result();
         if ($result->num_rows > 0) {
             $student = $result->fetch_assoc();
+
+            // --- Generate QR code and receipt ---
+            require_once __DIR__ . '/../../student/generate_receipt.php';
+            require_once __DIR__ . '/../QR/functions.php';
+
+            // Prepare user and payment details for receipt
+            $user = [
+                'fullname' => $student['fullname'],
+                'email' => $student['email'],
+                'phone' => $student['phone'],
+                'department' => $student['department'],
+                'reg_number' => $student['reg_number'],
+                'photo' => isset($student['photo']) && file_exists($student['photo']) ? $student['photo'] : null
+            ];
+            $payment_details = [
+                'reference' => $student['payment_reference'] ?? $student['reg_number'],
+                'payment_type' => $student['payment_type'],
+                'amount' => $student['payment_amount'],
+                'expiration_date' => $student['expiration_date'],
+                'registration_date' => $student['registration_date'] ?? date('Y-m-d')
+            ];
+
+            // Generate QR code (returns SVG path)
+            $studentData = [
+                'fullname' => $student['fullname'],
+                'department' => $student['department'],
+                'reg_number' => $student['reg_number'],
+                'status' => isset($student['expiration_date']) ? (new DateTime() > new DateTime($student['expiration_date']) ? 'Expired' : 'Active') : 'Unknown',
+                'payment_reference' => $payment_details['reference'],
+                'payment_type' => $payment_details['payment_type'],
+                'payment_amount' => $payment_details['amount'],
+                'registration_date' => $payment_details['registration_date'],
+                'expiration_date' => $payment_details['expiration_date']
+            ];
+            $qrPath = generateStudentQR($studentData);
+
+            // Generate receipt with QR code (extend Receipt class to add QR)
+            class ReceiptWithQR extends Receipt {
+                public $qrPath;
+                function generateReceipt($user, $payment_details, $table) {
+                    parent::generateReceipt($user, $payment_details, $table);
+                    
+                    // Generate QR code
+                    $qrPath = generateStudentQR([
+                        'fullname' => $user['fullname'],
+                        'department' => $user['department'],
+                        'reg_number' => $user['reg_number'],
+                        'payment_reference' => $payment_details['reference'],
+                        'payment_type' => $payment_details['payment_type'],
+                        'payment_amount' => $payment_details['amount'],
+                        'registration_date' => isset($payment_details['registration_date']) ? $payment_details['registration_date'] : date('Y-m-d'),
+                        'expiration_date' => $payment_details['expiration_date']
+                    ]);
+
+                    if ($qrPath && file_exists($qrPath)) {
+                        try {
+                            // Add QR code to receipt
+                            $this->Image($qrPath, 160, 80, 30, 30);
+                            // Clean up the temporary QR code file
+                            @unlink($qrPath);
+                        } catch (Exception $e) {
+                            error_log('Failed to add QR code to PDF: ' . $e->getMessage());
+                            $this->SetXY(160, 80);
+                            $this->SetFont('Arial', 'I', 8);
+                            $this->Cell(30, 30, 'QR Code Error', 1, 0, 'C');
+                        }
+                    } else {
+                        $this->SetXY(160, 80);
+                        $this->SetFont('Arial', 'I', 8);
+                        $this->Cell(30, 30, 'QR Code Error', 1, 0, 'C');
+                    }
+                }
+            }
+            $pdf = new ReceiptWithQR();
+            $pdf->qrPath = $qrPath;
+            $pdf->generateReceipt($user, $payment_details, $table);
+            $uploads_dir = __DIR__ . '/../../student/uploads';
+            if (!file_exists($uploads_dir)) {
+                mkdir($uploads_dir, 0777, true);
+            }
+            // Use a safe filename for the receipt (replace / with _)
+            $safe_reg_number = str_replace('/', '_', $student['reg_number']);
+            $receipt_filename = 'receipt_' . $safe_reg_number . '_' . time() . '.pdf';
+            $receipt_path = $uploads_dir . '/' . $receipt_filename;
+            $pdf->Output('F', $receipt_path);
+            $success .= '<br><a class="btn btn-info mt-2" href="../../student/uploads/' . $receipt_filename . '" target="_blank">Download Receipt with QR Code</a>';
         }
     } else {
         $error = 'Failed to renew payment. Please try again.';
@@ -69,10 +155,16 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Renew Student Payment</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 </head>
 <body class="bg-light">
 <div class="container py-5">
-    <h2 class="mb-4">Renew Student Payment (Cash)</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Renew Student Payment (Cash)</h2>
+        <a href="payment _report.php" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Payment Reports
+        </a>
+    </div>
     <?php if ($error): ?>
         <div class="alert alert-danger"><?php echo $error; ?></div>
     <?php endif; ?>

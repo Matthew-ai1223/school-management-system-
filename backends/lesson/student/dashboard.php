@@ -449,6 +449,7 @@ $receipt_exists = file_exists($receipt_path);
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>Full Name:</strong> <?php echo htmlspecialchars($user['fullname']); ?></p>
+                            <p><strong>Reg Number:</strong> <?php echo htmlspecialchars($user['reg_number']); ?></p>
                             <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email']); ?></p>
                             <p><strong>Phone:</strong> <?php echo htmlspecialchars($user['phone']); ?></p>
                             <p><strong>Department:</strong> <?php echo ucfirst(htmlspecialchars($user['department'])); ?></p>

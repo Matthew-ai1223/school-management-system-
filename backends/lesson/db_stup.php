@@ -117,6 +117,30 @@ if ($conn->query($sql) === TRUE) {
     echo "Error creating reference numbers table: " . $conn->error . "<br>";
 }
 
+// Create cash payments table
+$sql = "CREATE TABLE IF NOT EXISTS cash_payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    reference_number VARCHAR(255) NOT NULL UNIQUE,
+    fullname VARCHAR(255) NOT NULL,
+    session_type ENUM('morning', 'afternoon') NOT NULL,
+    department ENUM('sciences', 'commercial', 'art') NOT NULL,
+    payment_type ENUM('full', 'half') NOT NULL,
+    payment_amount DECIMAL(10,2) NOT NULL,
+    class VARCHAR(50) NULL,
+    school VARCHAR(255) NULL,
+    registration_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expiration_date DATE NOT NULL,
+    is_processed BOOLEAN DEFAULT FALSE,
+    processed_at TIMESTAMP NULL,
+    processed_by VARCHAR(50) NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Cash payments table created successfully or already exists<br>";
+} else {
+    echo "Error creating cash payments table: " . $conn->error . "<br>";
+}
+
 // Create uploads directory if it doesn't exist
 $uploads_dir = 'uploads';
 if (!file_exists($uploads_dir)) {
