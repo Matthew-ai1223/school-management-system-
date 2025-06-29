@@ -233,14 +233,22 @@ if (!in_array($payment_type, ['school', 'tutorial'])) {
                                             <select class="form-select" id="payment_category" name="payment_category" required>
                                                 <option value="">Select Payment Category</option>
                                                 <?php if ($payment_type === 'school'): ?>
-                                                    <option value="Tuition Fee" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Tuition Fee') ? 'selected' : ''; ?>>Tuition Fee</option>
-                                                    <option value="Book Library" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Book Library') ? 'selected' : ''; ?>>Book Library</option>
-                                                    <option value="Uniform" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Uniform') ? 'selected' : ''; ?>>Uniform</option>
+                                                    <option value="Tuition fee" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Tuition fee') ? 'selected' : ''; ?>>Tuition fee</option>
+                                                    <option value="Sportswear" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Sportswear') ? 'selected' : ''; ?>>Sportswear</option>
                                                     <option value="Cardigan" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Cardigan') ? 'selected' : ''; ?>>Cardigan</option>
-                                                    <option value="Sport Wares" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Sport Wares') ? 'selected' : ''; ?>>Sport Wares</option>
-                                                    <option value="Examination Fee" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Examination Fee') ? 'selected' : ''; ?>>Examination Fee</option>
-                                                    <option value="Development Levy" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Development Levy') ? 'selected' : ''; ?>>Development Levy</option>
-                                                    <option value="Other" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Other') ? 'selected' : ''; ?>>Other</option>
+                                                    <option value="Literature text" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Literature text') ? 'selected' : ''; ?>>Literature text</option>
+                                                    <option value="Excursion fee" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Excursion fee') ? 'selected' : ''; ?>>Excursion fee</option>
+                                                    <option value="Party fee" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Party fee') ? 'selected' : ''; ?>>Party fee</option>
+                                                    <option value="Inter house sport fee" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Inter house sport fee') ? 'selected' : ''; ?>>Inter house sport fee</option>
+                                                    <option value="Cultural day fee" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Cultural day fee') ? 'selected' : ''; ?>>Cultural day fee</option>
+                                                    <option value="Complete uniform" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Complete uniform') ? 'selected' : ''; ?>>Complete uniform</option>
+                                                    <option value="Only Shirt" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Only Shirt') ? 'selected' : ''; ?>>Only Shirt</option>
+                                                    <option value="Only Trouser" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Only Trouser') ? 'selected' : ''; ?>>Only Trouser</option>
+                                                    <option value="Only Skirt" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Only Skirt') ? 'selected' : ''; ?>>Only Skirt</option>
+                                                    <option value="Only Gown" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Only Gown') ? 'selected' : ''; ?>>Only Gown</option>
+                                                    <option value="Only Jacket" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Only Jacket') ? 'selected' : ''; ?>>Only Jacket</option>
+                                                    <option value="Only Tie" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Only Tie') ? 'selected' : ''; ?>>Only Tie</option>
+                                                    <option value="Others" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Others') ? 'selected' : ''; ?>>Others</option>
                                                 <?php else: ?>
                                                     <option value="Morning Class" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Morning Class') ? 'selected' : ''; ?>>Morning Class (₦10,000)</option>
                                                     <option value="Evening Class" <?php echo (isset($_POST['payment_category']) && $_POST['payment_category'] === 'Evening Class') ? 'selected' : ''; ?>>Evening Class (₦3,000)</option>

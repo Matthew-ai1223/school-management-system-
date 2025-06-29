@@ -25,7 +25,7 @@ if (isset($_GET['logout'])) {
 
 // Handle payment status updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
-    if (isset($_SESSION['admin_logged_in'])) {
+    // if (isset($_SESSION['admin_logged_in'])) {
         $payment_id = $_POST['payment_id'];
         $new_status = $_POST['status'];
         $admin_notes = sanitizeInput($_POST['admin_notes']);
@@ -47,14 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
         } catch (PDOException $e) {
             $error_message = "Database error: " . $e->getMessage();
         }
-    }
+    // }
 }
 
 // Check if admin is logged in
-if (!isset($_SESSION['admin_logged_in'])) {
+// if (!isset($_SESSION['admin_logged_in'])) {
     // Show login form
-    ?>
-    <!DOCTYPE html>
+    // ?>
+    <!-- <!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -162,10 +162,10 @@ if (!isset($_SESSION['admin_logged_in'])) {
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>
-    </html>
+    </html> -->
     <?php
-    exit;
-}
+    // exit;
+// }
 
 // Fetch payments for admin dashboard
 try {

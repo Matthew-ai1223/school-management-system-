@@ -189,6 +189,17 @@
     </div>
 
     <div class="container">
+        <!-- Important Notice for Students -->
+        <div class="alert alert-warning alert-dismissible fade show" role="alert" style="margin-bottom: 20px;">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-exclamation-triangle me-3" style="font-size: 1.5rem; color: #856404;"></i>
+                <div>
+                    <strong>Dear Student!</strong> If you get "Registration failed: Invalid reference number or payment verification failed." after registering, it's a network problem. Your account has been created and you can <a href="login.php" style="text-decoration: none; color: #007bff; font-weight: bold; font-size: 1.2rem;">Login</a>.
+                </div> 
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
         <h2 class="text-center mb-4">Student Registration</h2>
         
         <!-- Reference Number Verification Section -->

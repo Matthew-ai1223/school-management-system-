@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACE Model College - Payment System</title>
+    <title>ACE  College - Payment System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -58,8 +58,11 @@
             background: linear-gradient(45deg, #fc466b, #3f5efb);
         }
         .logo {
-            font-size: 3rem;
             margin-bottom: 1rem;
+        }
+        .logo img {
+            max-width: 120px;
+            height: auto;
         }
         .payment-icon {
             font-size: 4rem;
@@ -75,9 +78,9 @@
                 <div class="payment-card">
                     <div class="card-header">
                         <div class="logo">
-                            <i class="fas fa-graduation-cap"></i>
+                            <img src="../../images/logo_2.png" alt="ACE  College Logo">
                         </div>
-                        <h1 class="mb-0">ACE Model College</h1>
+                        <h1 class="mb-0">ACE  College</h1>
                         <p class="mb-0">Payment System</p>
                     </div>
                     <div class="card-body text-center">
@@ -90,7 +93,7 @@
                                     <i class="fas fa-school text-success"></i>
                                 </div>
                                 <h4>School Payment</h4>
-                                <p class="text-muted">Tuition fees, examination fees, and other school-related payments</p>
+                                <p class="text-muted">For ACE COLLEGE & ACE KIDDIES</p>
                                 <a href="school_payment.php" class="btn btn-payment btn-school">
                                     <i class="fas fa-arrow-right me-2"></i>
                                     School Payment
@@ -110,12 +113,12 @@
                             </div>
                         </div>
                         
-                        <div class="mt-4 pt-4 border-top">
+                        <!-- <div class="mt-4 pt-4 border-top">
                             <a href="payment_history.php" class="btn btn-outline-secondary">
                                 <i class="fas fa-history me-2"></i>
                                 View Payment History
                             </a>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </div>

@@ -2,8 +2,8 @@
 session_start();
 
 // Define credentials
-define('VALID_USERNAME', 'ola');
-define('VALID_PASSWORD', '123');
+define('VALID_USERNAME', 'bursar001');
+define('VALID_PASSWORD', 'acecollege001');
 
 // Check if user is already logged in
 if (!isset($_SESSION['logged_in'])) {
@@ -188,6 +188,62 @@ if (!isset($_SESSION['logged_in'])) {
         .btn-admin {
             background: linear-gradient(135deg, #9C27B0, #7B1FA2);
         }
+        .btn-payment-admin {
+            background: linear-gradient(135deg, #FF5722, #E64A19);
+        }
+        .user-guide {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .guide-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            background-color: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+            display: none; /* Hide by default */
+        }
+        .guide-section h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .guide-section h4 i {
+            margin-right: 10px;
+        }
+        .guide-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .guide-section li {
+            margin-bottom: 5px;
+            color: #555;
+        }
+        .guide-toggle {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        .guide-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .guide-content {
+            display: none;
+        }
+        .guide-content.show {
+            display: block;
+        }
     </style>
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -206,13 +262,56 @@ if (!isset($_SESSION['logged_in'])) {
                 Tutorial Student Portal
             </a>
            <a href="backends/school_paymente/buxer_dashbord.php" class="dashboard-btn btn-teacher">
-                <i class="fas fa-chalkboard-teacher"></i>
-                Bursar Dashboard
+                <i class="fas fa-school"></i>
+                School Bursar Portal
             </a>
             <a href="backends\lesson\admin\payment\payment _report.php" class="dashboard-btn btn-admin">
-                <i class="fas fa-user-shield"></i>
-                Admin Portal
+                <i class="fas fa-book"></i>
+                Lesson Bursar Portal
             </a> 
+            <a href="backends/g_p/admin.php" class="dashboard-btn btn-payment-admin">
+                <i class="fas fa-credit-card"></i>
+                School and Tutorial Online Payment
+            </a>
+        </div>
+        <div class="user-guide">
+            <h3>User Guide</h3>
+            <div class="guide-section">
+                <h4><i class="fas fa-user-graduate"></i> Tutorial Student Portal</h4>
+                <ul>
+                    <li>Access the portal to manage your academic records and progress.</li>
+                    <li>View your course schedule and assignments.</li>
+                    <li>Submit assignments and participate in discussions.</li>
+                </ul>
+            </div>
+            <div class="guide-section">
+                <h4><i class="fas fa-school"></i> School Bursar Portal</h4>
+                <ul>
+                    <li>Access the portal to manage school fees and payments.</li>
+                    <li>View and manage student accounts.</li>
+                    <li>Generate and manage invoices.</li>
+                </ul>
+            </div>
+            <div class="guide-section">
+                <h4><i class="fas fa-book"></i> Lesson Bursar Portal</h4>
+                <ul>
+                    <li>Access the portal to manage lesson fees and payments.</li>
+                    <li>View and manage lesson schedules.</li>
+                    <li>Generate and manage invoices.</li>
+                </ul>
+            </div>
+            <div class="guide-section">
+                <h4><i class="fas fa-credit-card"></i> School and Tutorial Online Payment</h4>
+                <ul>
+                    <li>Access the portal to make payments for school fees and tutorials.</li>
+                    <li>View payment history and manage payment methods.</li>
+                    <li>Receive and manage payment notifications.</li>
+                </ul>
+            </div>
+            <button class="guide-toggle">Show Guide</button>
+        </div>
+        <div class="guide-content">
+            <!-- Guide content will be dynamically added here -->
         </div>
     </div>
 
@@ -224,5 +323,31 @@ if (!isset($_SESSION['logged_in'])) {
         exit;
     }
     ?>
+    
+    <script>
+        // Toggle user guide visibility
+        document.addEventListener('DOMContentLoaded', function() {
+            const guideToggle = document.querySelector('.guide-toggle');
+            const guideSections = document.querySelectorAll('.guide-section');
+            
+            guideToggle.addEventListener('click', function() {
+                const isVisible = guideSections[0].style.display !== 'none';
+                
+                guideSections.forEach(function(section) {
+                    if (isVisible) {
+                        section.style.display = 'none';
+                    } else {
+                        section.style.display = 'block';
+                    }
+                });
+                
+                if (isVisible) {
+                    guideToggle.textContent = 'Show Guide';
+                } else {
+                    guideToggle.textContent = 'Hide Guide';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
