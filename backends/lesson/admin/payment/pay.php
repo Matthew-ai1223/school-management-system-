@@ -197,7 +197,7 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
         </div>
         <form method="POST">
             <input type="hidden" name="reg_number" value="<?php echo htmlspecialchars($student['reg_number']); ?>">
-            <input type="hidden" name="session" value="<?php echo htmlspecialchars($student['session']); ?>">
+            <input type="hidden" name="session" id="session" value="<?php echo htmlspecialchars($student['session']); ?>">
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title mb-3">Renew Payment</h5>
@@ -219,4 +219,28 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
     <?php endif; ?>
 </div>
 </body>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentType = document.getElementById('payment_type');
+    const amountInput = document.getElementById('amount');
+    const sessionInput = document.getElementById('session');
+
+    function updateAmount() {
+        const session = sessionInput ? sessionInput.value : '';
+        const type = paymentType.value;
+        let amount = 0;
+
+        if (session === 'morning') {
+            amount = (type === 'full') ? 7000 : 3500;
+        } else if (session === 'afternoon') {
+            amount = (type === 'full') ? 3000 : 1500;
+        }
+        amountInput.value = amount;
+    }
+
+    if (paymentType && amountInput && sessionInput) {
+        paymentType.addEventListener('change', updateAmount);
+    }
+});
+</script>
 </html>

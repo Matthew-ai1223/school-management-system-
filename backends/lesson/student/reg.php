@@ -306,13 +306,13 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="morning_payment_type" id="morning_full_payment" value="full" checked>
                                     <label class="form-check-label" for="morning_full_payment">
-                                        Full Payment (₦10,000)
+                                        Full Payment (₦7,000)
                                     </label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="morning_payment_type" id="morning_half_payment" value="half">
                                     <label class="form-check-label" for="morning_half_payment">
-                                        Half Payment (₦5,200)
+                                        Half Payment (₦3,500)
                                     </label>
                                 </div>
                             </div>
@@ -413,13 +413,13 @@
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="afternoon_payment_type" id="afternoon_full_payment" value="full" checked>
                                     <label class="form-check-label" for="afternoon_full_payment">
-                                        Full Payment (₦4,000)
+                                        Full Payment (₦3,000)
                                     </label>
                                 </div>
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="afternoon_payment_type" id="afternoon_half_payment" value="half">
                                     <label class="form-check-label" for="afternoon_half_payment">
-                                        Half Payment (₦2,200)
+                                        Half Payment (₦1,500)
                                     </label>
                                 </div>
                             </div>
@@ -524,11 +524,11 @@
                 const halfPaymentLabel = halfPaymentRadio.nextElementSibling;
                 
                 if (sessionType === 'afternoon') {
-                    fullPaymentLabel.textContent = 'Full Payment (₦4,000)';
-                    halfPaymentLabel.textContent = 'Half Payment (₦2,200)';
+                    fullPaymentLabel.textContent = 'Full Payment (₦3,000)';
+                    halfPaymentLabel.textContent = 'Half Payment (₦1,500)';
                 } else {
-                    fullPaymentLabel.textContent = 'Full Payment (₦10,000)';
-                    halfPaymentLabel.textContent = 'Half Payment (₦5,200)';
+                    fullPaymentLabel.textContent = 'Full Payment (₦7,000)';
+                    halfPaymentLabel.textContent = 'Half Payment (₦ 3,500)';
                 }
             }
         }
@@ -675,7 +675,7 @@
             submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Initializing Payment...';
 
             const handler = PaystackPop.setup({
-                key: 'pk_test_fff1d31f74a43da37f1322e466e0e27d1c1900f7',
+                key: '',
                 email: email,
                 amount: amount * 100,
                 currency: 'NGN',

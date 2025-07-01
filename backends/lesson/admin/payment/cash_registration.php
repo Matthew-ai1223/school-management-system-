@@ -49,9 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         // Calculate amount based on session and payment type
         if ($session === 'morning') {
-            $amount = ($payment_type === 'full') ? 10000 : 5200;
+            $amount = ($payment_type === 'full') ? 7000 : 3500;
         } else {
-            $amount = ($payment_type === 'full') ? 4000 : 2200;
+            $amount = ($payment_type === 'full') ? 3000 : 3500;
         }
 
         // Generate random reference number
@@ -182,13 +182,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="payment_type" id="full_payment" value="full" checked>
                             <label class="form-check-label" for="full_payment" id="full_payment_label">
-                                Full Payment (₦10,000)
+                                Full Payment (₦7,000)
                             </label>
                         </div>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="payment_type" id="half_payment" value="half">
                             <label class="form-check-label" for="half_payment" id="half_payment_label">
-                                Half Payment (₦5,200)
+                                Half Payment (₦3,500)
                             </label>
                         </div>
                     </div>
@@ -210,14 +210,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 afternoonFields.style.display = 'block';
                 document.getElementById('class').required = true;
                 document.getElementById('school').required = true;
-                fullPaymentLabel.textContent = 'Full Payment (₦4,000)';
-                halfPaymentLabel.textContent = 'Half Payment (₦2,200)';
+                fullPaymentLabel.textContent = 'Full Payment (₦3,000)';
+                halfPaymentLabel.textContent = 'Half Payment (₦1,500)';
             } else {
                 afternoonFields.style.display = 'none';
                 document.getElementById('class').required = false;
                 document.getElementById('school').required = false;
-                fullPaymentLabel.textContent = 'Full Payment (₦10,000)';
-                halfPaymentLabel.textContent = 'Half Payment (₦5,200)';
+                fullPaymentLabel.textContent = 'Full Payment (₦7,000)';
+                halfPaymentLabel.textContent = 'Half Payment (₦3,500)';
             }
         }
     </script>
