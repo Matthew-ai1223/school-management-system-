@@ -265,7 +265,7 @@ if (!isset($_SESSION['logged_in'])) {
                 <i class="fas fa-school"></i>
                 School Bursar Portal
             </a>
-            <a href="backends\lesson\admin\payment\payment _report.php" class="dashboard-btn btn-admin">
+            <a href="backends\lesson\admin\payment\payment_report.php" class="dashboard-btn btn-admin">
                 <i class="fas fa-book"></i>
                 Lesson Bursar Portal
             </a> 

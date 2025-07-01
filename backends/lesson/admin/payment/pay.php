@@ -40,12 +40,13 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
     $session = $_POST['session'];
     $payment_type = $_POST['payment_type'];
     $amount = floatval($_POST['amount']);
+    $payment_method = isset($_POST['payment_method']) ? $_POST['payment_method'] : 'cash';
     $table = $session === 'morning' ? 'morning_students' : 'afternoon_students';
     // Extend expiration date by 30 days from today
     $new_expiration = date('Y-m-d', strtotime('+30 days'));
-    $update_sql = "UPDATE $table SET payment_type = ?, payment_amount = ?, expiration_date = ?, is_active = 1, is_processed = 0 WHERE reg_number = ?";
+    $update_sql = "UPDATE $table SET payment_type = ?, payment_amount = ?, expiration_date = ?, payment_method = ?, is_active = 1, is_processed = 0 WHERE reg_number = ?";
     $stmt = $conn->prepare($update_sql);
-    $stmt->bind_param('sdss', $payment_type, $amount, $new_expiration, $reg_number);
+    $stmt->bind_param('sdsss', $payment_type, $amount, $new_expiration, $payment_method, $reg_number);
     if ($stmt->execute()) {
         $success = 'Payment renewed successfully! Expiration extended to ' . $new_expiration . '. Payment is pending admin approval.';
         // Fetch updated student info
@@ -74,7 +75,8 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
                 'payment_type' => $student['payment_type'],
                 'amount' => $student['payment_amount'],
                 'expiration_date' => $student['expiration_date'],
-                'registration_date' => $student['registration_date'] ?? date('Y-m-d')
+                'registration_date' => $student['registration_date'] ?? date('Y-m-d'),
+                'payment_method' => $payment_method
             ];
 
             // Generate QR code (returns SVG path)
@@ -161,7 +163,7 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Renew Student Payment (Cash)</h2>
-        <a href="payment _report.php" class="btn btn-secondary">
+        <a href="payment_report.php" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Back to Payment Reports
         </a>
     </div>
@@ -211,6 +213,17 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
                     <div class="mb-3">
                         <label for="amount" class="form-label">Amount (₦)</label>
                         <input type="number" class="form-control" id="amount" name="amount" required min="0" step="0.01" value="<?php echo htmlspecialchars($student['payment_amount']); ?>">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="payment_method_cash" value="cash" checked>
+                            <label class="form-check-label" for="payment_method_cash">Cash</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="payment_method_online" value="online">
+                            <label class="form-check-label" for="payment_method_online">Online</label>
+                        </div>
                     </div>
                     <button type="submit" name="renew_payment" class="btn btn-success">Renew Payment (Cash)</button>
                 </div>

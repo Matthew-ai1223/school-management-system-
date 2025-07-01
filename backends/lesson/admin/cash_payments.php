@@ -293,7 +293,7 @@ $total_amount = $stats_result['total_amount'] ?? 0;
         <div class="row mt-4">
             <div class="col-12 text-center">
                 <a href="payment/cash_registration.php" class="btn btn-primary">Create New Payment</a>
-                <a href="payment/payment _report.php" class="btn btn-secondary">Back to Dashboard</a>
+                <a href="payment_report.php" class="btn btn-secondary">Back to Dashboard</a>
             </div>
         </div>
     </div>

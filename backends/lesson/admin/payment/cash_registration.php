@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $payment_type = $_POST['payment_type'];
     $class = isset($_POST['class']) ? trim($_POST['class']) : '';
     $school = isset($_POST['school']) ? trim($_POST['school']) : '';
+    $payment_method = isset($_POST['payment_method']) ? $_POST['payment_method'] : 'cash';
 
     // Validate inputs
     if (empty($fullname) || empty($session) || empty($department) || empty($payment_type)) {
@@ -64,11 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Store payment details in cash_payments table
             $expiration_date = date('Y-m-d', strtotime('+30 days'));
             
-            $sql = "INSERT INTO cash_payments (reference_number, fullname, session_type, department, payment_type, payment_amount, class, school, expiration_date) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            $sql = "INSERT INTO cash_payments (reference_number, fullname, session_type, department, payment_type, payment_amount, class, school, expiration_date, payment_method) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             $stmt = $conn->prepare($sql);
-            $stmt->bind_param("sssssdsss", $reference, $fullname, $session, $department, $payment_type, $amount, $class, $school, $expiration_date);
+            $stmt->bind_param("sssssdssss", $reference, $fullname, $session, $department, $payment_type, $amount, $class, $school, $expiration_date, $payment_method);
             
             if ($stmt->execute()) {
                 // Generate receipt with QR code
@@ -122,14 +123,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="mb-0">Cash Registration</h3>
+            <h3 class="mb-0">Registration</h3>
             <a href="../cash_payments.php" class="btn btn-secondary">
                 <i class="bi bi-arrow-left"></i> Back to Cash Payments
             </a>
         </div>
         <div class="card">
             <div class="card-header">
-                <h3 class="mb-0">Cash Registration</h3>
+                <h3 class="mb-0">Registration</h3>
             </div>
             <div class="card-body">
                 <?php if ($success): ?>
@@ -174,6 +175,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="mb-3">
                             <label for="school" class="form-label">School</label>
                             <input type="text" class="form-control" id="school" name="school">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="payment_method_cash" value="cash" checked>
+                            <label class="form-check-label" for="payment_method_cash">Cash</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="payment_method" id="payment_method_online" value="online">
+                            <label class="form-check-label" for="payment_method_online">Online</label>
                         </div>
                     </div>
 

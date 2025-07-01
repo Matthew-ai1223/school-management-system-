@@ -3,6 +3,7 @@ include '../../confg.php';
 
 // Add missing columns if they don't exist
 $alter_queries = [
+    "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'cash' AFTER expiration_date",
     "ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS is_processed BOOLEAN DEFAULT FALSE",
     "ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS processed_at TIMESTAMP NULL",
     "ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS processed_by VARCHAR(50) NULL",
@@ -68,6 +69,7 @@ $cash_sql = "SELECT
     cp.school,
     COALESCE(cp.created_at, cp.updated_at) as payment_date,
     cp.expiration_date,
+    cp.payment_method,
     'New Registration' as payment_source,
     CASE WHEN cp.is_processed = 1 THEN 'Approved' ELSE 'Pending' END as status,
     cp.is_processed,
@@ -105,6 +107,7 @@ if ($payment_source !== 'new') {
         '' as school,
         COALESCE(ms.updated_at, ms.created_at) as payment_date,
         ms.expiration_date,
+        ms.payment_method,
         'Renewal' as payment_source,
         CASE WHEN ms.is_processed = 1 THEN 'Approved' ELSE 'Pending' END as status,
         ms.is_processed,
@@ -135,6 +138,7 @@ if ($payment_source !== 'new') {
             asf.school,
             COALESCE(asf.updated_at, asf.created_at) as payment_date,
             asf.expiration_date,
+            asf.payment_method,
             'Renewal' as payment_source,
             CASE WHEN asf.is_processed = 1 THEN 'Approved' ELSE 'Pending' END as status,
             asf.is_processed,
@@ -168,6 +172,31 @@ $payments_by_type = [];
 $payments_by_session = [];
 $today_payments = ['count' => 0, 'amount' => 0];
 $today = date('Y-m-d');
+
+if (
+    $result
+) {
+    while ($row = $result->fetch_assoc()) {
+        $total_amount += $row['payment_amount'];
+        $total_records++;
+        // Count by payment type
+        $type = $row['payment_type'];
+        if (!isset($payments_by_type[$type])) {
+            $payments_by_type[$type] = ['count' => 0, 'amount' => 0];
+        }
+        $payments_by_type[$type]['count']++;
+        $payments_by_type[$type]['amount'] += $row['payment_amount'];
+        // Count by session
+        $session = $row['session_type'];
+        if (!isset($payments_by_session[$session])) {
+            $payments_by_session[$session] = ['count' => 0, 'amount' => 0];
+        }
+        $payments_by_session[$session]['count']++;
+        $payments_by_session[$session]['amount'] += $row['payment_amount'];
+    }
+    // Reset result pointer
+    $result->data_seek(0);
+}
 
 ?>
 <!DOCTYPE html>
@@ -282,6 +311,48 @@ $today = date('Y-m-d');
             </div>
         <?php endif; ?>
         
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card summary-card bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Payments</h5>
+                        <p class="card-text">
+                            Count: <?php echo $total_records; ?><br>
+                            Amount: ₦<?php echo number_format($total_amount, 2); ?>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <?php foreach ($payments_by_type as $type => $data): ?>
+            <div class="col-md-3">
+                <div class="card summary-card bg-success text-white">
+                    <div class="card-body">
+                        <h5 class="card-title"><?php echo ucfirst($type); ?> Payments</h5>
+                        <p class="card-text">
+                            Count: <?php echo $data['count']; ?><br>
+                            Amount: ₦<?php echo number_format($data['amount'], 2); ?>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+            <?php foreach ($payments_by_session as $session => $data): ?>
+            <div class="col-md-3">
+                <div class="card summary-card bg-info text-white">
+                    <div class="card-body">
+                        <h5 class="card-title"><?php echo ucfirst($session); ?> Session</h5>
+                        <p class="card-text">
+                            Count: <?php echo $data['count']; ?><br>
+                            Amount: ₦<?php echo number_format($data['amount'], 2); ?>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <!-- End Summary Cards -->
+        
         <div class="filters mb-4">
             <form method="GET" class="row g-3 align-items-end">
                 <div class="col-md-2">
@@ -337,6 +408,7 @@ $today = date('Y-m-d');
                             <th>Department</th>
                             <th>Payment Type</th>
                             <th>Amount</th>
+                            <th>Payment Method</th>
                             <th>Source</th>
                             <th>Status</th>
                             <th>Expiry Date</th>
@@ -353,6 +425,7 @@ $today = date('Y-m-d');
                             <td><?php echo ucfirst($row['department']); ?></td>
                             <td><?php echo ucfirst($row['payment_type']); ?></td>
                             <td>₦<?php echo number_format($row['payment_amount'], 2); ?></td>
+                            <td><?php echo isset($row['payment_method']) ? ucfirst($row['payment_method']) : '-'; ?></td>
                             <td><?php echo $row['payment_source']; ?></td>
                             <td>
                                 <span class="badge badge-<?php echo $row['status'] === 'Approved' ? 'success' : 'warning'; ?>">

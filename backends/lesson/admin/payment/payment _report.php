@@ -3,6 +3,7 @@ include '../../confg.php';
 
 // Add missing columns if they don't exist
 $alter_queries = [
+    "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'cash' AFTER expiration_date",
     "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
     "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
     "ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
@@ -38,6 +39,7 @@ $query = "
         cp.school,
         COALESCE(cp.created_at, cp.updated_at) as payment_date,
         cp.expiration_date,
+        cp.payment_method,
         'New Registration' as payment_source,
         CASE 
             WHEN cp.is_processed = 1 THEN 'Processed'
@@ -76,6 +78,7 @@ if ($payment_source === 'new') {
         '' as school,
         COALESCE(ms.updated_at, ms.created_at) as payment_date,
         ms.expiration_date,
+        ms.payment_method,
         'Renewal' as payment_source,
         'Processed' as status
     FROM morning_students ms
@@ -105,6 +108,7 @@ if ($payment_source === 'new') {
             as.school,
             COALESCE(as.updated_at, as.created_at) as payment_date,
             as.expiration_date,
+            as.payment_method,
             'Renewal' as payment_source,
             'Processed' as status
         FROM afternoon_students as
@@ -209,7 +213,7 @@ $payments_by_session = [];
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">&nbsp;</label>
-                    <a href="payment _report.php" class="btn btn-outline-secondary w-100">Clear Filters</a>
+                    <a href="payment_report.php" class="btn btn-outline-secondary w-100">Clear Filters</a>
                 </div>
             </form>
         </div>
@@ -282,6 +286,7 @@ $payments_by_session = [];
                             <th>Department</th>
                             <th>Payment Type</th>
                             <th>Amount</th>
+                            <th>Payment Method</th>
                             <th>Source</th>
                             <th>Status</th>
                             <th>Expiry Date</th>
@@ -297,6 +302,7 @@ $payments_by_session = [];
                             <td><?php echo ucfirst($row['department']); ?></td>
                             <td><?php echo ucfirst($row['payment_type']); ?></td>
                             <td>₦<?php echo number_format($row['payment_amount'], 2); ?></td>
+                            <td><?php echo isset($row['payment_method']) ? ucfirst($row['payment_method']) : '-'; ?></td>
                             <td><?php echo $row['payment_source']; ?></td>
                             <td>
                                 <span class="badge bg-<?php echo $row['status'] === 'Processed' ? 'success' : 'warning'; ?>">
