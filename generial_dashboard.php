@@ -1,9 +1,25 @@
 <?php
 session_start();
 
+// Handle logout
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit;
+}
+
 // Define credentials
+$default_password = 'acecollege001';
 define('VALID_USERNAME', 'bursar001');
-define('VALID_PASSWORD', 'acecollege001');
+
+// Read password from file if it exists
+$password_file = __DIR__ . '/dashboard_password.txt';
+if (file_exists($password_file)) {
+    $password_from_file = trim(file_get_contents($password_file));
+    define('VALID_PASSWORD', $password_from_file);
+} else {
+    define('VALID_PASSWORD', $default_password);
+}
 
 // Check if user is already logged in
 if (!isset($_SESSION['logged_in'])) {
@@ -316,12 +332,6 @@ if (!isset($_SESSION['logged_in'])) {
     </div>
 
     <?php
-    // Handle logout
-    if (isset($_GET['logout'])) {
-        session_destroy();
-        header('Location: ' . $_SERVER['PHP_SELF']);
-        exit;
-    }
     ?>
     
     <script>
