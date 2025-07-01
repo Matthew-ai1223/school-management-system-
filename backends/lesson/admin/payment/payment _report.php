@@ -160,11 +160,11 @@ $payments_by_session = [];
                     <i class="bi bi-cash"></i> Renew Payment
                 </a>
                 <a href="../cash_payments.php" class="btn btn-success me-2">
-                    <i class="bi bi-credit-card"></i> Cash Payments
+                    <i class="bi bi-credit-card"></i>Make New Payments
                 </a>
-                <a href="../dashboard.php" class="btn btn-secondary">
+                <!-- <a href="../dashboard.php" class="btn btn-secondary">
                     <i class="bi bi-house"></i> Dashboard
-                </a>
+                </a> -->
             </div>
         </div>
 

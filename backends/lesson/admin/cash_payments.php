@@ -117,7 +117,7 @@ $total_amount = $stats_result['total_amount'] ?? 0;
 </head>
 <body>
     <div class="container-fluid py-4">
-        <h2 class="text-center mb-4">Cash Payments Management</h2>
+        <h2 class="text-center mb-4">Payments Management</h2>
 
         <!-- Filters -->
         <div class="card mb-4 filters-card">
@@ -292,7 +292,7 @@ $total_amount = $stats_result['total_amount'] ?? 0;
         <!-- Action Buttons -->
         <div class="row mt-4">
             <div class="col-12 text-center">
-                <a href="payment/cash_registration.php" class="btn btn-primary">Create New Cash Payment</a>
+                <a href="payment/cash_registration.php" class="btn btn-primary">Create New Payment</a>
                 <a href="payment/payment _report.php" class="btn btn-secondary">Back to Dashboard</a>
             </div>
         </div>
