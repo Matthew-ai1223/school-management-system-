@@ -5370,3 +5370,9 @@ Stack trace:
 [25-Jun-2025 10:16:37 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
 [25-Jun-2025 10:21:36 Africa/Lagos] Successfully fetched 5 reports
 [25-Jun-2025 10:21:36 Africa/Lagos] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\cbt\admin\reports.php on line 330
+[01-Jul-2025 18:29:54 Africa/Lagos] === Dashboard Access Attempt ===
+[01-Jul-2025 18:29:54 Africa/Lagos] Session student_id: 51
+[01-Jul-2025 18:29:54 Africa/Lagos] Student lookup result: Found
+[01-Jul-2025 18:31:33 Africa/Lagos] === Dashboard Access Attempt ===
+[01-Jul-2025 18:31:33 Africa/Lagos] Session student_id: 51
+[01-Jul-2025 18:31:33 Africa/Lagos] Student lookup result: Found
