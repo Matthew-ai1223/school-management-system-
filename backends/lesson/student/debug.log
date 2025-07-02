@@ -56,3 +56,169 @@ check_account_status.php loaded
 check_account_status.php loaded
 check_account_status.php loaded
 check_account_status.php loaded
+Script started: 2025-07-02T14:16:43+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+[02-Jul-2025 14:16:45 Europe/Berlin] Registration error: Invalid reference number or payment verification failed.
+Script started: 2025-07-02T14:16:50+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+[02-Jul-2025 14:16:52 Europe/Berlin] Registration error: Invalid reference number or payment verification failed.
+Script started: 2025-07-02T14:18:03+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+[02-Jul-2025 14:18:06 Europe/Berlin] Registration error: Invalid reference number or payment verification failed.
+Script started: 2025-07-02T14:18:24+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+Student inserted
+Reg number generated: 2025/MORNING/0003
+Reg number updated in DB
+Receipt generated: receipt_MORF00337712.pdf
+[02-Jul-2025 14:18:25 Europe/Berlin] PHP Warning:  require_once(../../confg.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+[02-Jul-2025 14:18:25 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../../confg.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php:2
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\student\process_registration.php(330): require_once()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+Script started: 2025-07-02T14:24:39+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+Student inserted
+Reg number generated: 2025/MORNING/0004
+Reg number updated in DB
+Receipt generated: receipt_MORH03538725.pdf
+[02-Jul-2025 14:24:40 Europe/Berlin] PHP Warning:  require_once(../../confg.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+[02-Jul-2025 14:24:40 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../../confg.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php:2
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\student\process_registration.php(330): require_once()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+Script started: 2025-07-02T14:25:59+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+Student inserted
+Reg number generated: 2025/MORNING/0005
+Reg number updated in DB
+Receipt generated: receipt_MORF39045851.pdf
+[02-Jul-2025 14:26:00 Europe/Berlin] PHP Warning:  require_once(../../confg.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+[02-Jul-2025 14:26:00 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../../confg.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php:2
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\student\process_registration.php(330): require_once()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+Script started: 2025-07-02T14:47:39+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+Student inserted
+Reg number generated: 2025/MORNING/0006
+Reg number updated in DB
+Receipt generated: receipt_MORF37530714.pdf
+[02-Jul-2025 14:47:40 Europe/Berlin] PHP Warning:  require_once(../../confg.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+[02-Jul-2025 14:47:40 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../../confg.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php:2
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\student\process_registration.php(330): require_once()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+Script started: 2025-07-02T15:16:09+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+Student inserted
+Reg number generated: 2025/MORNING/0002
+Reg number updated in DB
+Receipt generated: receipt_MORF04253031.pdf
+[02-Jul-2025 15:16:10 Europe/Berlin] PHP Warning:  require_once(../../confg.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+[02-Jul-2025 15:16:10 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../../confg.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php:2
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\student\process_registration.php(330): require_once()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+Script started: 2025-07-02T15:38:46+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+Student inserted
+Reg number generated: 2025/AFTERNOON/0002
+Reg number updated in DB
+Receipt generated: receipt_AFTF41075680.pdf
+[02-Jul-2025 15:38:46 Europe/Berlin] PHP Warning:  require_once(../../confg.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+[02-Jul-2025 15:38:46 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../../confg.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php:2
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\student\process_registration.php(330): require_once()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+Script started: 2025-07-02T15:55:45+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+Student inserted
+Reg number generated: 2025/MORNING/0003
+Reg number updated in DB
+Receipt generated: receipt_MORH23314487.pdf
+[02-Jul-2025 15:55:45 Europe/Berlin] PHP Warning:  require_once(../../confg.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+[02-Jul-2025 15:55:45 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../../confg.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php:2
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\student\process_registration.php(330): require_once()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+Script started: 2025-07-02T16:06:38+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+Student inserted
+Reg number generated: 2025/MORNING/0004
+Reg number updated in DB
+Receipt generated: receipt_MORH19822396.pdf
+[02-Jul-2025 16:06:38 Europe/Berlin] PHP Warning:  require_once(../../confg.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+[02-Jul-2025 16:06:38 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../../confg.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php:2
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\student\process_registration.php(330): require_once()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+Script started: 2025-07-02T16:15:53+02:00
+DB config included
+DB connection successful
+check_account_status.php loaded
+After require_once check_account_status.php
+Required files included
+Student inserted
+Reg number generated: 2025/MORNING/0005
+Reg number updated in DB
+Receipt generated: receipt_MORF88998456.pdf
+[02-Jul-2025 16:15:54 Europe/Berlin] PHP Warning:  require_once(../../confg.php): Failed to open stream: No such file or directory in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+[02-Jul-2025 16:15:54 Europe/Berlin] PHP Fatal error:  Uncaught Error: Failed opening required '../../confg.php' (include_path='C:\xampp\php\PEAR') in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php:2
+Stack trace:
+#0 C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\student\process_registration.php(330): require_once()
+#1 {main}
+  thrown in C:\xampp\htdocs\ACE MODEL COLLEGE\backends\lesson\admin\payment\generate_cash_receipt.php on line 2
+check_account_status.php loaded

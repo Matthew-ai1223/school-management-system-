@@ -5,9 +5,7 @@ include '../../confg.php';
 $alter_queries = [
     "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'cash' AFTER expiration_date",
     "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
-    "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
-    "ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
-    "ALTER TABLE afternoon_students ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+    "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
 ];
 
 foreach ($alter_queries as $query) {
@@ -20,15 +18,16 @@ foreach ($alter_queries as $query) {
 }
 
 // Initialize filters
-$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'); // First day of current month
-$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t'); // Last day of current month
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t');
 $payment_type = isset($_GET['payment_type']) ? $_GET['payment_type'] : '';
 $session_type = isset($_GET['session_type']) ? $_GET['session_type'] : '';
 $payment_source = isset($_GET['payment_source']) ? $_GET['payment_source'] : '';
 
-// Base query for cash payments
-$query = "
-    (SELECT 
+// Build query based on payment_source filter
+if ($payment_source === 'new') {
+    // Only cash_payments
+    $query = "SELECT 
         cp.reference_number,
         cp.fullname,
         cp.session_type,
@@ -47,87 +46,100 @@ $query = "
         END as status
     FROM cash_payments cp
     LEFT JOIN reference_numbers rn ON cp.reference_number = rn.reference_number
-    WHERE (rn.is_used IS NULL OR rn.is_used = 0)";
-
-// Add filters for cash payments
-if ($start_date) {
-    $query .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) >= '$start_date'";
-}
-if ($end_date) {
-    $query .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) <= '$end_date'";
-}
-if ($payment_type) {
-    $query .= " AND cp.payment_type = '$payment_type'";
-}
-if ($session_type) {
-    $query .= " AND cp.session_type = '$session_type'";
-}
-if ($payment_source === 'new') {
-    $query .= ")";
-} else {
-    $query .= ")
-    UNION
-    (SELECT 
-        ms.reg_number as reference_number,
-        ms.fullname,
-        'morning' as session_type,
-        ms.department,
-        ms.payment_type,
-        ms.payment_amount,
-        '' as class,
-        '' as school,
-        COALESCE(ms.updated_at, ms.created_at) as payment_date,
-        ms.expiration_date,
-        ms.payment_method,
-        'Renewal' as payment_source,
-        'Processed' as status
-    FROM morning_students ms
     WHERE 1=1";
-    
-    // Add filters for morning students
     if ($start_date) {
-        $query .= " AND DATE(COALESCE(ms.updated_at, ms.created_at)) >= '$start_date'";
+        $query .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) >= '$start_date'";
     }
     if ($end_date) {
-        $query .= " AND DATE(COALESCE(ms.updated_at, ms.created_at)) <= '$end_date'";
+        $query .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) <= '$end_date'";
     }
     if ($payment_type) {
-        $query .= " AND ms.payment_type = '$payment_type'";
+        $query .= " AND cp.payment_type = '$payment_type'";
     }
-    if ($session_type && $session_type !== 'afternoon') {
-        $query .= ")
-        UNION
-        (SELECT 
-            as.reg_number as reference_number,
-            as.fullname,
-            'afternoon' as session_type,
-            as.department,
-            as.payment_type,
-            as.payment_amount,
-            as.class,
-            as.school,
-            COALESCE(as.updated_at, as.created_at) as payment_date,
-            as.expiration_date,
-            as.payment_method,
-            'Renewal' as payment_source,
-            'Processed' as status
-        FROM afternoon_students as
-        WHERE 1=1";
-        
-        // Add filters for afternoon students
-        if ($start_date) {
-            $query .= " AND DATE(COALESCE(as.updated_at, as.created_at)) >= '$start_date'";
-        }
-        if ($end_date) {
-            $query .= " AND DATE(COALESCE(as.updated_at, as.created_at)) <= '$end_date'";
-        }
-        if ($payment_type) {
-            $query .= " AND as.payment_type = '$payment_type'";
-        }
+    if ($session_type) {
+        $query .= " AND cp.session_type = '$session_type'";
     }
-    $query .= ")";
+} else if ($payment_source === 'renewal') {
+    // Only renew_payment
+    $query = "SELECT 
+        rp.reference_number,
+        rp.fullname,
+        rp.session_type,
+        rp.department,
+        rp.payment_type,
+        rp.payment_amount,
+        rp.class,
+        rp.school,
+        COALESCE(rp.created_at, rp.updated_at) as payment_date,
+        rp.expiration_date,
+        rp.payment_method,
+        'Renewal' as payment_source,
+        CASE 
+            WHEN rp.is_processed = 1 THEN 'Processed'
+            ELSE 'Pending'
+        END as status
+    FROM renew_payment rp
+    WHERE 1=1";
+    if ($start_date) {
+        $query .= " AND DATE(COALESCE(rp.created_at, rp.updated_at)) >= '$start_date'";
+    }
+    if ($end_date) {
+        $query .= " AND DATE(COALESCE(rp.created_at, rp.updated_at)) <= '$end_date'";
+    }
+    if ($payment_type) {
+        $query .= " AND rp.payment_type = '$payment_type'";
+    }
+    if ($session_type) {
+        $query .= " AND rp.session_type = '$session_type'";
+    }
+} else {
+    // Both tables (All)
+    $query = "SELECT 
+        cp.reference_number,
+        cp.fullname,
+        cp.session_type,
+        cp.department,
+        cp.payment_type,
+        cp.payment_amount,
+        cp.class,
+        cp.school,
+        COALESCE(cp.created_at, cp.updated_at) as payment_date,
+        cp.expiration_date,
+        cp.payment_method,
+        'New Registration' as payment_source,
+        CASE 
+            WHEN cp.is_processed = 1 THEN 'Processed'
+            ELSE 'Pending'
+        END as status
+    FROM cash_payments cp
+    LEFT JOIN reference_numbers rn ON cp.reference_number = rn.reference_number
+    WHERE 1=1";
+    if ($start_date) {
+        $query .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) >= '$start_date'";
+    }
+    if ($end_date) {
+        $query .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) <= '$end_date'";
+    }
+    if ($payment_type) {
+        $query .= " AND cp.payment_type = '$payment_type'";
+    }
+    if ($session_type) {
+        $query .= " AND cp.session_type = '$session_type'";
+    }
+    $query .= "\nUNION ALL\nSELECT \n    rp.reference_number,\n    rp.fullname,\n    rp.session_type,\n    rp.department,\n    rp.payment_type,\n    rp.payment_amount,\n    rp.class,\n    rp.school,\n    COALESCE(rp.created_at, rp.updated_at) as payment_date,\n    rp.expiration_date,\n    rp.payment_method,\n    'Renewal' as payment_source,\n    CASE \n        WHEN rp.is_processed = 1 THEN 'Processed'\n        ELSE 'Pending'\n    END as status\nFROM renew_payment rp\nWHERE 1=1";
+    if ($start_date) {
+        $query .= " AND DATE(COALESCE(rp.created_at, rp.updated_at)) >= '$start_date'";
+    }
+    if ($end_date) {
+        $query .= " AND DATE(COALESCE(rp.created_at, rp.updated_at)) <= '$end_date'";
+    }
+    if ($payment_type) {
+        $query .= " AND rp.payment_type = '$payment_type'";
+    }
+    if ($session_type) {
+        $query .= " AND rp.session_type = '$session_type'";
+    }
 }
-
 $query .= " ORDER BY payment_date DESC";
 
 $result = $conn->query($query);
@@ -213,7 +225,7 @@ $payments_by_session = [];
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">&nbsp;</label>
-                    <a href="payment_report.php" class="btn btn-outline-secondary w-100">Clear Filters</a>
+                    <a href="payment _report.php?payment_source=&start_date=&end_date=&payment_type=&session_type=" class="btn btn-outline-secondary w-100">Clear Filters</a>
                 </div>
             </form>
         </div>

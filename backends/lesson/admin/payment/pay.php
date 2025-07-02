@@ -57,6 +57,38 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
         if ($result->num_rows > 0) {
             $student = $result->fetch_assoc();
 
+            // Insert renewal record into renew_payment table
+            $reg_number = $student['reg_number'];
+            $fullname = $student['fullname'];
+            $session_type = $student['session'];
+            $department = $student['department'];
+            $payment_type_val = $student['payment_type'];
+            $payment_amount = $student['payment_amount'];
+            $class = isset($student['class']) ? $student['class'] : '';
+            $school = isset($student['school']) ? $student['school'] : '';
+            $expiration_date = $student['expiration_date'];
+            $payment_method_var = $payment_method;
+            $processed_by = $student['reg_number'];
+
+            $insert_sql = "INSERT INTO renew_payment (reference_number, fullname, session_type, department, payment_type, payment_amount, class, school, expiration_date, payment_method, created_at, updated_at, processed_by, is_processed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, 0)";
+            $insert_stmt = $conn->prepare($insert_sql);
+            $insert_stmt->bind_param(
+                'sssssdsssss',
+                $reg_number,
+                $fullname,
+                $session_type,
+                $department,
+                $payment_type_val,
+                $payment_amount,
+                $class,
+                $school,
+                $expiration_date,
+                $payment_method_var,
+                $processed_by
+            );
+            $insert_stmt->execute();
+            $insert_stmt->close();
+
             // --- Generate QR code and receipt ---
             require_once __DIR__ . '/../../student/generate_receipt.php';
             require_once __DIR__ . '/../QR/functions.php';

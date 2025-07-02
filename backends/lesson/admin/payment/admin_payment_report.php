@@ -3,15 +3,7 @@ include '../../confg.php';
 
 // Add missing columns if they don't exist
 $alter_queries = [
-    "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'cash' AFTER expiration_date",
-    "ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS is_processed BOOLEAN DEFAULT FALSE",
-    "ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS processed_at TIMESTAMP NULL",
-    "ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS processed_by VARCHAR(50) NULL",
-    "ALTER TABLE afternoon_students ADD COLUMN IF NOT EXISTS is_processed BOOLEAN DEFAULT FALSE",
-    "ALTER TABLE afternoon_students ADD COLUMN IF NOT EXISTS processed_at TIMESTAMP NULL",
-    "ALTER TABLE afternoon_students ADD COLUMN IF NOT EXISTS processed_by VARCHAR(50) NULL",
-    "ALTER TABLE morning_students ADD COLUMN IF NOT EXISTS reg_number VARCHAR(32) UNIQUE NULL",
-    "ALTER TABLE afternoon_students ADD COLUMN IF NOT EXISTS reg_number VARCHAR(32) UNIQUE NULL"
+    "ALTER TABLE cash_payments ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'cash' AFTER expiration_date"
 ];
 
 foreach ($alter_queries as $query) {
@@ -34,8 +26,14 @@ if (isset($_GET['approve']) && !empty($_GET['approve'])) {
         $stmt->bind_param('s', $reference);
         $stmt->execute();
         $stmt->close();
+    } else if ($payment_source === 'renewal') {
+        // Approve renewal payment in renew_payment table (use reference_number)
+        $stmt = $conn->prepare("UPDATE renew_payment SET is_processed = 1, processed_at = NOW(), processed_by = 'admin' WHERE reference_number = ?");
+        $stmt->bind_param('s', $reference);
+        $stmt->execute();
+        $stmt->close();
     } else {
-        // Approve renewal payment in student tables
+        // Approve renewal payment in student tables (legacy, fallback)
         $table = $_GET['table'] ?? 'morning_students';
         $stmt = $conn->prepare("UPDATE $table SET is_processed = 1, processed_at = NOW(), processed_by = 'admin' WHERE reg_number = ?");
         $stmt->bind_param('s', $reference);
@@ -55,113 +53,123 @@ $payment_type = isset($_GET['payment_type']) ? $_GET['payment_type'] : '';
 $session_type = isset($_GET['session_type']) ? $_GET['session_type'] : '';
 $payment_source = isset($_GET['payment_source']) ? $_GET['payment_source'] : '';
 
-$selects = [];
-
-// Cash payments (New Registration)
-$cash_sql = "SELECT 
-    cp.reference_number,
-    cp.fullname,
-    cp.session_type,
-    cp.department,
-    cp.payment_type,
-    cp.payment_amount,
-    cp.class,
-    cp.school,
-    COALESCE(cp.created_at, cp.updated_at) as payment_date,
-    cp.expiration_date,
-    cp.payment_method,
-    'New Registration' as payment_source,
-    CASE WHEN cp.is_processed = 1 THEN 'Approved' ELSE 'Pending' END as status,
-    cp.is_processed,
-    'cash' as source_type,
-    'cash_payments' as table_name
-FROM cash_payments cp
-LEFT JOIN reference_numbers rn ON cp.reference_number = rn.reference_number
-WHERE (rn.is_used IS NULL OR rn.is_used = 0)";
-if ($start_date) {
-    $cash_sql .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) >= '$start_date'";
-}
-if ($end_date) {
-    $cash_sql .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) <= '$end_date'";
-}
-if ($payment_type) {
-    $cash_sql .= " AND cp.payment_type = '$payment_type'";
-}
-if ($session_type) {
-    $cash_sql .= " AND cp.session_type = '$session_type'";
-}
-if ($payment_source === 'new' || $payment_source === '') {
-    $selects[] = $cash_sql;
-}
-
-// Morning students (Renewal payments)
-if ($payment_source !== 'new') {
-    $morning_sql = "SELECT 
-        ms.reg_number as reference_number,
-        ms.fullname,
-        'morning' as session_type,
-        ms.department,
-        ms.payment_type,
-        ms.payment_amount,
-        '' as class,
-        '' as school,
-        COALESCE(ms.updated_at, ms.created_at) as payment_date,
-        ms.expiration_date,
-        ms.payment_method,
-        'Renewal' as payment_source,
-        CASE WHEN ms.is_processed = 1 THEN 'Approved' ELSE 'Pending' END as status,
-        ms.is_processed,
-        'renewal' as source_type,
-        'morning_students' as table_name
-    FROM morning_students ms
+// Build query based on payment_source filter
+if ($payment_source === 'new') {
+    // Only cash_payments
+    $query = "SELECT 
+        cp.reference_number,
+        cp.fullname,
+        cp.session_type,
+        cp.department,
+        cp.payment_type,
+        cp.payment_amount,
+        cp.class,
+        cp.school,
+        COALESCE(cp.created_at, cp.updated_at) as payment_date,
+        cp.expiration_date,
+        cp.payment_method,
+        'New Registration' as payment_source,
+        CASE WHEN cp.is_processed = 1 THEN 'Approved' ELSE 'Pending' END as status,
+        cp.is_processed,
+        'cash' as source_type,
+        'cash_payments' as table_name
+    FROM cash_payments cp
+    LEFT JOIN reference_numbers rn ON cp.reference_number = rn.reference_number
     WHERE 1=1";
     if ($start_date) {
-        $morning_sql .= " AND DATE(COALESCE(ms.updated_at, ms.created_at)) >= '$start_date'";
+        $query .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) >= '$start_date'";
     }
     if ($end_date) {
-        $morning_sql .= " AND DATE(COALESCE(ms.updated_at, ms.created_at)) <= '$end_date'";
+        $query .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) <= '$end_date'";
     }
     if ($payment_type) {
-        $morning_sql .= " AND ms.payment_type = '$payment_type'";
+        $query .= " AND cp.payment_type = '$payment_type'";
     }
-    if ($session_type && $session_type !== 'afternoon') {
-        $selects[] = $morning_sql;
-        // Afternoon students
-        $afternoon_sql = "SELECT 
-            asf.reg_number as reference_number,
-            asf.fullname,
-            'afternoon' as session_type,
-            asf.department,
-            asf.payment_type,
-            asf.payment_amount,
-            asf.class,
-            asf.school,
-            COALESCE(asf.updated_at, asf.created_at) as payment_date,
-            asf.expiration_date,
-            asf.payment_method,
-            'Renewal' as payment_source,
-            CASE WHEN asf.is_processed = 1 THEN 'Approved' ELSE 'Pending' END as status,
-            asf.is_processed,
-            'renewal' as source_type,
-            'afternoon_students' as table_name
-        FROM afternoon_students asf
-        WHERE 1=1";
-        if ($start_date) {
-            $afternoon_sql .= " AND DATE(COALESCE(asf.updated_at, asf.created_at)) >= '$start_date'";
-        }
-        if ($end_date) {
-            $afternoon_sql .= " AND DATE(COALESCE(asf.updated_at, asf.created_at)) <= '$end_date'";
-        }
-        if ($payment_type) {
-            $afternoon_sql .= " AND asf.payment_type = '$payment_type'";
-        }
-        $selects[] = $afternoon_sql;
-    } else {
-        $selects[] = $morning_sql;
+    if ($session_type) {
+        $query .= " AND cp.session_type = '$session_type'";
+    }
+} else if ($payment_source === 'renewal') {
+    // Only renew_payment
+    $query = "SELECT 
+        rp.reference_number,
+        rp.fullname,
+        rp.session_type,
+        rp.department,
+        rp.payment_type,
+        rp.payment_amount,
+        rp.class,
+        rp.school,
+        COALESCE(rp.created_at, rp.updated_at) as payment_date,
+        rp.expiration_date,
+        rp.payment_method,
+        'Renewal' as payment_source,
+        CASE WHEN rp.is_processed = 1 THEN 'Approved' ELSE 'Pending' END as status,
+        rp.is_processed,
+        'renewal' as source_type,
+        'renew_payment' as table_name
+    FROM renew_payment rp
+    WHERE 1=1";
+    if ($start_date) {
+        $query .= " AND DATE(COALESCE(rp.created_at, rp.updated_at)) >= '$start_date'";
+    }
+    if ($end_date) {
+        $query .= " AND DATE(COALESCE(rp.created_at, rp.updated_at)) <= '$end_date'";
+    }
+    if ($payment_type) {
+        $query .= " AND rp.payment_type = '$payment_type'";
+    }
+    if ($session_type) {
+        $query .= " AND rp.session_type = '$session_type'";
+    }
+} else {
+    // Both tables (All)
+    $query = "SELECT 
+        cp.reference_number,
+        cp.fullname,
+        cp.session_type,
+        cp.department,
+        cp.payment_type,
+        cp.payment_amount,
+        cp.class,
+        cp.school,
+        COALESCE(cp.created_at, cp.updated_at) as payment_date,
+        cp.expiration_date,
+        cp.payment_method,
+        'New Registration' as payment_source,
+        CASE WHEN cp.is_processed = 1 THEN 'Approved' ELSE 'Pending' END as status,
+        cp.is_processed,
+        'cash' as source_type,
+        'cash_payments' as table_name
+    FROM cash_payments cp
+    LEFT JOIN reference_numbers rn ON cp.reference_number = rn.reference_number
+    WHERE 1=1";
+    if ($start_date) {
+        $query .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) >= '$start_date'";
+    }
+    if ($end_date) {
+        $query .= " AND DATE(COALESCE(cp.created_at, cp.updated_at)) <= '$end_date'";
+    }
+    if ($payment_type) {
+        $query .= " AND cp.payment_type = '$payment_type'";
+    }
+    if ($session_type) {
+        $query .= " AND cp.session_type = '$session_type'";
+    }
+    $query .= "\nUNION ALL\nSELECT \n    rp.reference_number,\n    rp.fullname,\n    rp.session_type,\n    rp.department,\n    rp.payment_type,\n    rp.payment_amount,\n    rp.class,\n    rp.school,\n    COALESCE(rp.created_at, rp.updated_at) as payment_date,\n    rp.expiration_date,\n    rp.payment_method,\n    'Renewal' as payment_source,\n    CASE WHEN rp.is_processed = 1 THEN 'Approved' ELSE 'Pending' END as status,\n    rp.is_processed,\n    'renewal' as source_type,\n    'renew_payment' as table_name\nFROM renew_payment rp\nWHERE 1=1";
+    if ($start_date) {
+        $query .= " AND DATE(COALESCE(rp.created_at, rp.updated_at)) >= '$start_date'";
+    }
+    if ($end_date) {
+        $query .= " AND DATE(COALESCE(rp.created_at, rp.updated_at)) <= '$end_date'";
+    }
+    if ($payment_type) {
+        $query .= " AND rp.payment_type = '$payment_type'";
+    }
+    if ($session_type) {
+        $query .= " AND rp.session_type = '$session_type'";
     }
 }
-
-$query = implode(" UNION ", $selects) . " ORDER BY payment_date DESC";
+$query .= " ORDER BY payment_date DESC";
 
 $result = $conn->query($query);
 

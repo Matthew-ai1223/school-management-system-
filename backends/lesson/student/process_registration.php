@@ -122,11 +122,11 @@ try {
             $update_stmt->bind_param("s", $reference);
             $update_stmt->execute();
             
-            // Mark cash payment as processed
-            $update_cash_sql = "UPDATE cash_payments SET is_processed = 1, processed_at = CURRENT_TIMESTAMP WHERE reference_number = ?";
-            $update_cash_stmt = $conn->prepare($update_cash_sql);
-            $update_cash_stmt->bind_param("s", $reference);
-            $update_cash_stmt->execute();
+            // Mark cash payment as processed (DISABLED: do not alter cash_payments after registration)
+            // $update_cash_sql = "UPDATE cash_payments SET is_processed = 1, processed_at = CURRENT_TIMESTAMP WHERE reference_number = ?";
+            // $update_cash_stmt = $conn->prepare($update_cash_sql);
+            // $update_cash_stmt->bind_param("s", $reference);
+            // $update_cash_stmt->execute();
             
             // Return the cash payment data
             return $payment_data;
@@ -166,9 +166,9 @@ try {
                 $payment_type = $payment_verification['payment_type'];
                 // Set amount based on payment type and session
                 if ($form_type === 'morning') {
-                    $amount = $payment_type === 'full' ? 10000 : 5200;
+                    $amount = $payment_type === 'full' ? 7000 : 3500;
                 } else {
-                    $amount = $payment_type === 'full' ? 4000 : 2200;
+                    $amount = $payment_type === 'full' ? 3000 : 1500;
                 }
             }
 
