@@ -89,6 +89,12 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             min-height: 100vh;
             background: #2c3e50;
             padding: 20px;
+            transition: all 0.3s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            width: 250px;
         }
         .sidebar .nav-link {
             color: #ecf0f1;
@@ -107,6 +113,8 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         .main-content {
             padding: 20px;
+            margin-left: 250px;
+            transition: all 0.3s ease;
         }
         .stat-card {
             background: white;
@@ -119,13 +127,77 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
             font-size: 2rem;
             color: #3498db;
         }
+        
+        /* Mobile responsive styles */
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 1001;
+            background: #2c3e50;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1.2rem;
+        }
+        
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+                padding-top: 70px;
+            }
+            .sidebar-toggle {
+                display: block;
+            }
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 15px;
+                padding-top: 70px;
+            }
+            .stat-card {
+                padding: 15px;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Mobile sidebar toggle button -->
+    <button class="sidebar-toggle" id="sidebarToggle">
+        <i class='bx bx-menu'></i>
+    </button>
+    
+    <!-- Sidebar overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 px-0 sidebar">
+            <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
                 <h4 class="text-white mb-4">Admin Panel</h4>
                 <nav class="nav flex-column">
                     <a class="nav-link active" href="dashboard.php">
@@ -335,57 +407,98 @@ $expiring_accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function() {
-            // Initialize DataTable
-            const attemptsTable = $('#recentAttemptsTable').DataTable({
-                pageLength: 10,
-                order: [[5, 'desc']], // Sort by date column by default
-                responsive: true,
-                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
-                language: {
-                    search: "_INPUT_",
-                    searchPlaceholder: "Search attempts..."
+        // Mobile sidebar functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            // Toggle sidebar
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+            });
+            
+            // Close sidebar when clicking overlay
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            });
+            
+            // Close sidebar when clicking on a nav link (mobile)
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('show');
+                        sidebarOverlay.classList.remove('show');
+                    }
+                });
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
                 }
             });
-
-            // Refresh button functionality
-            $('#refresh-attempts').click(function() {
-                const button = $(this);
-                const icon = button.find('i');
-                
-                // Add spinning animation
-                icon.addClass('fa-spin');
-                button.prop('disabled', true);
-
-                // Simulate refresh (replace with actual AJAX call)
-                setTimeout(function() {
-                    // Remove spinning animation
-                    icon.removeClass('fa-spin');
-                    button.prop('disabled', false);
-                    
-                    // Show success message
-                    const toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">')
-                        .html(`
-                            <div class="toast-header bg-success text-white">
-                                <strong class="me-auto">Success</strong>
-                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                            </div>
-                            <div class="toast-body">
-                                Data refreshed successfully!
-                            </div>
-                        `)
-                        .appendTo($('body'));
-                    
-                    const bsToast = new bootstrap.Toast(toast);
-                    bsToast.show();
-                    
-                    // Remove toast after it's hidden
-                    toast.on('hidden.bs.toast', function() {
-                        toast.remove();
-                    });
-                }, 1000);
-            });
         });
+
+        // Initialize DataTable (if jQuery is available)
+        if (typeof $ !== 'undefined') {
+            $(document).ready(function() {
+                // Initialize DataTable
+                const attemptsTable = $('#recentAttemptsTable').DataTable({
+                    pageLength: 10,
+                    order: [[5, 'desc']], // Sort by date column by default
+                    responsive: true,
+                    dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip',
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: "Search attempts..."
+                    }
+                });
+
+                // Refresh button functionality
+                $('#refresh-attempts').click(function() {
+                    const button = $(this);
+                    const icon = button.find('i');
+                    
+                    // Add spinning animation
+                    icon.addClass('fa-spin');
+                    button.prop('disabled', true);
+
+                    // Simulate refresh (replace with actual AJAX call)
+                    setTimeout(function() {
+                        // Remove spinning animation
+                        icon.removeClass('fa-spin');
+                        button.prop('disabled', false);
+                        
+                        // Show success message
+                        const toast = $('<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">')
+                            .html(`
+                                <div class="toast-header bg-success text-white">
+                                    <strong class="me-auto">Success</strong>
+                                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                                </div>
+                                <div class="toast-body">
+                                    Data refreshed successfully!
+                                </div>
+                            `)
+                            .appendTo($('body'));
+                        
+                        const bsToast = new bootstrap.Toast(toast);
+                        bsToast.show();
+                        
+                        // Remove toast after it's hidden
+                        toast.on('hidden.bs.toast', function() {
+                            toast.remove();
+                        });
+                    }, 1000);
+                });
+            });
+        }
 
         // Function to handle result download
         function downloadResult(attemptId) {
