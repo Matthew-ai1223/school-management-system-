@@ -121,6 +121,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
+    <!-- Loader Overlay -->
+    <div id="loaderOverlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.85);z-index:9999;justify-content:center;align-items:center;flex-direction:column;">
+        <div class="spinner-border text-primary" style="width:4rem;height:4rem;" role="status"></div>
+        <div style="margin-top:20px;font-size:1.2rem;color:#333;">Processing...</div>
+    </div>
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="mb-0">Registration</h3>
@@ -233,6 +238,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 halfPaymentLabel.textContent = 'Half Payment (₦3,500)';
             }
         }
+        // Loader logic
+        document.getElementById('registrationForm').addEventListener('submit', function() {
+            document.getElementById('loaderOverlay').style.display = 'flex';
+        });
     </script>
 </body>
 </html>

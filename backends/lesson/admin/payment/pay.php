@@ -192,6 +192,11 @@ if (isset($_POST['renew_payment']) && isset($_POST['reg_number'])) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
 </head>
 <body class="bg-light">
+<!-- Loader Overlay -->
+<div id="loaderOverlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.85);z-index:9999;justify-content:center;align-items:center;flex-direction:column;">
+    <div class="spinner-border text-primary" style="width:4rem;height:4rem;" role="status"></div>
+    <div style="margin-top:20px;font-size:1.2rem;color:#333;">Processing...</div>
+</div>
 <div class="container py-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Renew Student Payment (Cash)</h2>
@@ -286,6 +291,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (paymentType && amountInput && sessionInput) {
         paymentType.addEventListener('change', updateAmount);
     }
+
+    // Loader logic for all forms
+    document.querySelectorAll('form').forEach(function(form) {
+        form.addEventListener('submit', function() {
+            document.getElementById('loaderOverlay').style.display = 'flex';
+        });
+    });
 });
 </script>
 </html>

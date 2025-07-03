@@ -327,10 +327,10 @@ if (isset($_GET['generate_receipt'])) {
 
 // Function to generate receipt HTML
 function generateReceiptHTML($payment) {
-    $school_name = "ACE MODEL COLLEGE";
+    $school_name = "ACE COLLEGE";
     $school_address = "123 Education Street, Lagos, Nigeria";
     $school_phone = "+234 123 456 7890";
-    $school_email = "info@acemodelcollege.com";
+    $school_email = "info@acecollege.cng";
     
     $receipt_html = '
     <!DOCTYPE html>
@@ -819,13 +819,19 @@ function generateReceiptHTML($payment) {
                 padding: 1.25rem;
             }
         }
+
+        /* Loader Overlay Animation */
+        @keyframes fadeInLoader {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="page-header">
-            <h2><i class="fas fa-money-bill-wave"></i> Cash Payment Interface</h2>
-            <p>Process cash payments for students - Bursar Access Only</p>
+            <h2><i class="fas fa-money-bill-wave"></i>Payment Interface</h2>
+            <p>Process payments for students - Bursar Access Only</p>
         </div>
         
         <div class="row justify-content-center">
@@ -884,9 +890,17 @@ function generateReceiptHTML($payment) {
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">
-                            <i class="fas fa-money-bill-wave"></i> Process Cash Payment
-                            <span class="cash-payment-badge ms-2">CASH</span>
+                            <i class="fas fa-money-bill-wave"></i> Process Payment
+                            <span class="cash-payment-badge ms-2"></span>
                         </h5>
+                        <!-- Loader Overlay -->
+                        <div id="loaderOverlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7);backdrop-filter:blur(4px);z-index:9999;justify-content:center;align-items:center;flex-direction:column;animation:fadeInLoader 0.3s;">
+                            <div style="background:rgba(255,255,255,0.95);padding:40px 50px 30px 50px;border-radius:18px;box-shadow:0 8px 32px rgba(44,62,80,0.18);display:flex;flex-direction:column;align-items:center;">
+                                <div class="spinner-border text-success" style="width:4.5rem;height:4.5rem;border-width:7px;" role="status"></div>
+                                <div style="margin-top:28px;font-size:1.35rem;color:#2c3e50;font-weight:600;letter-spacing:0.5px;">Processing Payment...</div>
+                                <div style="margin-top:10px;font-size:1rem;color:#27ae60;font-weight:400;">Please wait, do not close this window.</div>
+                            </div>
+                        </div>
                         <form method="POST" id="cashPaymentForm">
                             <input type="hidden" name="student_id" 
                                    value="<?php echo htmlspecialchars($student_data['registration_number']); ?>">
@@ -933,7 +947,7 @@ function generateReceiptHTML($payment) {
                             </div>
                             
                             <button type="submit" name="process_cash_payment" class="btn btn-success w-100" id="processButton">
-                                <i class="fas fa-check-circle"></i> Process Cash Payment
+                                <i class="fas fa-check-circle"></i> Process Payment
                             </button>
                         </form>
                     </div>
@@ -951,38 +965,38 @@ function generateReceiptHTML($payment) {
                 </div>
 
                 <!-- Debug Section (remove in production) -->
-                <div class="card mt-4">
-                    <div class="card-body">
-                        <h6 class="card-title text-warning">
-                            <i class="fas fa-bug"></i> Debug Tools (Development Only)
-                        </h6>
-                        <div class="row">
-                            <div class="col-md-3">
-                                <button type="button" class="btn btn-sm btn-outline-info" onclick="testServer()">
-                                    <i class="fas fa-server"></i> Test Server
-                                </button>
-                            </div>
-                            <div class="col-md-3">
-                                <button type="button" class="btn btn-sm btn-outline-info" onclick="testDatabase()">
-                                    <i class="fas fa-database"></i> Test Database
-                                </button>
-                            </div>
-                            <div class="col-md-3">
-                                <button type="button" class="btn btn-sm btn-outline-info" onclick="testTableStructure()">
-                                    <i class="fas fa-table"></i> Test Table
-                                </button>
-                            </div>
-                            <div class="col-md-3">
-                                <button type="button" class="btn btn-sm btn-outline-info" onclick="showFormData()">
-                                    <i class="fas fa-eye"></i> Show Form Data
-                                </button>
-                            </div>
-                        </div>
-                        <div id="debug-output" class="mt-3" style="display: none;">
-                            <pre id="debug-content" class="bg-light p-2 rounded" style="font-size: 12px;"></pre>
-                        </div>
-                    </div>
-                </div>
+                <!--<div class="card mt-4">-->
+                <!--    <div class="card-body">-->
+                <!--        <h6 class="card-title text-warning">-->
+                <!--            <i class="fas fa-bug"></i> Debug Tools (Development Only)-->
+                <!--        </h6>-->
+                <!--        <div class="row">-->
+                <!--            <div class="col-md-3">-->
+                <!--                <button type="button" class="btn btn-sm btn-outline-info" onclick="testServer()">-->
+                <!--                    <i class="fas fa-server"></i> Test Server-->
+                <!--                </button>-->
+                <!--            </div>-->
+                <!--            <div class="col-md-3">-->
+                <!--                <button type="button" class="btn btn-sm btn-outline-info" onclick="testDatabase()">-->
+                <!--                    <i class="fas fa-database"></i> Test Database-->
+                <!--                </button>-->
+                <!--            </div>-->
+                <!--            <div class="col-md-3">-->
+                <!--                <button type="button" class="btn btn-sm btn-outline-info" onclick="testTableStructure()">-->
+                <!--                    <i class="fas fa-table"></i> Test Table-->
+                <!--                </button>-->
+                <!--            </div>-->
+                <!--            <div class="col-md-3">-->
+                <!--                <button type="button" class="btn btn-sm btn-outline-info" onclick="showFormData()">-->
+                <!--                    <i class="fas fa-eye"></i> Show Form Data-->
+                <!--                </button>-->
+                <!--            </div>-->
+                <!--        </div>-->
+                <!--        <div id="debug-output" class="mt-3" style="display: none;">-->
+                <!--            <pre id="debug-content" class="bg-light p-2 rounded" style="font-size: 12px;"></pre>-->
+                <!--        </div>-->
+                <!--    </div>-->
+                <!--</div>-->
             </div>
         </div>
     </div>
@@ -992,31 +1006,34 @@ function generateReceiptHTML($payment) {
         // Add debugging for form submission
         document.addEventListener('DOMContentLoaded', function() {
             const cashPaymentForm = document.getElementById('cashPaymentForm');
+            const loaderOverlay = document.getElementById('loaderOverlay');
             if (cashPaymentForm) {
                 cashPaymentForm.addEventListener('submit', function(e) {
+                    // Show loader overlay
+                    if(loaderOverlay) loaderOverlay.style.display = 'flex';
+                    // Existing debug code
                     console.log('Form submission started');
-                    
                     // Log form data for debugging
                     const formData = new FormData(this);
                     console.log('Form data:');
                     for (let [key, value] of formData.entries()) {
                         console.log(key + ': ' + value);
                     }
-                    
                     // Check if all required fields are filled
                     const studentId = formData.get('student_id');
                     const paymentType = formData.get('payment_type');
                     const amount = formData.get('amount');
-                    
                     if (!studentId || !paymentType || !amount) {
                         e.preventDefault();
                         alert('Please fill in all required fields');
                         console.log('Form validation failed - missing required fields');
+                        if(loaderOverlay) loaderOverlay.style.display = 'none';
                         return false;
                     }
-                    
                     console.log('Form validation passed, submitting...');
                 });
+                // Hide loader on page load (in case of reload)
+                if(loaderOverlay) loaderOverlay.style.display = 'none';
             }
         });
 
