@@ -855,5 +855,25 @@ $default_email = 'students@acecollege.ng';
             });
         }
     </script>
+    <!-- Loader Overlay -->
+    <div id="loaderOverlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.8);z-index:9999;align-items:center;justify-content:center;">
+      <div style="text-align:center;">
+        <div class="spinner-border text-primary" style="width:4rem;height:4rem;" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <div style="margin-top:1rem;font-weight:bold;color:#1a2b77;">Submitting, please wait...</div>
+      </div>
+    </div>
+    <script>
+    (function(){
+      var regForm = document.getElementById('studentRegistrationForm');
+      if(regForm){
+        regForm.addEventListener('submit', function(){
+          var loader = document.getElementById('loaderOverlay');
+          if(loader){ loader.style.display = 'flex'; }
+        });
+      }
+    })();
+    </script>
 </body>
 </html> 
